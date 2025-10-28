@@ -1,34 +1,41 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+import { useState, useEffect } from 'react'
 import './App.css'
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [message, setMessage] = useState('Cargando...')
+
+  const apiUrl = import.meta.env.VITE_API_URL;
+
+  useEffect(() => {
+    if (!apiUrl) {
+      setMessage('Error: La variable VITE_API_URL no está configurada.');
+      return;
+    }
+
+    fetch(`${apiUrl}/api/test`)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`Respuesta de red no fue OK (${response.status})`);
+        }
+        return response.json();
+      })
+      .then(data => {
+        setMessage(data.message);
+      })
+      .catch(error => {
+        console.error('Error fetching data:', error);
+        setMessage(`Error al conectar con el backend: ${error.message}`);
+      });
+  }, []); // El array vacío asegura que se ejecute solo una vez
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
+    <div className="App">
+      <h1>Test de Conexión Full-Stack</h1>
+      <p>
+        Mensaje del Backend: <strong>{message}</strong>
       </p>
-    </>
+      { !apiUrl && <p style={{color: 'red'}}>Revisa la variable VITE_API_URL en Railway.</p> }
+    </div>
   )
 }
 
