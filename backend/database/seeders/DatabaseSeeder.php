@@ -2,9 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class DatabaseSeeder extends Seeder
 {
@@ -15,11 +14,29 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
+        // El método 'call' ejecuta otros Seeders en el orden especificado.
+        $this->call([
+            // 1. Usuarios (Base)
+            UserSeeder::class,
+            AddressSeeder::class, // Las direcciones dependen de que existan los usuarios.
+            
+            // 2. Catálogo (Base del inventario)
+            CategorySeeder::class,
+            ProductSeeder::class, 
+            ProductDetailSeeder::class, // (Vacío, pero se ejecuta)
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+            // 3. Carrito y Pedidos (Dependientes de Usuarios y Productos)
+            ShoppingCartSeeder::class,
+            CartItemSeeder::class, 
+            OrderSeeder::class, 
+            OrderItemSeeder::class, // (Vacío, pero se ejecuta)
+
+            // 4. Ofertas (Dependientes de Productos/Detalles)
+            OfferSeeder::class,
+
+            // 5. Inteligencia Artificial (Dependientes de Usuarios/Sesiones)
+            AiSessionSeeder::class,
+            AiMessageSeeder::class,
         ]);
     }
 }

@@ -2,31 +2,38 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+// Asegúrate de que todas las clases de modelos están importadas
+use App\Models\Address;
+use App\Models\Order;
+use App\Models\ShoppingCart;
+use App\Models\AiSession;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable;
 
     /**
-     * The attributes that are mass assignable.
+     * Los atributos que son asignables en masa.
+     * Añadimos el campo 'role' que creamos en la migración.
      *
-     * @var list<string>
+     * @var array<int, string>
      */
     protected $fillable = [
         'name',
         'email',
         'password',
+        'role', // ¡Añadir este campo es crucial!
     ];
 
     /**
-     * The attributes that should be hidden for serialization.
+     * Los atributos que deberían estar ocultos para las arrays.
      *
-     * @var list<string>
+     * @var array<int, string>
      */
     protected $hidden = [
         'password',
@@ -34,15 +41,60 @@ class User extends Authenticatable
     ];
 
     /**
-     * Get the attributes that should be cast.
+     * Los atributos que deberían ser casteados a tipos nativos.
      *
-     * @return array<string, string>
+     * @var array<string, string>
      */
-    protected function casts(): array
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'password' => 'hashed',
+    ];
+
+    // ----------------------------------------------------
+    // RELACIONES DE ELOQUENT
+    // ----------------------------------------------------
+
+    /**
+     * Relación Uno-a-Muchos: Un usuario puede tener muchas direcciones.
+     */
+    public function addresses()
     {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
+        return $this->hasMany(Address::class);
+    }
+
+    /**
+     * Relación Uno-a-Muchos: Un usuario puede tener muchos pedidos.
+     */
+    public function orders()
+    {
+        return $this->hasMany(Order::class);
+    }
+
+    /**
+     * Relación Uno-a-Uno: Un usuario tiene un único carrito de compra activo.
+     */
+    public function shoppingCart()
+    {
+        return $this->hasOne(ShoppingCart::class);
+    }
+
+    /**
+     * Relación Uno-a-Muchos: Un usuario puede tener muchas sesiones de IA.
+     */
+    public function aiSessions()
+    {
+        return $this->hasMany(AiSession::class);
+    }
+
+    // ----------------------------------------------------
+    // SCOPES (Funciones Auxiliares)
+    // ----------------------------------------------------
+
+    /**
+     * Scope para verificar si el usuario es un administrador/empleado.
+     */
+    public function isAdminOrEmployee(): bool
+    {
+        return $this->role === 'admin' || $this->role === 'employee';
     }
 }
