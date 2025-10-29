@@ -35,4 +35,9 @@ return [
         ],
     ],
 
+    // Dentro de config/services.php
+    'gemini' => [
+        'api_key' => env('GEMINI_API_KEY'),
+    ],
+
 ];
