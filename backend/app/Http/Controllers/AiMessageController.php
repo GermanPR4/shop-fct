@@ -22,10 +22,14 @@ class AiMessageController extends Controller
         Log::info('Datos recibidos:', $request->all());
 
         try {
+            // --- CORRECCIÓN AQUÍ ---
+            // Hemos quitado la regla 'exists:ai_sessions,session_token'
+            // La lógica firstOrCreate manejará si existe o no, evitando el error 422.
             $validated = $request->validate([
-                'session_token' => 'sometimes|nullable|string|exists:ai_sessions,session_token',
+                'session_token' => 'sometimes|nullable|string',
                 'message' => 'required|string|max:1000',
             ]);
+            // --- FIN CORRECCIÓN ---
 
             Log::info('Validación pasada.');
 
@@ -40,9 +44,12 @@ class AiMessageController extends Controller
                 $sessionToken = $existingUserSession?->session_token ?? Str::uuid()->toString(); // Usar existente o crear nuevo
             }
 
+            // Si $receivedToken existe pero no está en la BD (porque hicimos migrate:fresh),
+            // firstOrCreate creará uno nuevo con ese token.
             Log::info('Token de sesión a usar:', ['token' => $sessionToken, 'recibido' => $receivedToken, 'userId' => $userId]);
 
             // 1. Encontrar o crear la sesión de IA
+            // Si el token es "fantasma" (ej: "ABC"), creará una nueva sesión con "ABC".
             $session = AiSession::firstOrCreate(
                 ['session_token' => $sessionToken],
                 ['user_id' => $userId, 'last_message_at' => now()]
@@ -82,12 +89,12 @@ class AiMessageController extends Controller
             }
             // --- FIN: Lógica de Búsqueda de Productos ---
 
-            // 3. Preparar historial para Gemini (ÚLTIMOS 6 MENSAJES)
+            // 3. Preparar historial para Gemini
             $history_messages = $session->messages()
-                ->orderBy('created_at', 'desc') // Obtener los más recientes
-                ->take(6) // <-- CAMBIO 1: Reducir historial
+                ->orderBy('created_at', 'desc')
+                ->take(6)
                 ->get()
-                ->reverse(); // Volver a ordenarlos cronológicamente
+                ->reverse();
 
             $history = $history_messages->map(function ($msg) {
                 $role = ($msg->role === 'user') ? 'user' : 'model';
@@ -105,15 +112,13 @@ class AiMessageController extends Controller
             $client = new Client(['timeout' => 60]);
             $apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=' . $apiKey;
 
-            // --- REESTRUCTURACIÓN DEL PAYLOAD ---
             $contents = [];
             $systemInstruction = "Eres OmniStyle AI, un asistente de moda experto y amable de la tienda OmniStyle. Tu objetivo principal es ayudar al usuario a encontrar prendas en nuestro catálogo. Usa el historial de conversación y el contexto de productos proporcionado para dar recomendaciones relevantes y específicas de OmniStyle. Si encuentras productos adecuados basados en la consulta y el contexto, menciónalos brevemente (Nombre, Colores/Tallas disponibles si aplican, Precio) y pregunta directamente al usuario si quiere añadir alguno al carrito. Si no encuentras productos exactos en el contexto, informa al usuario amablemente y sugiere alternativas generales basadas en su consulta. Sé siempre conciso, amigable y enfocado en la venta.";
 
             $contents[] = ['role' => 'user', 'parts' => [['text' => $systemInstruction]]];
             $contents[] = ['role' => 'model', 'parts' => [['text' => 'Entendido. Soy OmniStyle AI. ¡Vamos a encontrar el estilo perfecto! Pregúntame lo que necesites sobre nuestro catálogo.']]];
 
-            // Añadir historial (TODOS MENOS EL ÚLTIMO MENSAJE DEL USUARIO)
-            $last_user_message = array_pop($history); // Quita el último mensaje del historial
+            $last_user_message = array_pop($history);
 
             if (!empty($history)) {
                 $contents = array_merge($contents, $history);
@@ -124,15 +129,14 @@ class AiMessageController extends Controller
             if ($last_user_message) {
                 $contents[] = $last_user_message;
             }
-            // --- FIN REESTRUCTURACIÓN ---
 
             $payload = [
                 'contents' => $contents,
                 'generationConfig' => [
                     'temperature' => 0.6,
-                    'maxOutputTokens' => 1024, // <-- CAMBIO 2: Aumentar tokens de salida
+                    'maxOutputTokens' => 1024,
                 ],
-                'safetySettings' => [ // Relajar filtros
+                'safetySettings' => [
                     ['category' => 'HARM_CATEGORY_HARASSMENT', 'threshold' => 'BLOCK_NONE'],
                     ['category' => 'HARM_CATEGORY_HATE_SPEECH', 'threshold' => 'BLOCK_NONE'],
                     ['category' => 'HARM_CATEGORY_SEXUALLY_EXPLICIT', 'threshold' => 'BLOCK_NONE'],
@@ -149,7 +153,6 @@ class AiMessageController extends Controller
                 $body = json_decode($response->getBody()->getContents(), true);
                 Log::info('Respuesta de Gemini recibida.');
 
-                // --- CAMBIO 3: MANEJO DE ERRORES ROBUSTO ---
                 if (empty($body['candidates'])) {
                     $blockReason = $body['promptFeedback']['blockReason'] ?? 'Bloqueo desconocido (sin candidatos)';
                     Log::channel('stderr')->error('Respuesta de Gemini bloqueada (sin candidatos):', ['reason' => $blockReason, 'body' => $body]);
@@ -157,16 +160,14 @@ class AiMessageController extends Controller
                 }
                 $candidate = $body['candidates'][0];
                 if (isset($candidate['finishReason']) && $candidate['finishReason'] !== 'STOP') {
-                    $reason = $candidate['finishReason']; // Ej: MAX_TOKENS, SAFETY
+                    $reason = $candidate['finishReason'];
                     Log::channel('stderr')->error('Respuesta de Gemini incompleta:', ['reason' => $reason, 'body' => $body]);
                     throw new \Exception('La respuesta del asistente fue incompleta (' . $reason . ').');
                 }
-                // Esta es la comprobación clave para el error "Undefined array key 'parts'"
                 if (!isset($candidate['content']['parts'][0]['text'])) {
                     Log::channel('stderr')->error('Respuesta inesperada de Gemini (sin parts/text):', $body);
                     throw new \Exception('Formato de respuesta de Gemini inesperado o bloqueado.');
                 }
-                // --- FIN MANEJO DE ERRORES ---
 
                 $assistantMessage = $candidate['content']['parts'][0]['text'];
 
@@ -220,13 +221,11 @@ class AiMessageController extends Controller
         $query = Product::query()->with(['details', 'categories']);
         $query->where('is_active', true);
 
-        // Si no hay palabras clave, no buscar nada
         if (empty($keywords)) {
-            return collect(); // Devuelve una colección vacía
+            return collect();
         }
 
         foreach ($keywords as $keyword) {
-            // Añadimos una búsqueda más flexible para plurales simples (sudadera -> sudaderas)
             $singular = rtrim($keyword, 's');
             $plural = $keyword . 's';
 
@@ -253,7 +252,7 @@ class AiMessageController extends Controller
                     });
             });
         }
-        return $query->take(3)->get(); // Limitar a 3 productos
+        return $query->take(3)->get();
     }
 
     private function formatProductContext($products): string
@@ -270,6 +269,7 @@ class AiMessageController extends Controller
             }
             $context .= "---\n";
         }
-        return Str::limit(trim($context), 2000); // Límite de contexto
+        return Str::limit(trim($context), 2000);
     }
 }
+
