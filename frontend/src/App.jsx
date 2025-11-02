@@ -23,43 +23,115 @@ const PAGES = {
 
 // --- COMPONENTES AUXILIARES ---
 
-// Navbar (Corregido NavIconButton)
+// Navbar Mejorado con Diseño Moderno
 const Navbar = ({ setPage, cartItemCount, user, onLogout, onOpenCartSidebar }) => (
-  <nav className="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+  <nav className="bg-gradient-to-r from-white via-slate-50 to-white border-b border-slate-200/60 sticky top-0 z-50 shadow-lg backdrop-blur-sm">
     <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div className="flex justify-between items-center h-16">
+      <div className="flex justify-between items-center h-18 py-2">
         {/* Logo y Categorías */}
-        <div className="flex items-center space-x-4">
-          <button onClick={() => setPage(PAGES.HOME)} className="text-2xl font-bold text-slate-800 text-purple hover:text-emerald-600 transition-colors duration-300">
-            OmniStyle
+        <div className="flex items-center space-x-6">
+          <button 
+            onClick={() => setPage(PAGES.HOME)} 
+            className="group flex items-center space-x-2 text-2xl font-bold bg-gradient-to-r from-purple-600 via-violet-600 to-indigo-600 bg-clip-text text-transparent hover:from-emerald-600 hover:via-teal-600 hover:to-cyan-600 transition-all duration-500 transform hover:scale-105"
+          >
+            <svg className="h-8 w-8 text-purple-600 group-hover:text-emerald-600 transition-colors duration-500 transform group-hover:rotate-12" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 2L2 7v10c0 5.55 3.84 10 9 10s9-4.45 9-10V7L12 2z"/>
+              <circle cx="12" cy="12" r="3" fill="white"/>
+            </svg>
+            <span>OmniStyle</span>
           </button>
-          <button className="hidden md:flex items-center space-x-1 text-sm font-medium text-slate-700 hover:text-emerald-600 bg-slate-100 hover:bg-emerald-50 px-3 py-1.5 rounded-lg transition-all duration-300">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
+          
+          <button className="hidden lg:flex items-center space-x-2 text-sm font-medium text-slate-700 hover:text-white bg-gradient-to-r from-slate-100 to-slate-200 hover:from-emerald-500 hover:to-teal-500 px-4 py-2.5 rounded-xl transition-all duration-300 shadow-sm hover:shadow-lg transform hover:scale-105 border border-slate-200 hover:border-emerald-400">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 transform transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h8M4 18h16" />
+            </svg>
             <span>Categorías</span>
+            <svg className="h-4 w-4 transform transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+            </svg>
           </button>
         </div>
-        {/* Barra de Búsqueda */}
-        <div className="flex-1 px-4 hidden md:block">
-          <input type="text" placeholder="Buscar productos..." className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm transition-all duration-300" />
+
+        {/* Barra de Búsqueda Mejorada */}
+        <div className="flex-1 max-w-xl mx-6 hidden md:block">
+          <div className="relative group">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+              <svg className="h-5 w-5 text-slate-400 group-focus-within:text-emerald-500 transition-colors duration-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
+            <input 
+              type="text" 
+              placeholder="Descubre productos increíbles..." 
+              className="w-full pl-12 pr-4 py-3 bg-white border-2 border-slate-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-emerald-500/20 focus:border-emerald-500 text-sm placeholder-slate-400 transition-all duration-300 shadow-sm hover:shadow-md focus:shadow-lg"
+            />
+            <div className="absolute inset-y-0 right-0 pr-4 flex items-center">
+              <kbd className="hidden sm:inline-flex items-center px-2 py-1 text-xs font-medium text-slate-400 bg-slate-100 border border-slate-200 rounded">
+                ⌘K
+              </kbd>
+            </div>
+          </div>
         </div>
-        {/* Iconos Derecha */}
-        <div className="flex items-center space-x-3 md:space-x-4">
-          <NavIconButton icon={<svg className="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>} label="Buscar" className="md:hidden" />
-          <NavIconButton onClick={onOpenCartSidebar} icon={<svg className="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>} label="Bolsa" count={cartItemCount} />
+
+        {/* Iconos Derecha Mejorados */}
+        <div className="flex items-center space-x-2 md:space-x-3">
+          <NavIconButton 
+            icon={
+              <svg className="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            } 
+            label="Buscar" 
+            className="md:hidden" 
+          />
+          
+          <NavIconButton 
+            onClick={onOpenCartSidebar} 
+            icon={
+              <svg className="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+              </svg>
+            } 
+            label="Carrito" 
+            count={cartItemCount} 
+          />
+          
+          <div className="hidden sm:block w-px h-8 bg-slate-200"></div>
+          
           {user ? (
             <UserDropdown user={user} onLogout={onLogout} setPage={setPage} />
           ) : (
-            <NavIconButton onClick={() => setPage(PAGES.LOGIN)} icon={<svg className="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>} label="Cuenta" />
+            <div className="flex items-center space-x-2">
+              <NavIconButton 
+                onClick={() => setPage(PAGES.LOGIN)} 
+                icon={
+                  <svg className="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                } 
+                label="Perfil" 
+              />
+              <button 
+                onClick={() => setPage(PAGES.LOGIN)}
+                className="hidden sm:flex items-center space-x-2 text-sm font-medium text-white bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 px-4 py-2.5 rounded-xl transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105 border border-emerald-400"
+              >
+                <span>Iniciar Sesión</span>
+                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                </svg>
+              </button>
+            </div>
           )}
         </div>
       </div>
-      {/* Enlaces secundarios */}
-      <div className="hidden md:flex justify-center space-x-4 py-3 border-t border-slate-100">
-        <SecondaryNavLink label="Novedades" />
-        <SecondaryNavLink label="Rebajas" /*active={true}*/ />
-        <SecondaryNavLink label="Hombre" />
-        <SecondaryNavLink label="Mujer" />
-        <SecondaryNavLink label="Zapatillas" />
+      
+      {/* Enlaces secundarios mejorados */}
+      <div className="hidden lg:flex justify-center items-center space-x-1 py-4 border-t border-slate-100/50 bg-gradient-to-r from-transparent via-slate-50/50 to-transparent">
+        <SecondaryNavLink label="✨ Novedades" />
+        <SecondaryNavLink label="🔥 Rebajas" /*active={true}*/ />
+        <SecondaryNavLink label="👔 Hombre" />
+        <SecondaryNavLink label="👗 Mujer" />
+        <SecondaryNavLink label="👟 Zapatillas" />
       </div>
     </div>
   </nav>
@@ -67,20 +139,38 @@ const Navbar = ({ setPage, cartItemCount, user, onLogout, onOpenCartSidebar }) =
 
 // Componente para botones de icono en Navbar (Corregido)
 const NavIconButton = ({ icon, label, count, onClick, className = '' }) => (
-  <button onClick={onClick} className={`relative p-2 text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all duration-300 ${className}`}>
-    {icon}
-    {count !== undefined && (
-      <span className="absolute -top-1 -right-1 inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-bold leading-none text-white bg-amber-500 rounded-full">{count}</span>
+  <button 
+    onClick={onClick} 
+    className={`group relative p-3 text-slate-600 hover:text-emerald-600 hover:bg-gradient-to-br hover:from-emerald-50 hover:to-teal-50 rounded-xl transition-all duration-300 transform hover:scale-110 hover:shadow-md border border-transparent hover:border-emerald-200 ${className}`}
+  >
+    <div className="transform transition-transform duration-300 group-hover:scale-110">
+      {icon}
+    </div>
+    {count !== undefined && count > 0 && (
+      <span className="absolute -top-1 -right-1 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-gradient-to-r from-amber-500 to-orange-500 rounded-full shadow-lg animate-pulse border-2 border-white">
+        {count > 99 ? '99+' : count}
+      </span>
     )}
-    {/* Usamos el label para accesibilidad (oculto visualmente) */}
+    {/* Tooltip mejorado */}
+    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs font-medium text-white bg-slate-800 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none whitespace-nowrap z-50">
+      {label}
+      <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-2 h-2 bg-slate-800 rotate-45"></div>
+    </div>
     <span className="sr-only">{label}</span>
   </button>
 );
 
-// Componente para enlaces secundarios en Navbar
+// Componente para enlaces secundarios en Navbar mejorado
 const SecondaryNavLink = ({ label, active = false }) => (
-  <button className={`text-sm font-medium px-4 py-2 rounded-full transition-all duration-300 ${active ? 'text-white bg-emerald-600 shadow-md' : 'text-slate-600 hover:text-emerald-600 hover:bg-emerald-50'}`}>
-    {label}
+  <button className={`group relative text-sm font-medium px-5 py-2.5 rounded-xl transition-all duration-300 transform hover:scale-105 ${
+    active 
+      ? 'text-white bg-gradient-to-r from-emerald-500 to-teal-500 shadow-lg border border-emerald-400' 
+      : 'text-slate-600 hover:text-emerald-600 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-teal-50 border border-transparent hover:border-emerald-200 hover:shadow-md'
+  }`}>
+    <span className="relative z-10">{label}</span>
+    {active && (
+      <div className="absolute inset-0 bg-gradient-to-r from-emerald-600 to-teal-600 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+    )}
   </button>
 );
 
@@ -265,15 +355,24 @@ const UserDropdown = ({ user, onLogout, setPage }) => {
     <div className="relative user-dropdown">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center space-x-2 p-2 text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all duration-300"
+        className="group flex items-center space-x-3 p-3 text-slate-600 hover:text-emerald-600 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-teal-50 rounded-xl transition-all duration-300 transform hover:scale-105 border border-transparent hover:border-emerald-200 hover:shadow-lg"
       >
-        <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center">
-          <span className="text-sm font-medium text-emerald-600">
-            {user.name.charAt(0).toUpperCase()}
-          </span>
+        <div className="relative">
+          <div className="w-10 h-10 bg-gradient-to-r from-emerald-400 to-teal-400 rounded-full flex items-center justify-center shadow-md ring-2 ring-white group-hover:ring-emerald-200 transition-all duration-300">
+            <span className="text-sm font-bold text-white">
+              {user.name.charAt(0).toUpperCase()}
+            </span>
+          </div>
+          <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-400 border-2 border-white rounded-full"></div>
+        </div>
+        <div className="hidden sm:block text-left">
+          <div className="text-sm font-medium text-slate-800 group-hover:text-emerald-600 transition-colors duration-300">
+            {user.name.split(' ')[0]}
+          </div>
+          <div className="text-xs text-slate-500">Mi cuenta</div>
         </div>
         <svg
-          className={`w-4 h-4 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
+          className={`w-4 h-4 transition-all duration-300 ${isOpen ? 'rotate-180 text-emerald-600' : 'text-slate-400 group-hover:text-emerald-500'}`}
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -283,11 +382,23 @@ const UserDropdown = ({ user, onLogout, setPage }) => {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-slate-200 py-2 z-50">
-          {/* Header del usuario */}
-          <div className="px-4 py-3 border-b border-slate-100">
-            <p className="text-sm font-medium text-slate-800">{user.name}</p>
-            <p className="text-xs text-slate-500">{user.email}</p>
+        <div className="absolute right-0 mt-3 w-64 bg-white rounded-2xl shadow-2xl border border-slate-200/50 py-2 z-50 backdrop-blur-sm animate-in slide-in-from-top-2 duration-300">
+          {/* Header del usuario mejorado */}
+          <div className="px-5 py-4 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-transparent">
+            <div className="flex items-center space-x-3">
+              <div className="w-12 h-12 bg-gradient-to-r from-emerald-400 to-teal-400 rounded-xl flex items-center justify-center shadow-lg">
+                <span className="text-lg font-bold text-white">
+                  {user.name.charAt(0).toUpperCase()}
+                </span>
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-slate-800">{user.name}</p>
+                <p className="text-xs text-slate-500 flex items-center">
+                  <span className="w-2 h-2 bg-green-400 rounded-full mr-2 animate-pulse"></span>
+                  {user.email}
+                </p>
+              </div>
+            </div>
           </div>
 
           {/* Opciones del menú */}
@@ -297,12 +408,17 @@ const UserDropdown = ({ user, onLogout, setPage }) => {
                 setPage(PAGES.PROFILE);
                 setIsOpen(false);
               }}
-              className="flex items-center w-full px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors duration-200"
+              className="group flex items-center w-full px-5 py-3 text-sm text-slate-700 hover:text-emerald-600 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-teal-50 transition-all duration-200 transform hover:translate-x-1"
             >
-              <svg className="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-              </svg>
-              Mi Perfil
+              <div className="w-8 h-8 bg-blue-100 group-hover:bg-blue-200 rounded-lg flex items-center justify-center mr-3 transition-all duration-200">
+                <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <div className="font-medium">Mi Perfil</div>
+                <div className="text-xs text-slate-500">Datos personales</div>
+              </div>
             </button>
 
             <button
@@ -310,12 +426,17 @@ const UserDropdown = ({ user, onLogout, setPage }) => {
                 setPage(PAGES.ORDERS);
                 setIsOpen(false);
               }}
-              className="flex items-center w-full px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors duration-200"
+              className="group flex items-center w-full px-5 py-3 text-sm text-slate-700 hover:text-emerald-600 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-teal-50 transition-all duration-200 transform hover:translate-x-1"
             >
-              <svg className="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-              </svg>
-              Mis Pedidos
+              <div className="w-8 h-8 bg-purple-100 group-hover:bg-purple-200 rounded-lg flex items-center justify-center mr-3 transition-all duration-200">
+                <svg className="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <div className="font-medium">Mis Pedidos</div>
+                <div className="text-xs text-slate-500">Historial de compras</div>
+              </div>
             </button>
 
             <button
@@ -323,28 +444,38 @@ const UserDropdown = ({ user, onLogout, setPage }) => {
                 setPage(PAGES.FAVORITES);
                 setIsOpen(false);
               }}
-              className="flex items-center w-full px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors duration-200"
+              className="group flex items-center w-full px-5 py-3 text-sm text-slate-700 hover:text-emerald-600 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-teal-50 transition-all duration-200 transform hover:translate-x-1"
             >
-              <svg className="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-              </svg>
-              Favoritos
+              <div className="w-8 h-8 bg-pink-100 group-hover:bg-pink-200 rounded-lg flex items-center justify-center mr-3 transition-all duration-200">
+                <svg className="w-4 h-4 text-pink-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <div className="font-medium">Favoritos</div>
+                <div className="text-xs text-slate-500">Lista de deseos</div>
+              </div>
             </button>
 
-            <hr className="my-1 border-slate-100" />
+            <hr className="my-2 mx-3 border-slate-100" />
 
             <button
               onClick={() => {
                 setPage(PAGES.SETTINGS);
                 setIsOpen(false);
               }}
-              className="flex items-center w-full px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors duration-200"
+              className="group flex items-center w-full px-5 py-3 text-sm text-slate-700 hover:text-emerald-600 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-teal-50 transition-all duration-200 transform hover:translate-x-1"
             >
-              <svg className="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-              Configuración
+              <div className="w-8 h-8 bg-amber-100 group-hover:bg-amber-200 rounded-lg flex items-center justify-center mr-3 transition-all duration-200">
+                <svg className="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <div className="font-medium">Configuración</div>
+                <div className="text-xs text-slate-500">Ajustes de cuenta</div>
+              </div>
             </button>
 
             <button
@@ -352,12 +483,17 @@ const UserDropdown = ({ user, onLogout, setPage }) => {
                 onLogout();
                 setIsOpen(false);
               }}
-              className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors duration-200"
+              className="group flex items-center w-full px-5 py-3 text-sm text-red-600 hover:text-white hover:bg-gradient-to-r hover:from-red-500 hover:to-red-600 transition-all duration-200 transform hover:translate-x-1 border-t border-slate-100 mt-2"
             >
-              <svg className="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-              </svg>
-              Cerrar Sesión
+              <div className="w-8 h-8 bg-red-100 group-hover:bg-red-200 rounded-lg flex items-center justify-center mr-3 transition-all duration-200">
+                <svg className="w-4 h-4 text-red-600 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <div className="font-medium">Cerrar Sesión</div>
+                <div className="text-xs text-slate-500 group-hover:text-red-200">Salir de mi cuenta</div>
+              </div>
             </button>
           </div>
         </div>

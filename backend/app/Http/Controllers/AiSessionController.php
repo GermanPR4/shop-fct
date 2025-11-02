@@ -19,7 +19,6 @@ class AiSessionController extends Controller
             'message' => 'required|string|max:500',
         ]);
         
-        // TODO: (Lógica pendiente) Encontrar sesión, buscar productos en BD, llamar a OpenAI, guardar la respuesta, y devolver el JSON.
         
         return response()->json(['message' => 'Lógica de IA pendiente de implementación.'], 200);
     }
