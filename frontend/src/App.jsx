@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import HeroSection from './components/HeroSection.jsx';
 import PopularCategories from './components/PopularCategories.jsx';
 import ChatWidget from './components/ChatWidget.jsx';
-import CategoryFilter from './components/CategoryFilter.jsx'; // Asegúrate de que este archivo existe
+import CategoryFilter from './components/CategoryFilter.jsx';
 
 // --- CONFIGURACIÓN DE NAVEGACIÓN ---
 const PAGES = {
@@ -19,22 +19,22 @@ const PAGES = {
 
 // Navbar (Corregido NavIconButton)
 const Navbar = ({ setPage }) => (
- <nav className="bg-white border-b border-gray-200 sticky top-0 z-50">
+  <nav className="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
     <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8">
       <div className="flex justify-between items-center h-16">
         {/* Logo y Categorías */}
         <div className="flex items-center space-x-4">
-           <button onClick={() => setPage(PAGES.HOME)} className="text-2xl font-bold text-indigo-600 hover:text-indigo-700 transition">
-             OmniStyle
-           </button>
-           <button className="hidden md:flex items-center space-x-1 text-sm font-medium text-gray-700 hover:text-indigo-600 bg-gray-100 px-3 py-1.5 rounded-md">
-             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
-             <span>Categorías</span>
-           </button>
+          <button onClick={() => setPage(PAGES.HOME)} className="text-2xl font-bold text-slate-800 text-purple hover:text-emerald-600 transition-colors duration-300">
+            OmniStyle
+          </button>
+          <button className="hidden md:flex items-center space-x-1 text-sm font-medium text-slate-700 hover:text-emerald-600 bg-slate-100 hover:bg-emerald-50 px-3 py-1.5 rounded-lg transition-all duration-300">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
+            <span>Categorías</span>
+          </button>
         </div>
         {/* Barra de Búsqueda */}
         <div className="flex-1 px-4 hidden md:block">
-          <input type="text" placeholder="Buscar productos..." className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"/>
+          <input type="text" placeholder="Buscar productos..." className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm transition-all duration-300" />
         </div>
         {/* Iconos Derecha */}
         <div className="flex items-center space-x-3 md:space-x-4">
@@ -44,12 +44,12 @@ const Navbar = ({ setPage }) => (
         </div>
       </div>
       {/* Enlaces secundarios */}
-      <div className="hidden md:flex justify-center space-x-8 py-2 border-t border-gray-100">
-         <SecondaryNavLink label="Novedades" />
-         <SecondaryNavLink label="Rebajas" active={true} />
-         <SecondaryNavLink label="Hombre" />
-         <SecondaryNavLink label="Mujer" />
-         <SecondaryNavLink label="Zapatillas" />
+      <div className="hidden md:flex justify-center space-x-4 py-3 border-t border-slate-100">
+        <SecondaryNavLink label="Novedades" />
+        <SecondaryNavLink label="Rebajas" /*active={true}*/ />
+        <SecondaryNavLink label="Hombre" />
+        <SecondaryNavLink label="Mujer" />
+        <SecondaryNavLink label="Zapatillas" />
       </div>
     </div>
   </nav>
@@ -57,21 +57,21 @@ const Navbar = ({ setPage }) => (
 
 // Componente para botones de icono en Navbar (Corregido)
 const NavIconButton = ({ icon, label, count, onClick, className = '' }) => (
-  <button onClick={onClick} className={`relative p-1 text-gray-500 hover:text-indigo-600 transition ${className}`}>
+  <button onClick={onClick} className={`relative p-2 text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all duration-300 ${className}`}>
     {icon}
     {count !== undefined && (
-      <span className="absolute -top-1 -right-1 inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-bold leading-none text-red-100 bg-red-600 rounded-full">{count}</span>
+      <span className="absolute -top-1 -right-1 inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-bold leading-none text-white bg-amber-500 rounded-full">{count}</span>
     )}
-    {/* Usamos el label para accesibilidad */}
+    {/* Usamos el label para accesibilidad (oculto visualmente) */}
     <span className="sr-only">{label}</span>
   </button>
 );
 
 // Componente para enlaces secundarios en Navbar
 const SecondaryNavLink = ({ label, active = false }) => (
-   <button className={`text-sm font-medium ${active ? 'text-indigo-600' : 'text-gray-500 hover:text-gray-900'} transition`}>
-     {label}
-   </button>
+  <button className={`text-sm font-medium px-4 py-2 rounded-full transition-all duration-300 ${active ? 'text-white bg-emerald-600 shadow-md' : 'text-slate-600 hover:text-emerald-600 hover:bg-emerald-50'}`}>
+    {label}
+  </button>
 );
 
 
@@ -87,7 +87,7 @@ const ProductCard = ({ product, setPage, setSelectedProduct }) => {
   return (
     <div className="bg-white rounded-lg border border-gray-200 overflow-hidden group transition hover:shadow-md cursor-pointer" onClick={handleViewDetails}>
       <div className="aspect-w-1 aspect-h-1 w-full overflow-hidden bg-gray-100">
-        <img src={defaultDetail?.image_url || 'https://placehold.co/400x400/E5E7EB/4B5563?text=OmniStyle'} alt={product.name} className="w-full h-full object-center object-cover group-hover:opacity-75" onError={(e) => { e.target.onerror = null; e.target.src='https://placehold.co/400x400/E5E7EB/4B5563?text=OmniStyle'}}/>
+        <img src={defaultDetail?.image_url || 'https://placehold.co/400x400/E5E7EB/4B5563?text=OmniStyle'} alt={product.name} className="w-full h-full object-center object-cover group-hover:opacity-75" onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/400x400/E5E7EB/4B5563?text=OmniStyle' }} />
       </div>
       <div className="p-4 text-left">
         <h3 className="text-sm font-medium text-gray-700 mb-1 truncate">{product.name}</h3>
@@ -103,7 +103,7 @@ const ProductCard = ({ product, setPage, setSelectedProduct }) => {
 
 // --- PÁGINAS PRINCIPALES ---
 
-// Página de Catálogo / Home
+// Página de Catálogo / Home (Corregida)
 const HomePage = ({ products, loading, categories, onSelectCategory, setPage, setSelectedProduct, selectedCategoryId }) => ( // Renombrado a selectedCategoryId
   <div className="px-4 sm:px-0 py-8">
     <HeroSection />
@@ -113,19 +113,19 @@ const HomePage = ({ products, loading, categories, onSelectCategory, setPage, se
 
 
     <div className="mb-12">
-       <div className="flex justify-between items-center mb-6">
-         <h2 className="text-2xl font-bold text-gray-800">Las Mejores Ofertas Para Ti</h2>
-         <button className="text-sm font-medium text-indigo-600 hover:text-indigo-800">Ver Todas &rarr;</button>
-       </div>
-       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-         {loading ? (
-           <p className="col-span-full text-center py-10 text-gray-500">Cargando ofertas...</p>
-         ) : (
-           products.slice(0, 4).map(product => (
-             <ProductCard key={product.id} product={product} setPage={setPage} setSelectedProduct={setSelectedProduct} />
-           ))
-         )}
-       </div>
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold text-gray-800">Las Mejores Ofertas Para Ti</h2>
+        <button className="text-sm font-medium text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 px-4 py-2 rounded-lg transition-all duration-300">Ver Todas &rarr;</button>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {loading ? (
+          <p className="col-span-full text-center py-10 text-gray-500">Cargando ofertas...</p>
+        ) : (
+          products.slice(0, 4).map(product => (
+            <ProductCard key={product.id} product={product} setPage={setPage} setSelectedProduct={setSelectedProduct} />
+          ))
+        )}
+      </div>
     </div>
   </div>
 );
@@ -140,24 +140,22 @@ const ProductDetailPage = ({ product }) => {
 
   // --- CORRECCIÓN: useEffect DEBE ir ANTES del return condicional ---
   useEffect(() => {
-      // Solo ejecutar si hay detalles y tallas disponibles
-      if (product && product.details) {
-          const availableSizesForColor = [...new Set(product.details.filter(d => d.color === selectedColor).map(d => d.size))];
-          // Solo actualiza si hay tallas disponibles para ese color y la actual no está incluida
-          if (availableSizesForColor.length > 0 && !availableSizesForColor.includes(selectedSize)) {
-              setSelectedSize(availableSizesForColor[0]); // Selecciona la primera talla disponible
-          }
+    // Solo ejecutar si hay detalles y tallas disponibles
+    if (product && product.details) {
+      const availableSizesForColor = [...new Set(product.details.filter(d => d.color === selectedColor).map(d => d.size))];
+      // Solo actualiza si hay tallas disponibles para ese color y la actual no está incluida
+      if (availableSizesForColor.length > 0 && !availableSizesForColor.includes(selectedSize)) {
+        setSelectedSize(availableSizesForColor[0]); // Selecciona la primera talla disponible
       }
+    }
   }, [product, selectedColor, selectedSize]); // Añadimos 'product' a las dependencias
   // --- FIN CORRECCIÓN ---
 
 
   // Early return si no hay producto o detalles
   if (!product || !product.details || product.details.length === 0) {
-      // Asegurarse de que los hooks se llamaron antes si product es null inicialmente
-      // Si product pudiera ser null al principio, necesitaríamos inicializar los useState con null
-      // Pero como llegamos aquí desde una ProductCard, asumimos que product tiene datos.
-      return <p className="text-center py-10 text-gray-500">Detalles del producto no disponibles.</p>;
+    // Este return ahora es seguro porque los Hooks ya se han llamado
+    return <p className="text-center py-10 text-gray-500">Detalles del producto no disponibles.</p>;
   }
 
   // Ahora podemos calcular esto de forma segura
@@ -173,7 +171,7 @@ const ProductDetailPage = ({ product }) => {
         <div className="flex space-x-2 overflow-x-auto">
           {/* Muestra miniaturas únicas por color */}
           {[...new Map(product.details.map(item => [item['color'], item])).values()].map(detail => (
-             <img key={detail.id} src={detail.image_url || 'https://placehold.co/100x100/E5E7EB/4B5563?text=Var'} alt={`${product.name} ${detail.color}`} className={`w-16 h-16 rounded object-cover cursor-pointer border-2 ${selectedColor === detail.color ? 'border-indigo-500' : 'border-transparent hover:border-gray-300'}`} onClick={() => setSelectedColor(detail.color)}/>
+            <img key={detail.id} src={detail.image_url || 'https://placehold.co/100x100/E5E7EB/4B5563?text=Var'} alt={`${product.name} ${detail.color}`} className={`w-16 h-16 rounded object-cover cursor-pointer border-2 ${selectedColor === detail.color ? 'border-indigo-500' : 'border-transparent hover:border-gray-300'}`} onClick={() => setSelectedColor(detail.color)} />
           ))}
         </div>
       </div>
@@ -184,7 +182,7 @@ const ProductDetailPage = ({ product }) => {
         <div className="flex items-center mb-4">
           <span className="text-xs text-yellow-500">⭐⭐⭐⭐⭐</span> <span className="text-xs text-gray-500 ml-1">(50)</span>
         </div>
-        <p className="text-3xl font-semibold text-indigo-600 mb-6">{product.price.toFixed(2)}€</p>
+        <p className="text-3xl font-semibold text-emerald-600 mb-6">{product.price.toFixed(2)}€</p>
         <p className="text-gray-600 mb-6">{product.short_description}</p>
 
         {/* Selector de Color */}
@@ -192,7 +190,7 @@ const ProductDetailPage = ({ product }) => {
           <h3 className="text-sm font-medium text-gray-900 mb-2">Color: <span className="font-semibold">{selectedColor}</span></h3>
           <div className="flex space-x-2">
             {availableColors.map(color => (
-              <button key={color} onClick={() => setSelectedColor(color)} className={`w-8 h-8 rounded-full border-2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${selectedColor === color ? 'border-indigo-600 ring-2 ring-indigo-300' : 'border-gray-300'}`} style={{ backgroundColor: color.toLowerCase() }} title={color}></button>
+              <button key={color} onClick={() => setSelectedColor(color)} className={`w-8 h-8 rounded-full border-2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-all duration-300 hover:scale-110 ${selectedColor === color ? 'border-emerald-600 ring-2 ring-emerald-300 shadow-lg' : 'border-slate-300 hover:border-emerald-400'}`} style={{ backgroundColor: color.toLowerCase() }} title={color}></button>
             ))}
           </div>
         </div>
@@ -203,7 +201,7 @@ const ProductDetailPage = ({ product }) => {
           <div className="flex flex-wrap gap-2">
             {/* Mostrar solo las tallas disponibles para el color seleccionado */}
             {availableSizes.map(size => (
-              <button key={size} onClick={() => setSelectedSize(size)} className={`px-4 py-2 border rounded-md text-sm font-medium ${selectedSize === size ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'}`}>
+              <button key={size} onClick={() => setSelectedSize(size)} className={`px-4 py-2 border rounded-lg text-sm font-medium transition-all duration-300 ${selectedSize === size ? 'bg-emerald-600 text-white border-emerald-600 shadow-md' : 'bg-white text-slate-700 border-slate-300 hover:bg-emerald-50 hover:border-emerald-300'}`}>
                 {size}
               </button>
             ))}
@@ -212,20 +210,20 @@ const ProductDetailPage = ({ product }) => {
 
         {/* Cantidad y Añadir al Carrito */}
         <div className="flex items-center space-x-4 mb-6">
-          <div className="flex items-center border rounded">
-             <button className="px-3 py-2 text-gray-600 hover:bg-gray-100 disabled:opacity-50" >-</button>
-             <span className="px-4 py-2 font-medium">1</span> {/* Cantidad (pendiente) */}
-             <button className="px-3 py-2 text-gray-600 hover:bg-gray-100">+</button>
+          <div className="flex items-center border border-slate-300 rounded-lg overflow-hidden">
+            <button className="px-3 py-2 text-slate-600 hover:bg-slate-100 disabled:opacity-50 transition-colors duration-300" >-</button>
+            <span className="px-4 py-2 font-medium text-slate-800">1</span> {/* Cantidad (pendiente) */}
+            <button className="px-3 py-2 text-slate-600 hover:bg-slate-100 transition-colors duration-300">+</button>
           </div>
-          <button className="flex-1 bg-indigo-600 text-white py-3 rounded-lg font-semibold hover:bg-indigo-700 transition disabled:opacity-75" disabled={!currentDetail || currentDetail.stock <= 0}>
+          <button className="flex-1 bg-emerald-600 text-white py-3 rounded-lg font-semibold hover:bg-emerald-700 active:bg-emerald-800 transition-all duration-300 shadow-md hover:shadow-lg disabled:opacity-75" disabled={!currentDetail || currentDetail.stock <= 0}>
             {currentDetail && currentDetail.stock > 0 ? 'Añadir al Carrito' : 'Agotado'}
           </button>
         </div>
 
         {/* Acordeones */}
         <div className="border-t pt-4">
-           <h4 className="font-medium mb-1">Descripción</h4>
-           <p className="text-sm text-gray-600">{product.long_description || product.short_description}</p>
+          <h4 className="font-medium mb-1">Descripción</h4>
+          <p className="text-sm text-gray-600">{product.long_description || product.short_description}</p>
         </div>
       </div>
     </div>
@@ -261,7 +259,7 @@ export default function App() {
         const productsData = await productsResponse.json();
         setAllProducts(productsData);
         // Inicialmente, mostrar todos los productos
-        setProducts(productsData); 
+        setProducts(productsData);
 
       } catch (error) {
         console.error('Error al obtener el catálogo:', error);
@@ -275,14 +273,14 @@ export default function App() {
   // Aplicar filtro cuando cambie la categoría seleccionada o los productos base
   useEffect(() => {
     // Si no hay productos base cargados, no hacer nada
-    if (!allProducts || allProducts.length === 0) return; 
+    if (!allProducts || allProducts.length === 0) return;
 
     if (selectedCategory) {
       const filtered = allProducts.filter(p => p.categories.some(c => c.id === selectedCategory));
       setProducts(filtered);
     } else {
       // Si no hay categoría seleccionada, mostrar todos
-      setProducts(allProducts); 
+      setProducts(allProducts);
     }
   }, [selectedCategory, allProducts]); // Dependencias correctas
 
@@ -297,28 +295,28 @@ export default function App() {
 
   const renderPage = () => {
     switch (currentPage) { // Se usa currentPage aquí
-        case PAGES.PRODUCT:
-            // Asegurarse de que selectedProduct tenga datos antes de renderizar
-            return selectedProduct ? <ProductDetailPage product={selectedProduct} /> : <p>Cargando producto...</p>;
-        case PAGES.LOGIN:
-            return <h2 className="text-2xl text-center py-20">Página de Login (PENDIENTE)</h2>;
-        case PAGES.CART:
-            return <h2 className="text-2xl text-center py-20">Página del Carrito (PENDIENTE)</h2>;
-        case PAGES.CATALOG: // CATALOG y HOME muestran lo mismo por ahora
-        case PAGES.HOME:
-        default:
-            return (
-                <HomePage
-                    products={products}
-                    loading={loading}
-                    categories={categories}
-                    onSelectCategory={handleCategorySelect} // Usamos la nueva función
-                    setPage={setCurrentPage}
-                    setSelectedProduct={setSelectedProduct}
-                    // Pasamos el ID de la categoría seleccionada aquí
-                    selectedCategoryId={selectedCategory} 
-                />
-            );
+      case PAGES.PRODUCT:
+        // Asegurarse de que selectedProduct tenga datos antes de renderizar
+        return selectedProduct ? <ProductDetailPage product={selectedProduct} /> : <p>Cargando producto...</p>;
+      case PAGES.LOGIN:
+        return <h2 className="text-2xl text-center py-20">Página de Login (PENDIENTE)</h2>;
+      case PAGES.CART:
+        return <h2 className="text-2xl text-center py-20">Página del Carrito (PENDIENTE)</h2>;
+      case PAGES.CATALOG: // CATALOG y HOME muestran lo mismo por ahora
+      case PAGES.HOME:
+      default:
+        return (
+          <HomePage
+            products={products}
+            loading={loading}
+            categories={categories}
+            onSelectCategory={handleCategorySelect} // Usamos la nueva función
+            setPage={setCurrentPage}
+            setSelectedProduct={setSelectedProduct}
+            // Pasamos el ID de la categoría seleccionada aquí
+            selectedCategoryId={selectedCategory}
+          />
+        );
     }
   };
 
@@ -326,7 +324,9 @@ export default function App() {
     <div className="min-h-screen bg-white flex flex-col">
       <Navbar setPage={setCurrentPage} />
 
-      <main className="flex-grow w-full mx-auto py-6 sm:px-6 lg:px-8">
+      {/* --- CORRECCIÓN DE ANCHO --- */}
+      {/* Se han eliminado 'max-w-screen-xl' y 'mx-auto' para que ocupe todo el ancho */}
+      <main className="flex-grow w-full py-6 sm:px-6 lg:px-8">
         {renderPage()}
       </main>
 
@@ -339,4 +339,3 @@ export default function App() {
     </div>
   );
 }
-

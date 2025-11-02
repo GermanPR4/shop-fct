@@ -2,12 +2,14 @@ import React from 'react';
 
 // Datos de ejemplo para las categorías populares
 const popularCategoriesData = [
-    { name: 'Ropa', icon: '👕', bgColor: 'bg-orange-100' },
-    { name: 'Accesorios', icon: '🎧', bgColor: 'bg-blue-100' },
-    { name: 'Zapatos', icon: '👟', bgColor: 'bg-green-100' }, // Ejemplo añadido
-    { name: 'Deportivo', icon: '🏃', bgColor: 'bg-red-100' }, // Ejemplo añadido
-    { name: 'Cosméticos', icon: '💄', bgColor: 'bg-pink-100' },
-    { name: 'Electrónica', icon: '💻', bgColor: 'bg-purple-100' }, // Ejemplo
+    { name: 'Casual', icon: '👕', bgColor: 'bg-orange-100' },
+    { name: 'Deportivo', icon: '🏃', bgColor: 'bg-red-100' },
+    { name: 'Zapatos', icon: '👟', bgColor: 'bg-green-100' },
+    { name: 'Invierno', icon: '🧥', bgColor: 'bg-cyan-100' }, // Reemplaza Electrónica
+    { name: 'Veraniego', icon: '🕶️', bgColor: 'bg-yellow-100' }, // Reemplaza Cosméticos
+    { name: 'Accesorios', icon: '🧣', bgColor: 'bg-blue-100' },
+    // Nota: 'Accesorios' (auriculares) es un placeholder, 
+    // puedes cambiar el icono por '👜' (bolso) o '🎧' (bufanda)
 ];
 
 const PopularCategories = ({ onSelectCategory }) => {

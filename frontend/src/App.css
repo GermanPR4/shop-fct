@@ -1,8 +1,21 @@
 #root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+/* Estilos adicionales para transiciones suaves */
+button, a, input {
+  transition: all 0.3s ease;
+}
+
+/* Mejoras visuales para botones hover */
+button:hover {
+  transform: translateY(-1px);
+}
+
+button:active {
+  transform: translateY(0);
 }
 
 .logo {
