@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation, Navigate, useParams } from 'react-router-dom';
 // Importa los componentes
 import HeroSection from './components/HeroSection.jsx';
@@ -23,9 +23,46 @@ const PAGES = {
 
 // --- COMPONENTES AUXILIARES ---
 
-// Navbar Mejorado con Diseño Moderno
-const Navbar = ({ setPage, cartItemCount, user, onLogout, onOpenCartSidebar }) => (
-  <nav className="bg-gradient-to-r from-white via-slate-50 to-white border-b border-slate-200/60 sticky top-0 z-50 shadow-lg backdrop-blur-sm">
+// Navbar Mejorado con Diseño Moderno y Búsqueda Funcional
+const Navbar = ({ setPage, cartItemCount, user, onLogout, onOpenCartSidebar, onSearch }) => {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [showMobileSearch, setShowMobileSearch] = useState(false);
+  const searchInputRef = useRef(null);
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (searchTerm.trim()) {
+      onSearch(searchTerm.trim());
+      setPage(PAGES.CATALOG);
+      setShowMobileSearch(false);
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      handleSearch(e);
+    }
+  };
+
+  // Manejador para el atajo de teclado Cmd/Ctrl + K
+  useEffect(() => {
+    const handleGlobalKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        if (searchInputRef.current) {
+          searchInputRef.current.focus();
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleGlobalKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleGlobalKeyDown);
+    };
+  }, []);
+
+  return (
+    <nav className="bg-gradient-to-r from-white via-slate-50 to-white border-b border-slate-200/60 sticky top-0 z-50 shadow-lg backdrop-blur-sm">
     <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8">
       <div className="flex justify-between items-center h-18 py-2">
         {/* Logo y Categorías */}
@@ -52,30 +89,55 @@ const Navbar = ({ setPage, cartItemCount, user, onLogout, onOpenCartSidebar }) =
           </button>
         </div>
 
-        {/* Barra de Búsqueda Mejorada */}
+        {/* Barra de Búsqueda Funcional Mejorada */}
         <div className="flex-1 max-w-xl mx-6 hidden md:block">
-          <div className="relative group">
+          <form onSubmit={handleSearch} className="relative group">
             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
               <svg className="h-5 w-5 text-slate-400 group-focus-within:text-emerald-500 transition-colors duration-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             </div>
             <input 
+              ref={searchInputRef}
               type="text" 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              onKeyDown={handleKeyDown}
               placeholder="Descubre productos increíbles..." 
-              className="w-full pl-12 pr-4 py-3 bg-white border-2 border-slate-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-emerald-500/20 focus:border-emerald-500 text-sm placeholder-slate-400 transition-all duration-300 shadow-sm hover:shadow-md focus:shadow-lg"
+              className="w-full pl-12 pr-20 py-3 bg-white border-2 border-slate-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-emerald-500/20 focus:border-emerald-500 text-sm placeholder-slate-400 transition-all duration-300 shadow-sm hover:shadow-md focus:shadow-lg"
             />
-            <div className="absolute inset-y-0 right-0 pr-4 flex items-center">
+            <div className="absolute inset-y-0 right-0 pr-2 flex items-center space-x-1">
+              {searchTerm && (
+                <button
+                  type="button"
+                  onClick={() => setSearchTerm('')}
+                  className="p-1 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100 transition-colors duration-200"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              )}
+              <button
+                type="submit"
+                disabled={!searchTerm.trim()}
+                className="p-1.5 text-slate-400 hover:text-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg hover:bg-emerald-50 transition-colors duration-200"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </button>
               <kbd className="hidden sm:inline-flex items-center px-2 py-1 text-xs font-medium text-slate-400 bg-slate-100 border border-slate-200 rounded">
                 ⌘K
               </kbd>
             </div>
-          </div>
+          </form>
         </div>
 
         {/* Iconos Derecha Mejorados */}
         <div className="flex items-center space-x-2 md:space-x-3">
           <NavIconButton 
+            onClick={() => setShowMobileSearch(!showMobileSearch)}
             icon={
               <svg className="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -125,8 +187,52 @@ const Navbar = ({ setPage, cartItemCount, user, onLogout, onOpenCartSidebar }) =
         </div>
       </div>
       
+      {/* Barra de búsqueda móvil */}
+      {showMobileSearch && (
+        <div className="md:hidden px-4 pb-4 border-t border-slate-100">
+          <form onSubmit={handleSearch} className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <svg className="h-5 w-5 text-slate-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
+            <input 
+              type="text" 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="Buscar productos..." 
+              className="w-full pl-10 pr-12 py-3 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm placeholder-slate-400"
+              autoFocus
+            />
+            <div className="absolute inset-y-0 right-0 pr-2 flex items-center space-x-1">
+              {searchTerm && (
+                <button
+                  type="button"
+                  onClick={() => setSearchTerm('')}
+                  className="p-1.5 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              )}
+              <button
+                type="submit"
+                disabled={!searchTerm.trim()}
+                className="p-1.5 text-emerald-600 disabled:text-slate-400 disabled:cursor-not-allowed rounded-lg hover:bg-emerald-50"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+      
       {/* Enlaces secundarios mejorados */}
-      <div className="hidden lg:flex justify-center items-center space-x-1 py-4 border-t border-slate-100/50 bg-gradient-to-r from-transparent via-slate-50/50 to-transparent">
+      <div className="hidden lg:flex justify-center items-center space-x-6 py-4 border-t border-slate-100/50 bg-gradient-to-r from-transparent via-slate-50/50 to-transparent">
         <SecondaryNavLink label="✨ Novedades" />
         <SecondaryNavLink label="🔥 Rebajas" /*active={true}*/ />
         <SecondaryNavLink label="👔 Hombre" />
@@ -135,7 +241,8 @@ const Navbar = ({ setPage, cartItemCount, user, onLogout, onOpenCartSidebar }) =
       </div>
     </div>
   </nav>
-);
+  );
+};
 
 // Componente para botones de icono en Navbar (Corregido)
 const NavIconButton = ({ icon, label, count, onClick, className = '' }) => (
@@ -2468,6 +2575,7 @@ function AppContent() {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState(null);
+  const [searchFilter, setSearchFilter] = useState('');
   const [_selectedProduct, setSelectedProduct] = useState(null); // Producto para la página de detalle
   const [user, setUser] = useState(() => {
     // Cargar usuario desde localStorage al inicializar
@@ -2664,19 +2772,30 @@ function AppContent() {
     fetchCatalog();
   }, [API_URL]); // Dependencia correcta
 
-  // Aplicar filtro cuando cambie la categoría seleccionada o los productos base
+  // Aplicar filtros cuando cambien la categoría seleccionada, búsqueda o los productos base
   useEffect(() => {
     // Si no hay productos base cargados, no hacer nada
     if (!allProducts || allProducts.length === 0) return;
 
+    let filtered = allProducts;
+
+    // Filtrar por categoría si hay una seleccionada
     if (selectedCategory) {
-      const filtered = allProducts.filter(p => p.categories.some(c => c.id === selectedCategory));
-      setProducts(filtered);
-    } else {
-      // Si no hay categoría seleccionada, mostrar todos
-      setProducts(allProducts);
+      filtered = filtered.filter(p => p.categories.some(c => c.id === selectedCategory));
     }
-  }, [selectedCategory, allProducts]); // Dependencias correctas
+
+    // Filtrar por búsqueda si hay un término de búsqueda
+    if (searchFilter && searchFilter.trim()) {
+      const searchTerm = searchFilter.toLowerCase().trim();
+      filtered = filtered.filter(p => 
+        p.name.toLowerCase().includes(searchTerm) ||
+        p.description?.toLowerCase().includes(searchTerm) ||
+        p.categories.some(c => c.name.toLowerCase().includes(searchTerm))
+      );
+    }
+
+    setProducts(filtered);
+  }, [selectedCategory, searchFilter, allProducts]); // Dependencias correctas
 
 
   const handleCategorySelect = (categoryId) => {
@@ -2736,6 +2855,15 @@ function AppContent() {
     // Limpiar el carrito del usuario actual de localStorage
     const cartKey = getCartKey(user?.id);
     localStorage.removeItem(cartKey);
+  };
+
+  // Función para manejar búsqueda
+  const handleSearch = (searchTerm) => {
+    setSearchFilter(searchTerm);
+    // Limpiar filtro de categoría cuando se busca para mostrar resultados en todas las categorías
+    if (searchTerm.trim()) {
+      setSelectedCategory(null);
+    }
   };
 
   // Función para cerrar sesión
@@ -2802,6 +2930,7 @@ function AppContent() {
         user={user} 
         onLogout={handleLogout}
         onOpenCartSidebar={() => setCartSidebarOpen(true)}
+        onSearch={handleSearch}
       />
 
       {/* Sidebar del Carrito */}
