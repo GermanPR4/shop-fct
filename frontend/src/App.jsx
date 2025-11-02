@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation, Navigate, useParams } from 'react-router-dom';
 // Importa los componentes
 import HeroSection from './components/HeroSection.jsx';
 import PopularCategories from './components/PopularCategories.jsx';
@@ -11,14 +12,19 @@ const PAGES = {
   CATALOG: 'CATALOG',
   PRODUCT: 'PRODUCT',
   CART: 'CART',
+  CHECKOUT: 'CHECKOUT',
   ADMIN: 'ADMIN',
   LOGIN: 'LOGIN',
+  PROFILE: 'PROFILE',
+  ORDERS: 'ORDERS',
+  FAVORITES: 'FAVORITES',
+  SETTINGS: 'SETTINGS',
 };
 
 // --- COMPONENTES AUXILIARES ---
 
 // Navbar (Corregido NavIconButton)
-const Navbar = ({ setPage }) => (
+const Navbar = ({ setPage, cartItemCount, user, onLogout, onOpenCartSidebar }) => (
   <nav className="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
     <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8">
       <div className="flex justify-between items-center h-16">
@@ -39,8 +45,12 @@ const Navbar = ({ setPage }) => (
         {/* Iconos Derecha */}
         <div className="flex items-center space-x-3 md:space-x-4">
           <NavIconButton icon={<svg className="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>} label="Buscar" className="md:hidden" />
-          <NavIconButton onClick={() => setPage(PAGES.CART)} icon={<svg className="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>} label="Bolsa" count={0} />
-          <NavIconButton onClick={() => setPage(PAGES.LOGIN)} icon={<svg className="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>} label="Cuenta" />
+          <NavIconButton onClick={onOpenCartSidebar} icon={<svg className="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>} label="Bolsa" count={cartItemCount} />
+          {user ? (
+            <UserDropdown user={user} onLogout={onLogout} setPage={setPage} />
+          ) : (
+            <NavIconButton onClick={() => setPage(PAGES.LOGIN)} icon={<svg className="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>} label="Cuenta" />
+          )}
         </div>
       </div>
       {/* Enlaces secundarios */}
@@ -74,6 +84,288 @@ const SecondaryNavLink = ({ label, active = false }) => (
   </button>
 );
 
+// Componente Sidebar del Carrito
+const CartSidebar = ({ isOpen, onClose, cartItems, setCartItems, setPage }) => {
+  const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+  const updateQuantity = (itemId, newQuantity) => {
+    if (newQuantity <= 0) {
+      removeItem(itemId);
+    } else {
+      setCartItems(prev => prev.map(item => 
+        item.id === itemId ? { ...item, quantity: newQuantity } : item
+      ));
+    }
+  };
+
+  const removeItem = (itemId) => {
+    setCartItems(prev => prev.filter(item => item.id !== itemId));
+  };
+
+  const goToCart = () => {
+    setPage(PAGES.CART);
+    onClose();
+  };
+
+  const goToCheckout = () => {
+    setPage(PAGES.CHECKOUT);
+    onClose();
+  };
+
+  return (
+    <>
+      {/* Overlay */}
+      {isOpen && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-50"
+          onClick={onClose}
+        />
+      )}
+
+      {/* Sidebar */}
+      <div className={`fixed top-0 right-0 h-full w-80 bg-white shadow-2xl z-50 transform transition-transform duration-300 ease-in-out ${
+        isOpen ? 'translate-x-0' : 'translate-x-full'
+      }`}>
+        <div className="flex flex-col h-full">
+          {/* Header */}
+          <div className="flex items-center justify-between p-3 border-b border-slate-200">
+            <h2 className="text-base font-semibold text-slate-800">
+              Mi Carrito ({cartItems.length})
+            </h2>
+            <button
+              onClick={onClose}
+              className="p-1.5 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors duration-200"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          {/* Contenido */}
+          <div className="flex-1 overflow-y-auto">
+            {cartItems.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-full p-4 text-center">
+                <svg className="w-12 h-12 text-slate-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                </svg>
+                <h3 className="text-base font-medium text-slate-800 mb-2">Tu carrito está vacío</h3>
+                <p className="text-sm text-slate-500 mb-4">¡Explora nuestros productos!</p>
+                <button
+                  onClick={() => {
+                    setPage(PAGES.HOME);
+                    onClose();
+                  }}
+                  className="bg-emerald-600 text-white px-4 py-2 text-sm rounded-lg hover:bg-emerald-700 transition-colors duration-300"
+                >
+                  Explorar productos
+                </button>
+              </div>
+            ) : (
+              <div className="p-3 space-y-2">
+                {cartItems.map(item => (
+                  <div key={item.id} className="flex items-center space-x-2 p-2 bg-slate-50 rounded-lg">
+                    <img
+                      src={item.image || 'https://placehold.co/40x40/E5E7EB/4B5563?text=P'}
+                      alt={item.name}
+                      className="w-10 h-10 object-cover rounded flex-shrink-0"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <h4 className="text-xs font-medium text-slate-800 truncate leading-tight">{item.name}</h4>
+                      <div className="text-xs text-slate-500">
+                        <span>{item.color} • {item.size}</span>
+                      </div>
+                      <div className="flex items-center justify-between mt-1">
+                        <span className="text-xs font-semibold text-emerald-600">
+                          {item.price.toFixed(2)}€
+                        </span>
+                        <div className="flex items-center space-x-1">
+                          <button
+                            onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                            className="w-5 h-5 flex items-center justify-center text-slate-500 hover:text-slate-700 hover:bg-white rounded"
+                          >
+                            <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 12H4" />
+                            </svg>
+                          </button>
+                          <span className="text-xs font-medium w-4 text-center">{item.quantity}</span>
+                          <button
+                            onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                            className="w-5 h-5 flex items-center justify-center text-slate-500 hover:text-slate-700 hover:bg-white rounded"
+                          >
+                            <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => removeItem(item.id)}
+                      className="p-0.5 text-slate-400 hover:text-red-500 transition-colors duration-200 flex-shrink-0"
+                    >
+                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Footer con total y botones */}
+          {cartItems.length > 0 && (
+            <div className="p-3 border-t border-slate-200 space-y-3">
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium text-slate-800">Subtotal:</span>
+                <span className="text-base font-bold text-emerald-600">{subtotal.toFixed(2)}€</span>
+              </div>
+              
+              <div className="space-y-2">
+                <button
+                  onClick={goToCheckout}
+                  className="w-full bg-emerald-600 text-white py-2.5 rounded-lg text-sm font-semibold hover:bg-emerald-700 transition-colors duration-300"
+                >
+                  Finalizar Compra
+                </button>
+                <button
+                  onClick={goToCart}
+                  className="w-full bg-slate-100 text-slate-700 py-2 rounded-lg text-sm font-medium hover:bg-slate-200 transition-colors duration-300"
+                >
+                  Ver Carrito Completo
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </>
+  );
+};
+
+// Componente dropdown para usuario logueado
+const UserDropdown = ({ user, onLogout, setPage }) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (!event.target.closest('.user-dropdown')) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  return (
+    <div className="relative user-dropdown">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex items-center space-x-2 p-2 text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all duration-300"
+      >
+        <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center">
+          <span className="text-sm font-medium text-emerald-600">
+            {user.name.charAt(0).toUpperCase()}
+          </span>
+        </div>
+        <svg
+          className={`w-4 h-4 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+
+      {isOpen && (
+        <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-slate-200 py-2 z-50">
+          {/* Header del usuario */}
+          <div className="px-4 py-3 border-b border-slate-100">
+            <p className="text-sm font-medium text-slate-800">{user.name}</p>
+            <p className="text-xs text-slate-500">{user.email}</p>
+          </div>
+
+          {/* Opciones del menú */}
+          <div className="py-1">
+            <button
+              onClick={() => {
+                setPage(PAGES.PROFILE);
+                setIsOpen(false);
+              }}
+              className="flex items-center w-full px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors duration-200"
+            >
+              <svg className="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+              Mi Perfil
+            </button>
+
+            <button
+              onClick={() => {
+                setPage(PAGES.ORDERS);
+                setIsOpen(false);
+              }}
+              className="flex items-center w-full px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors duration-200"
+            >
+              <svg className="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+              </svg>
+              Mis Pedidos
+            </button>
+
+            <button
+              onClick={() => {
+                setPage(PAGES.FAVORITES);
+                setIsOpen(false);
+              }}
+              className="flex items-center w-full px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors duration-200"
+            >
+              <svg className="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+              </svg>
+              Favoritos
+            </button>
+
+            <hr className="my-1 border-slate-100" />
+
+            <button
+              onClick={() => {
+                setPage(PAGES.SETTINGS);
+                setIsOpen(false);
+              }}
+              className="flex items-center w-full px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors duration-200"
+            >
+              <svg className="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              Configuración
+            </button>
+
+            <button
+              onClick={() => {
+                onLogout();
+                setIsOpen(false);
+              }}
+              className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors duration-200"
+            >
+              <svg className="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
+              Cerrar Sesión
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 
 // Componente Tarjeta de Producto
 const ProductCard = ({ product, setPage, setSelectedProduct }) => {
@@ -81,7 +373,7 @@ const ProductCard = ({ product, setPage, setSelectedProduct }) => {
 
   const handleViewDetails = () => {
     setSelectedProduct(product);
-    setPage(PAGES.PRODUCT);
+    setPage(PAGES.PRODUCT, product.id);
   };
 
   return (
@@ -121,9 +413,12 @@ const HomePage = ({ products, loading, categories, onSelectCategory, setPage, se
         {loading ? (
           <p className="col-span-full text-center py-10 text-gray-500">Cargando ofertas...</p>
         ) : (
-          products.slice(0, 4).map(product => (
-            <ProductCard key={product.id} product={product} setPage={setPage} setSelectedProduct={setSelectedProduct} />
-          ))
+          products
+            .sort(() => Math.random() - 0.5)
+            .slice(0, 4)
+            .map(product => (
+              <ProductCard key={product.id} product={product} setPage={setPage} setSelectedProduct={setSelectedProduct} />
+            ))
         )}
       </div>
     </div>
@@ -131,11 +426,12 @@ const HomePage = ({ products, loading, categories, onSelectCategory, setPage, se
 );
 
 // Página de Detalle de Producto (Corregida)
-const ProductDetailPage = ({ product }) => {
+const ProductDetailPage = ({ product, addToCart, toggleFavorite, isFavorite }) => {
   // --- CORRECCIÓN: useState DEBE ir ANTES del return condicional ---
   // Usamos optional chaining (?.) para seguridad si product es null inicialmente
   const [selectedColor, setSelectedColor] = useState(product?.details?.[0]?.color);
   const [selectedSize, setSelectedSize] = useState(product?.details?.[0]?.size);
+  const [quantity, setQuantity] = useState(1);
   // --- FIN CORRECCIÓN ---
 
   // --- CORRECCIÓN: useEffect DEBE ir ANTES del return condicional ---
@@ -178,7 +474,22 @@ const ProductDetailPage = ({ product }) => {
 
       {/* Columna Derecha: Información y Compra */}
       <div className="md:w-1/2">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">{product.name}</h1>
+        <div className="flex items-start justify-between mb-2">
+          <h1 className="text-3xl font-bold text-gray-900">{product.name}</h1>
+          <button
+            onClick={() => toggleFavorite(product.id)}
+            className="p-2 rounded-full hover:bg-slate-100 transition-colors duration-300"
+          >
+            <svg 
+              className={`w-6 h-6 ${isFavorite(product.id) ? 'text-red-500 fill-current' : 'text-slate-400'}`} 
+              fill={isFavorite(product.id) ? 'currentColor' : 'none'} 
+              stroke="currentColor" 
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+            </svg>
+          </button>
+        </div>
         <div className="flex items-center mb-4">
           <span className="text-xs text-yellow-500">⭐⭐⭐⭐⭐</span> <span className="text-xs text-gray-500 ml-1">(50)</span>
         </div>
@@ -211,11 +522,30 @@ const ProductDetailPage = ({ product }) => {
         {/* Cantidad y Añadir al Carrito */}
         <div className="flex items-center space-x-4 mb-6">
           <div className="flex items-center border border-slate-300 rounded-lg overflow-hidden">
-            <button className="px-3 py-2 text-slate-600 hover:bg-slate-100 disabled:opacity-50 transition-colors duration-300" >-</button>
-            <span className="px-4 py-2 font-medium text-slate-800">1</span> {/* Cantidad (pendiente) */}
-            <button className="px-3 py-2 text-slate-600 hover:bg-slate-100 transition-colors duration-300">+</button>
+            <button 
+              onClick={() => setQuantity(Math.max(1, quantity - 1))}
+              className="px-3 py-2 text-slate-600 hover:bg-slate-100 disabled:opacity-50 transition-colors duration-300"
+              disabled={quantity <= 1}
+            >
+              -
+            </button>
+            <span className="px-4 py-2 font-medium text-slate-800">{quantity}</span>
+            <button 
+              onClick={() => setQuantity(quantity + 1)}
+              className="px-3 py-2 text-slate-600 hover:bg-slate-100 transition-colors duration-300"
+            >
+              +
+            </button>
           </div>
-          <button className="flex-1 bg-emerald-600 text-white py-3 rounded-lg font-semibold hover:bg-emerald-700 active:bg-emerald-800 transition-all duration-300 shadow-md hover:shadow-lg disabled:opacity-75" disabled={!currentDetail || currentDetail.stock <= 0}>
+          <button 
+            onClick={() => {
+              if (currentDetail && currentDetail.stock > 0) {
+                addToCart(product, selectedColor, selectedSize, quantity);
+              }
+            }}
+            className="flex-1 bg-emerald-600 text-white py-3 rounded-lg font-semibold hover:bg-emerald-700 active:bg-emerald-800 transition-all duration-300 shadow-md hover:shadow-lg disabled:opacity-75" 
+            disabled={!currentDetail || currentDetail.stock <= 0}
+          >
             {currentDetail && currentDetail.stock > 0 ? 'Añadir al Carrito' : 'Agotado'}
           </button>
         </div>
@@ -231,18 +561,1946 @@ const ProductDetailPage = ({ product }) => {
 };
 
 
+// Página del Carrito
+const CartPage = ({ cartItems, setCartItems, setPage, clearCart }) => {
+  const updateQuantity = (itemId, newQuantity) => {
+    if (newQuantity <= 0) {
+      removeFromCart(itemId);
+      return;
+    }
+    setCartItems(cartItems.map(item => 
+      item.id === itemId ? { ...item, quantity: newQuantity } : item
+    ));
+  };
+
+  const removeFromCart = (itemId) => {
+    setCartItems(cartItems.filter(item => item.id !== itemId));
+  };
+
+  const getTotal = () => {
+    return cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
+  };
+
+  const getItemCount = () => {
+    return cartItems.reduce((count, item) => count + item.quantity, 0);
+  };
+
+  if (cartItems.length === 0) {
+    return (
+      <div className="max-w-4xl mx-auto px-4 py-16 text-center">
+        <div className="bg-slate-50 rounded-lg p-12">
+          <svg className="mx-auto h-12 w-12 text-slate-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+          </svg>
+          <h2 className="text-2xl font-semibold text-slate-800 mb-2">Tu carrito está vacío</h2>
+          <p className="text-slate-600 mb-6">¡Descubre nuestros productos y añade algunos a tu carrito!</p>
+          <button 
+            onClick={() => setPage(PAGES.HOME)}
+            className="bg-emerald-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-emerald-700 transition-all duration-300 shadow-md hover:shadow-lg"
+          >
+            Seguir Comprando
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-6xl mx-auto px-4 py-8">
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-3xl font-bold text-slate-800">Mi Carrito de Compras</h1>
+        <button 
+          onClick={() => {
+            if (window.confirm('¿Estás seguro de que quieres vaciar el carrito?')) {
+              clearCart();
+            }
+          }}
+          className="text-sm text-red-600 hover:text-red-700 hover:bg-red-50 px-3 py-2 rounded-lg transition-all duration-300"
+        >
+          Vaciar carrito
+        </button>
+      </div>
+      
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Lista de productos */}
+        <div className="lg:col-span-2 space-y-4">
+          {cartItems.map(item => (
+            <div key={item.id} className="bg-white border border-slate-200 rounded-lg p-6 shadow-sm">
+              <div className="flex flex-col sm:flex-row gap-4">
+                <img 
+                  src={item.image || 'https://placehold.co/150x150/E5E7EB/4B5563?text=Producto'} 
+                  alt={item.name}
+                  className="w-full sm:w-24 h-24 object-cover rounded-lg"
+                />
+                
+                <div className="flex-1">
+                  <div className="flex justify-between items-start mb-2">
+                    <h3 className="text-lg font-semibold text-slate-800">{item.name}</h3>
+                    <button 
+                      onClick={() => removeFromCart(item.id)}
+                      className="text-slate-400 hover:text-red-500 transition-colors duration-300"
+                    >
+                      <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
+                  </div>
+                  
+                  {item.color && (
+                    <p className="text-sm text-slate-600 mb-1">Color: {item.color}</p>
+                  )}
+                  {item.size && (
+                    <p className="text-sm text-slate-600 mb-3">Talla: {item.size}</p>
+                  )}
+                  
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center border border-slate-300 rounded-lg">
+                      <button 
+                        onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                        className="px-3 py-1 text-slate-600 hover:bg-slate-100 transition-colors duration-300"
+                      >
+                        -
+                      </button>
+                      <span className="px-4 py-1 font-medium text-slate-800">{item.quantity}</span>
+                      <button 
+                        onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                        className="px-3 py-1 text-slate-600 hover:bg-slate-100 transition-colors duration-300"
+                      >
+                        +
+                      </button>
+                    </div>
+                    
+                    <div className="text-right">
+                      <p className="text-sm text-slate-600">Precio unitario: {item.price.toFixed(2)}€</p>
+                      <p className="text-lg font-semibold text-emerald-600">
+                        {(item.price * item.quantity).toFixed(2)}€
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Resumen del pedido */}
+        <div className="lg:col-span-1">
+          <div className="bg-slate-50 rounded-lg p-6 sticky top-24">
+            <h2 className="text-xl font-semibold text-slate-800 mb-4">Resumen del Pedido</h2>
+            
+            <div className="space-y-3 mb-6">
+              <div className="flex justify-between text-slate-600">
+                <span>Productos ({getItemCount()})</span>
+                <span>{getTotal().toFixed(2)}€</span>
+              </div>
+              <div className="flex justify-between text-slate-600">
+                <span>Envío</span>
+                <span className="text-emerald-600 font-medium">Gratis</span>
+              </div>
+              <hr className="border-slate-300" />
+              <div className="flex justify-between text-lg font-semibold text-slate-800">
+                <span>Total</span>
+                <span className="text-emerald-600">{getTotal().toFixed(2)}€</span>
+              </div>
+            </div>
+
+            <button 
+              onClick={() => setPage(PAGES.CHECKOUT)}
+              className="w-full bg-emerald-600 text-white py-3 rounded-lg font-semibold hover:bg-emerald-700 active:bg-emerald-800 transition-all duration-300 shadow-md hover:shadow-lg mb-3"
+            >
+              Proceder al Pago
+            </button>
+            
+            <button 
+              onClick={() => setPage(PAGES.HOME)}
+              className="w-full bg-slate-200 text-slate-700 py-3 rounded-lg font-medium hover:bg-slate-300 transition-all duration-300"
+            >
+              Seguir Comprando
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Página de Checkout (Proceso de Pago)
+const CheckoutPage = ({ cartItems, user, setPage, clearCart, setNotification }) => {
+  const [currentStep, setCurrentStep] = useState(1);
+  const [shippingData, setShippingData] = useState({
+    name: user?.name || '',
+    email: user?.email || '',
+    phone: user?.phone || '',
+    address: user?.address || '',
+    city: '',
+    postalCode: '',
+    country: 'España'
+  });
+  const [paymentData, setPaymentData] = useState({
+    method: 'card',
+    cardNumber: '',
+    cardName: '',
+    expiryDate: '',
+    cvv: '',
+    saveCard: false
+  });
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  // Calcular totales
+  const subtotal = cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
+  const shipping = subtotal > 50 ? 0 : 5.99;
+  const tax = subtotal * 0.21; // IVA 21%
+  const total = subtotal + shipping + tax;
+
+  const handleShippingChange = (e) => {
+    const { name, value } = e.target;
+    setShippingData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handlePaymentChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setPaymentData(prev => ({ 
+      ...prev, 
+      [name]: type === 'checkbox' ? checked : value 
+    }));
+  };
+
+  const handleNext = () => {
+    if (currentStep < 3) {
+      setCurrentStep(currentStep + 1);
+    }
+  };
+
+  const handlePrevious = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
+
+  const handleSubmitOrder = async () => {
+    setIsProcessing(true);
+    
+    try {
+      const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
+      
+      // Preparar datos del pedido
+      const orderData = {
+        // Información de envío
+        shipping_name: shippingData.name,
+        shipping_email: shippingData.email,
+        shipping_phone: shippingData.phone,
+        shipping_address: shippingData.address,
+        shipping_city: shippingData.city,
+        shipping_postal_code: shippingData.postalCode,
+        shipping_country: shippingData.country,
+        
+        // Método de pago
+        payment_method: paymentData.method,
+        
+        // Productos del carrito
+        items: cartItems.map(item => ({
+          product_id: item.id,
+          quantity: item.quantity,
+          price: item.price
+        })),
+        
+        // Totales
+        subtotal: subtotal,
+        shipping_cost: shipping,
+        tax: tax,
+        total: total
+      };
+
+      const response = await fetch(`${API_URL}/api/checkout`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${user.token}`,
+        },
+        body: JSON.stringify(orderData),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Error al procesar el pedido');
+      }
+      
+      // Limpiar carrito después del éxito
+      clearCart();
+      
+      // Mostrar notificación de éxito
+      setNotification({
+        title: '¡Pedido realizado con éxito!',
+        message: `Tu pedido #${data.order?.id || 'N/A'} por ${total.toFixed(2)}€ ha sido procesado correctamente. Recibirás un email de confirmación.`,
+        product: null
+      });
+
+      // Redirigir a pedidos
+      setPage(PAGES.ORDERS);
+      
+    } catch (error) {
+      console.error('Error al procesar pedido:', error);
+      setNotification({
+        title: 'Error en el pedido',
+        message: error.message || 'Ha ocurrido un error al procesar tu pedido. Por favor, inténtalo de nuevo.',
+        product: null
+      });
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const renderStepIndicator = () => (
+    <div className="flex items-center justify-center mb-8">
+      {[1, 2, 3].map((step) => (
+        <div key={step} className="flex items-center">
+          <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold ${
+            step <= currentStep 
+              ? 'bg-emerald-600 text-white' 
+              : 'bg-slate-200 text-slate-500'
+          }`}>
+            {step}
+          </div>
+          {step < 3 && (
+            <div className={`w-16 h-1 ${
+              step < currentStep ? 'bg-emerald-600' : 'bg-slate-200'
+            }`}></div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+
+  const renderShippingStep = () => (
+    <div className="space-y-6">
+      <h2 className="text-2xl font-bold text-slate-800 mb-6">Información de Envío</h2>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-2">Nombre completo *</label>
+          <input
+            type="text"
+            name="name"
+            value={shippingData.name}
+            onChange={handleShippingChange}
+            required
+            className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+          />
+        </div>
+        
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-2">Email *</label>
+          <input
+            type="email"
+            name="email"
+            value={shippingData.email}
+            onChange={handleShippingChange}
+            required
+            className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+          />
+        </div>
+        
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-2">Teléfono *</label>
+          <input
+            type="tel"
+            name="phone"
+            value={shippingData.phone}
+            onChange={handleShippingChange}
+            required
+            className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+          />
+        </div>
+        
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-2">País</label>
+          <select
+            name="country"
+            value={shippingData.country}
+            onChange={handleShippingChange}
+            className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+          >
+            <option value="España">España</option>
+            <option value="Portugal">Portugal</option>
+            <option value="Francia">Francia</option>
+          </select>
+        </div>
+        
+        <div className="md:col-span-2">
+          <label className="block text-sm font-medium text-slate-700 mb-2">Dirección *</label>
+          <input
+            type="text"
+            name="address"
+            value={shippingData.address}
+            onChange={handleShippingChange}
+            required
+            placeholder="Calle, número, piso..."
+            className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+          />
+        </div>
+        
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-2">Ciudad *</label>
+          <input
+            type="text"
+            name="city"
+            value={shippingData.city}
+            onChange={handleShippingChange}
+            required
+            className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+          />
+        </div>
+        
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-2">Código Postal *</label>
+          <input
+            type="text"
+            name="postalCode"
+            value={shippingData.postalCode}
+            onChange={handleShippingChange}
+            required
+            className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+          />
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderPaymentStep = () => (
+    <div className="space-y-6">
+      <h2 className="text-2xl font-bold text-slate-800 mb-6">Método de Pago</h2>
+      
+      <div className="space-y-4">
+        <div className="flex items-center space-x-3">
+          <input
+            type="radio"
+            id="card"
+            name="method"
+            value="card"
+            checked={paymentData.method === 'card'}
+            onChange={handlePaymentChange}
+            className="w-4 h-4 text-emerald-600"
+          />
+          <label htmlFor="card" className="text-sm font-medium text-slate-700">
+            💳 Tarjeta de Crédito/Débito
+          </label>
+        </div>
+        
+        <div className="flex items-center space-x-3">
+          <input
+            type="radio"
+            id="paypal"
+            name="method"
+            value="paypal"
+            checked={paymentData.method === 'paypal'}
+            onChange={handlePaymentChange}
+            className="w-4 h-4 text-emerald-600"
+          />
+          <label htmlFor="paypal" className="text-sm font-medium text-slate-700">
+            🅿️ PayPal
+          </label>
+        </div>
+        
+        <div className="flex items-center space-x-3">
+          <input
+            type="radio"
+            id="transfer"
+            name="method"
+            value="transfer"
+            checked={paymentData.method === 'transfer'}
+            onChange={handlePaymentChange}
+            className="w-4 h-4 text-emerald-600"
+          />
+          <label htmlFor="transfer" className="text-sm font-medium text-slate-700">
+            🏦 Transferencia Bancaria
+          </label>
+        </div>
+      </div>
+      
+      {paymentData.method === 'card' && (
+        <div className="mt-6 space-y-4 p-4 bg-slate-50 rounded-lg">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-slate-700 mb-2">Número de Tarjeta *</label>
+              <input
+                type="text"
+                name="cardNumber"
+                value={paymentData.cardNumber}
+                onChange={handlePaymentChange}
+                placeholder="1234 5678 9012 3456"
+                maxLength="19"
+                className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+              />
+            </div>
+            
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-slate-700 mb-2">Nombre del Titular *</label>
+              <input
+                type="text"
+                name="cardName"
+                value={paymentData.cardName}
+                onChange={handlePaymentChange}
+                placeholder="Como aparece en la tarjeta"
+                className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">Fecha de Expiración *</label>
+              <input
+                type="text"
+                name="expiryDate"
+                value={paymentData.expiryDate}
+                onChange={handlePaymentChange}
+                placeholder="MM/AA"
+                maxLength="5"
+                className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">CVV *</label>
+              <input
+                type="text"
+                name="cvv"
+                value={paymentData.cvv}
+                onChange={handlePaymentChange}
+                placeholder="123"
+                maxLength="4"
+                className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+              />
+            </div>
+          </div>
+          
+          <div className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              name="saveCard"
+              checked={paymentData.saveCard}
+              onChange={handlePaymentChange}
+              className="w-4 h-4 text-emerald-600 rounded"
+            />
+            <label className="text-sm text-slate-700">
+              Guardar esta tarjeta para futuras compras (seguro)
+            </label>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
+  const renderReviewStep = () => (
+    <div className="space-y-6">
+      <h2 className="text-2xl font-bold text-slate-800 mb-6">Revisar Pedido</h2>
+      
+      {/* Productos */}
+      <div className="bg-white border border-slate-200 rounded-lg p-6">
+        <h3 className="text-lg font-semibold text-slate-800 mb-4">Productos ({cartItems.length})</h3>
+        <div className="space-y-4">
+          {cartItems.map(item => (
+            <div key={item.id} className="flex justify-between items-center">
+              <div className="flex items-center space-x-3">
+                <img 
+                  src={item.image || 'https://placehold.co/50x50/E5E7EB/4B5563?text=IMG'} 
+                  alt={item.name}
+                  className="w-12 h-12 object-cover rounded"
+                />
+                <div>
+                  <p className="font-medium text-slate-800">{item.name}</p>
+                  <p className="text-sm text-slate-600">Cantidad: {item.quantity}</p>
+                </div>
+              </div>
+              <p className="font-semibold text-slate-800">{(item.price * item.quantity).toFixed(2)}€</p>
+            </div>
+          ))}
+        </div>
+      </div>
+      
+      {/* Dirección de envío */}
+      <div className="bg-white border border-slate-200 rounded-lg p-6">
+        <h3 className="text-lg font-semibold text-slate-800 mb-4">Dirección de Envío</h3>
+        <div className="text-slate-600">
+          <p className="font-medium">{shippingData.name}</p>
+          <p>{shippingData.address}</p>
+          <p>{shippingData.postalCode} {shippingData.city}</p>
+          <p>{shippingData.country}</p>
+          <p className="mt-2">
+            📞 {shippingData.phone}<br />
+            ✉️ {shippingData.email}
+          </p>
+        </div>
+      </div>
+      
+      {/* Método de pago */}
+      <div className="bg-white border border-slate-200 rounded-lg p-6">
+        <h3 className="text-lg font-semibold text-slate-800 mb-4">Método de Pago</h3>
+        <div className="text-slate-600">
+          {paymentData.method === 'card' && (
+            <div>
+              <p>💳 Tarjeta terminada en ****{paymentData.cardNumber.slice(-4)}</p>
+              <p>Titular: {paymentData.cardName}</p>
+            </div>
+          )}
+          {paymentData.method === 'paypal' && <p>🅿️ PayPal</p>}
+          {paymentData.method === 'transfer' && <p>🏦 Transferencia Bancaria</p>}
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderOrderSummary = () => (
+    <div className="bg-slate-50 rounded-lg p-6 sticky top-4">
+      <h3 className="text-lg font-semibold text-slate-800 mb-4">Resumen del Pedido</h3>
+      
+      <div className="space-y-3">
+        <div className="flex justify-between text-slate-600">
+          <span>Subtotal ({cartItems.length} productos)</span>
+          <span>{subtotal.toFixed(2)}€</span>
+        </div>
+        <div className="flex justify-between text-slate-600">
+          <span>Envío</span>
+          <span className={shipping === 0 ? 'text-emerald-600 font-medium' : ''}>
+            {shipping === 0 ? 'Gratis' : `${shipping.toFixed(2)}€`}
+          </span>
+        </div>
+        <div className="flex justify-between text-slate-600">
+          <span>IVA (21%)</span>
+          <span>{tax.toFixed(2)}€</span>
+        </div>
+        <hr className="border-slate-300" />
+        <div className="flex justify-between text-lg font-semibold text-slate-800">
+          <span>Total</span>
+          <span className="text-emerald-600">{total.toFixed(2)}€</span>
+        </div>
+      </div>
+      
+      {subtotal < 50 && (
+        <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+          <p className="text-sm text-yellow-800">
+            💡 ¡Añade {(50 - subtotal).toFixed(2)}€ más para envío gratis!
+          </p>
+        </div>
+      )}
+    </div>
+  );
+
+  // Verificar si el usuario está autenticado
+  if (!user) {
+    return (
+      <div className="max-w-4xl mx-auto px-4 py-8 text-center">
+        <h1 className="text-3xl font-bold text-slate-800 mb-4">Iniciar Sesión Requerido</h1>
+        <p className="text-slate-600 mb-8">Necesitas iniciar sesión para proceder al pago.</p>
+        <button 
+          onClick={() => setPage(PAGES.LOGIN)}
+          className="bg-emerald-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-emerald-700 transition-colors duration-300 mr-4"
+        >
+          Iniciar Sesión
+        </button>
+        <button 
+          onClick={() => setPage(PAGES.CART)}
+          className="bg-slate-300 text-slate-700 px-6 py-3 rounded-lg font-semibold hover:bg-slate-400 transition-colors duration-300"
+        >
+          Volver al Carrito
+        </button>
+      </div>
+    );
+  }
+
+  if (cartItems.length === 0) {
+    return (
+      <div className="max-w-4xl mx-auto px-4 py-8 text-center">
+        <h1 className="text-3xl font-bold text-slate-800 mb-4">Checkout</h1>
+        <p className="text-slate-600 mb-8">No hay productos en tu carrito para proceder al pago.</p>
+        <button 
+          onClick={() => setPage(PAGES.HOME)}
+          className="bg-emerald-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-emerald-700 transition-colors duration-300"
+        >
+          Ir a Comprar
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="flex items-center justify-between mb-8">
+        <h1 className="text-3xl font-bold text-slate-800">Finalizar Pedido</h1>
+        <button 
+          onClick={() => setPage(PAGES.CART)}
+          className="text-slate-600 hover:text-slate-800 transition-colors duration-300"
+        >
+          ← Volver al carrito
+        </button>
+      </div>
+
+      {renderStepIndicator()}
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2">
+          {currentStep === 1 && renderShippingStep()}
+          {currentStep === 2 && renderPaymentStep()}
+          {currentStep === 3 && renderReviewStep()}
+          
+          {/* Botones de navegación */}
+          <div className="mt-8 flex justify-between">
+            <button
+              onClick={handlePrevious}
+              disabled={currentStep === 1}
+              className={`px-6 py-3 rounded-lg font-semibold transition-all duration-300 ${
+                currentStep === 1 
+                  ? 'bg-slate-200 text-slate-400 cursor-not-allowed' 
+                  : 'bg-slate-300 text-slate-700 hover:bg-slate-400'
+              }`}
+            >
+              Anterior
+            </button>
+            
+            {currentStep < 3 ? (
+              <button
+                onClick={handleNext}
+                className="px-6 py-3 bg-emerald-600 text-white rounded-lg font-semibold hover:bg-emerald-700 transition-all duration-300"
+              >
+                Siguiente
+              </button>
+            ) : (
+              <button
+                onClick={handleSubmitOrder}
+                disabled={isProcessing}
+                className={`px-8 py-3 rounded-lg font-semibold transition-all duration-300 ${
+                  isProcessing
+                    ? 'bg-slate-400 text-slate-200 cursor-not-allowed'
+                    : 'bg-emerald-600 text-white hover:bg-emerald-700'
+                }`}
+              >
+                {isProcessing ? (
+                  <div className="flex items-center space-x-2">
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <span>Procesando...</span>
+                  </div>
+                ) : (
+                  'Confirmar Pedido'
+                )}
+              </button>
+            )}
+          </div>
+        </div>
+        
+        {/* Sidebar con resumen */}
+        <div className="lg:col-span-1">
+          {renderOrderSummary()}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Componente de Notificación Toast
+const Toast = ({ notification, onClose }) => {
+  useEffect(() => {
+    if (notification) {
+      const timer = setTimeout(() => {
+        onClose();
+      }, notification.product ? 4000 : 3000); // Más tiempo para notificaciones con producto
+
+      return () => clearTimeout(timer);
+    }
+  }, [notification, onClose]);
+
+  if (!notification) return null;
+
+  // Determinar el icono y color según el tipo de notificación
+  const getIconAndColor = () => {
+    if (notification.title.includes('restaurado')) {
+      return {
+        bgColor: 'bg-blue-100',
+        textColor: 'text-blue-600',
+        borderColor: 'border-blue-200',
+        icon: (
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+          </svg>
+        )
+      };
+    }
+    // Por defecto (añadido al carrito)
+    return {
+      bgColor: 'bg-emerald-100',
+      textColor: 'text-emerald-600',
+      borderColor: 'border-emerald-200',
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+        </svg>
+      )
+    };
+  };
+
+  const { bgColor, textColor, borderColor, icon } = getIconAndColor();
+
+  return (
+    <div className="fixed top-4 right-4 z-50 animate-slide-in">
+      <div className={`bg-white border ${borderColor} rounded-lg shadow-lg p-4 max-w-sm w-full`}>
+        <div className="flex items-start space-x-3">
+          <div className="flex-shrink-0">
+            <div className={`w-8 h-8 ${bgColor} rounded-full flex items-center justify-center`}>
+              <div className={textColor}>
+                {icon}
+              </div>
+            </div>
+          </div>
+          
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-slate-800">{notification.title}</p>
+            <p className="text-sm text-slate-600 mt-1">{notification.message}</p>
+            
+            {notification.product && (
+              <div className="flex items-center mt-3 p-2 bg-slate-50 rounded-md">
+                <img 
+                  src={notification.product.image || 'https://placehold.co/40x40/E5E7EB/4B5563?text=P'} 
+                  alt={notification.product.name}
+                  className="w-10 h-10 rounded object-cover"
+                />
+                <div className="ml-3 flex-1">
+                  <p className="text-xs font-medium text-slate-800 truncate">{notification.product.name}</p>
+                  <p className="text-xs text-slate-500">
+                    {notification.product.color} • {notification.product.size} • Cantidad: {notification.product.quantity}
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+          
+          <button 
+            onClick={onClose}
+            className="flex-shrink-0 ml-4 text-slate-400 hover:text-slate-600 transition-colors duration-200"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Página de Login
+const LoginPage = ({ setPage, setNotification, setUser }) => {
+  const [isLogin, setIsLogin] = useState(true); // true = login, false = registro
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+    name: '',
+    confirmPassword: ''
+  });
+  const [isLoading, setIsLoading] = useState(false);
+  const [errors, setErrors] = useState({});
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+    // Limpiar error del campo cuando el usuario empiece a escribir
+    if (errors[name]) {
+      setErrors(prev => ({
+        ...prev,
+        [name]: ''
+      }));
+    }
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+
+    if (!formData.email) {
+      newErrors.email = 'El email es requerido';
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      newErrors.email = 'El formato del email no es válido';
+    }
+
+    if (!formData.password) {
+      newErrors.password = 'La contraseña es requerida';
+    } else if (formData.password.length < 6) {
+      newErrors.password = 'La contraseña debe tener al menos 6 caracteres';
+    }
+
+    if (!isLogin) {
+      if (!formData.name) {
+        newErrors.name = 'El nombre es requerido';
+      }
+      if (!formData.confirmPassword) {
+        newErrors.confirmPassword = 'Confirma tu contraseña';
+      } else if (formData.password !== formData.confirmPassword) {
+        newErrors.confirmPassword = 'Las contraseñas no coinciden';
+      }
+    }
+
+    return newErrors;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    const formErrors = validateForm();
+    if (Object.keys(formErrors).length > 0) {
+      setErrors(formErrors);
+      return;
+    }
+
+    setIsLoading(true);
+    setErrors({});
+
+    try {
+      const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
+      
+      if (isLogin) {
+        // Llamada API para login
+        const response = await fetch(`${API_URL}/api/login`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+          body: JSON.stringify({
+            email: formData.email,
+            password: formData.password,
+          }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          // Manejar errores específicos de la API
+          if (response.status === 401) {
+            setErrors({ general: 'Credenciales incorrectas. Verifica tu email y contraseña.' });
+          } else if (data.errors) {
+            setErrors(data.errors);
+          } else {
+            setErrors({ general: data.message || 'Error al iniciar sesión.' });
+          }
+          return;
+        }
+
+        // Login exitoso
+        const userData = {
+          id: data.user.id,
+          name: data.user.name,
+          email: data.user.email,
+          phone: data.user.phone || '',
+          address: data.user.address || '',
+          birthDate: data.user.birth_date || '',
+          token: data.token,
+          loginTime: new Date().toISOString()
+        };
+
+        setUser(userData);
+        
+        setNotification({
+          title: '¡Bienvenido!',
+          message: `Bienvenido de vuelta, ${userData.name}!`,
+          product: null
+        });
+
+      } else {
+        // Llamada API para registro
+        const response = await fetch(`${API_URL}/api/register`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+          body: JSON.stringify({
+            name: formData.name,
+            email: formData.email,
+            password: formData.password,
+            password_confirmation: formData.confirmPassword,
+          }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          if (data.errors) {
+            // Transformar errores de Laravel al formato del frontend
+            const transformedErrors = {};
+            Object.keys(data.errors).forEach(key => {
+              if (key === 'password_confirmation') {
+                transformedErrors.confirmPassword = data.errors[key][0];
+              } else {
+                transformedErrors[key] = data.errors[key][0];
+              }
+            });
+            setErrors(transformedErrors);
+          } else {
+            setErrors({ general: data.message || 'Error al crear la cuenta.' });
+          }
+          return;
+        }
+
+        // Registro exitoso
+        const userData = {
+          id: data.user.id,
+          name: data.user.name,
+          email: data.user.email,
+          phone: data.user.phone || '',
+          address: data.user.address || '',
+          birthDate: data.user.birth_date || '',
+          token: data.token,
+          loginTime: new Date().toISOString()
+        };
+
+        setUser(userData);
+        
+        setNotification({
+          title: '¡Cuenta creada!',
+          message: 'Tu cuenta ha sido creada exitosamente. ¡Bienvenido!',
+          product: null
+        });
+      }
+
+      // Redirigir al home
+      setPage('HOME');
+      
+    } catch (error) {
+      console.error('Error en la autenticación:', error);
+      setErrors({ general: 'Error de conexión. Verifica tu conexión a internet e inténtalo de nuevo.' });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const toggleMode = () => {
+    setIsLogin(!isLogin);
+    setFormData({
+      email: '',
+      password: '',
+      name: '',
+      confirmPassword: ''
+    });
+    setErrors({});
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-slate-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8">
+        <div>
+          <div className="mx-auto h-12 w-12 flex items-center justify-center rounded-full bg-emerald-100">
+            <svg className="h-8 w-8 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+          </div>
+          <h2 className="mt-6 text-center text-3xl font-bold text-slate-900">
+            {isLogin ? 'Inicia sesión en tu cuenta' : 'Crea tu cuenta'}
+          </h2>
+          <p className="mt-2 text-center text-sm text-slate-600">
+            {isLogin ? '¿No tienes cuenta? ' : '¿Ya tienes cuenta? '}
+            <button
+              onClick={toggleMode}
+              className="font-medium text-emerald-600 hover:text-emerald-500 transition-colors duration-300"
+            >
+              {isLogin ? 'Regístrate aquí' : 'Inicia sesión aquí'}
+            </button>
+          </p>
+        </div>
+
+        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+          {errors.general && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+              <p className="text-sm text-red-600">{errors.general}</p>
+            </div>
+          )}
+
+          <div className="space-y-4">
+            {!isLogin && (
+              <div>
+                <label htmlFor="name" className="block text-sm font-medium text-slate-700 mb-1">
+                  Nombre completo
+                </label>
+                <input
+                  id="name"
+                  name="name"
+                  type="text"
+                  value={formData.name}
+                  onChange={handleInputChange}
+                  className={`w-full px-3 py-2 border rounded-lg shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-300 ${
+                    errors.name ? 'border-red-300 bg-red-50' : 'border-slate-300'
+                  }`}
+                  placeholder="Tu nombre completo"
+                />
+                {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name}</p>}
+              </div>
+            )}
+
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-slate-700 mb-1">
+                Correo electrónico
+              </label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                value={formData.email}
+                onChange={handleInputChange}
+                className={`w-full px-3 py-2 border rounded-lg shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-300 ${
+                  errors.email ? 'border-red-300 bg-red-50' : 'border-slate-300'
+                }`}
+                placeholder="tu@email.com"
+              />
+              {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
+            </div>
+
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-slate-700 mb-1">
+                Contraseña
+              </label>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                value={formData.password}
+                onChange={handleInputChange}
+                className={`w-full px-3 py-2 border rounded-lg shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-300 ${
+                  errors.password ? 'border-red-300 bg-red-50' : 'border-slate-300'
+                }`}
+                placeholder="••••••••"
+              />
+              {errors.password && <p className="mt-1 text-sm text-red-600">{errors.password}</p>}
+            </div>
+
+            {!isLogin && (
+              <div>
+                <label htmlFor="confirmPassword" className="block text-sm font-medium text-slate-700 mb-1">
+                  Confirmar contraseña
+                </label>
+                <input
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  type="password"
+                  value={formData.confirmPassword}
+                  onChange={handleInputChange}
+                  className={`w-full px-3 py-2 border rounded-lg shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-300 ${
+                    errors.confirmPassword ? 'border-red-300 bg-red-50' : 'border-slate-300'
+                  }`}
+                  placeholder="••••••••"
+                />
+                {errors.confirmPassword && <p className="mt-1 text-sm text-red-600">{errors.confirmPassword}</p>}
+              </div>
+            )}
+          </div>
+
+          {isLogin && (
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <input
+                  id="remember-me"
+                  name="remember-me"
+                  type="checkbox"
+                  className="h-4 w-4 text-emerald-600 focus:ring-emerald-500 border-slate-300 rounded"
+                />
+                <label htmlFor="remember-me" className="ml-2 block text-sm text-slate-700">
+                  Recordarme
+                </label>
+              </div>
+
+              <div className="text-sm">
+                <button
+                  type="button"
+                  className="font-medium text-emerald-600 hover:text-emerald-500 transition-colors duration-300"
+                >
+                  ¿Olvidaste tu contraseña?
+                </button>
+              </div>
+            </div>
+          )}
+
+          <div className="space-y-3">
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 shadow-md hover:shadow-lg"
+            >
+              {isLoading ? (
+                <div className="flex items-center">
+                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Procesando...
+                </div>
+              ) : (
+                isLogin ? 'Iniciar Sesión' : 'Crear Cuenta'
+              )}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setPage('HOME')}
+              className="w-full flex justify-center py-3 px-4 border border-slate-300 text-sm font-medium rounded-lg text-slate-700 bg-white hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-all duration-300"
+            >
+              Volver al inicio
+            </button>
+          </div>
+        </form>
+
+        <div className="mt-6">
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-slate-300" />
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-2 bg-slate-50 text-slate-500">O continúa con</span>
+            </div>
+          </div>
+
+          <div className="mt-6 grid grid-cols-2 gap-3">
+            <button className="w-full inline-flex justify-center py-2 px-4 border border-slate-300 rounded-lg shadow-sm bg-white text-sm font-medium text-slate-500 hover:bg-slate-50 transition-colors duration-300">
+              <svg className="h-5 w-5" viewBox="0 0 24 24">
+                <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+              </svg>
+              <span className="ml-2">Google</span>
+            </button>
+
+            <button className="w-full inline-flex justify-center py-2 px-4 border border-slate-300 rounded-lg shadow-sm bg-white text-sm font-medium text-slate-500 hover:bg-slate-50 transition-colors duration-300">
+              <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+              </svg>
+              <span className="ml-2">Facebook</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Página de Mi Perfil
+const ProfilePage = ({ user, setUser, setNotification }) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [formData, setFormData] = useState({
+    name: user?.name || '',
+    email: user?.email || '',
+    phone: user?.phone || '',
+    address: user?.address || '',
+    birthDate: user?.birthDate || ''
+  });
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSave = async () => {
+    const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
+    
+    try {
+      const response = await fetch(`${API_URL}/api/profile`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${user.token}`,
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          address: formData.address,
+          birth_date: formData.birthDate,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setNotification({
+          title: 'Error',
+          message: data.message || 'Error al actualizar el perfil.',
+          product: null
+        });
+        return;
+      }
+
+      // Actualizar el usuario local con los datos del servidor
+      const updatedUser = {
+        ...user,
+        name: data.user.name,
+        email: data.user.email,
+        phone: data.user.phone || '',
+        address: data.user.address || '',
+        birthDate: data.user.birth_date || '',
+      };
+      
+      setUser(updatedUser);
+      setIsEditing(false);
+      setNotification({
+        title: '¡Perfil actualizado!',
+        message: 'Tus datos se han guardado correctamente.',
+        product: null
+      });
+
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      setNotification({
+        title: 'Error',
+        message: 'Error de conexión. Inténtalo más tarde.',
+        product: null
+      });
+    }
+  };
+
+  const handleCancel = () => {
+    setFormData({
+      name: user?.name || '',
+      email: user?.email || '',
+      phone: user?.phone || '',
+      address: user?.address || '',
+      birthDate: user?.birthDate || ''
+    });
+    setIsEditing(false);
+  };
+
+  return (
+    <div className="max-w-4xl mx-auto px-4 py-8">
+      <h1 className="text-3xl font-bold text-slate-800 mb-8">Mi Perfil</h1>
+      
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-xl font-semibold text-slate-800">Información Personal</h2>
+          {!isEditing ? (
+            <button
+              onClick={() => setIsEditing(true)}
+              className="bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition-colors duration-300"
+            >
+              Editar Perfil
+            </button>
+          ) : (
+            <div className="space-x-2">
+              <button
+                onClick={handleSave}
+                className="bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition-colors duration-300"
+              >
+                Guardar
+              </button>
+              <button
+                onClick={handleCancel}
+                className="bg-slate-300 text-slate-700 px-4 py-2 rounded-lg hover:bg-slate-400 transition-colors duration-300"
+              >
+                Cancelar
+              </button>
+            </div>
+          )}
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-2">Nombre completo</label>
+            {isEditing ? (
+              <input
+                type="text"
+                name="name"
+                value={formData.name}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+              />
+            ) : (
+              <p className="text-slate-900 py-2">{user?.name || 'No especificado'}</p>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-2">Email</label>
+            {isEditing ? (
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+              />
+            ) : (
+              <p className="text-slate-900 py-2">{user?.email || 'No especificado'}</p>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-2">Teléfono</label>
+            {isEditing ? (
+              <input
+                type="tel"
+                name="phone"
+                value={formData.phone}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                placeholder="Ej: +34 600 123 456"
+              />
+            ) : (
+              <p className="text-slate-900 py-2">{user?.phone || 'No especificado'}</p>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-2">Fecha de nacimiento</label>
+            {isEditing ? (
+              <input
+                type="date"
+                name="birthDate"
+                value={formData.birthDate}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+              />
+            ) : (
+              <p className="text-slate-900 py-2">{user?.birthDate || 'No especificado'}</p>
+            )}
+          </div>
+
+          <div className="md:col-span-2">
+            <label className="block text-sm font-medium text-slate-700 mb-2">Dirección</label>
+            {isEditing ? (
+              <textarea
+                name="address"
+                value={formData.address}
+                onChange={handleInputChange}
+                rows="3"
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                placeholder="Calle, número, ciudad, código postal..."
+              />
+            ) : (
+              <p className="text-slate-900 py-2">{user?.address || 'No especificado'}</p>
+            )}
+          </div>
+        </div>
+
+        <div className="mt-8 pt-6 border-t border-slate-200">
+          <h3 className="text-lg font-semibold text-slate-800 mb-4">Estadísticas de cuenta</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="bg-emerald-50 p-4 rounded-lg">
+              <p className="text-sm text-emerald-600 font-medium">Miembro desde</p>
+              <p className="text-lg font-semibold text-emerald-700">
+                {user?.loginTime ? new Date(user.loginTime).toLocaleDateString() : 'Hoy'}
+              </p>
+            </div>
+            <div className="bg-blue-50 p-4 rounded-lg">
+              <p className="text-sm text-blue-600 font-medium">Pedidos realizados</p>
+              <p className="text-lg font-semibold text-blue-700">0</p>
+            </div>
+            <div className="bg-purple-50 p-4 rounded-lg">
+              <p className="text-sm text-purple-600 font-medium">Productos favoritos</p>
+              <p className="text-lg font-semibold text-purple-700">0</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Página de Mis Pedidos
+const OrdersPage = () => {
+  // Datos de ejemplo para pedidos (esto vendría de la API)
+  const orders = [
+    {
+      id: 1,
+      date: '2024-10-15',
+      status: 'Entregado',
+      total: 89.99,
+      items: [
+        { name: 'Camiseta Básica', quantity: 2, price: 24.99 },
+        { name: 'Pantalones Chinos', quantity: 1, price: 39.99 }
+      ]
+    },
+    {
+      id: 2,
+      date: '2024-10-28',
+      status: 'En tránsito',
+      total: 156.50,
+      items: [
+        { name: 'Zapatillas Deportivas', quantity: 1, price: 89.99 },
+        { name: 'Sudadera Premium', quantity: 1, price: 66.51 }
+      ]
+    }
+  ];
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'Entregado': return 'bg-green-100 text-green-800';
+      case 'En tránsito': return 'bg-blue-100 text-blue-800';
+      case 'Procesando': return 'bg-yellow-100 text-yellow-800';
+      case 'Cancelado': return 'bg-red-100 text-red-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  if (orders.length === 0) {
+    return (
+      <div className="max-w-4xl mx-auto px-4 py-8 text-center">
+        <h1 className="text-3xl font-bold text-slate-800 mb-8">Mis Pedidos</h1>
+        <div className="bg-slate-50 rounded-lg p-12">
+          <svg className="mx-auto h-12 w-12 text-slate-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+          </svg>
+          <h2 className="text-xl font-semibold text-slate-800 mb-2">Aún no tienes pedidos</h2>
+          <p className="text-slate-600">¡Explora nuestros productos y realiza tu primer pedido!</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-4xl mx-auto px-4 py-8">
+      <h1 className="text-3xl font-bold text-slate-800 mb-8">Mis Pedidos</h1>
+      
+      <div className="space-y-6">
+        {orders.map(order => (
+          <div key={order.id} className="bg-white rounded-lg shadow-md p-6">
+            <div className="flex justify-between items-start mb-4">
+              <div>
+                <h3 className="text-lg font-semibold text-slate-800">Pedido #{order.id}</h3>
+                <p className="text-sm text-slate-600">Realizado el {new Date(order.date).toLocaleDateString()}</p>
+              </div>
+              <div className="text-right">
+                <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
+                  {order.status}
+                </span>
+                <p className="text-lg font-semibold text-slate-800 mt-1">{order.total.toFixed(2)}€</p>
+              </div>
+            </div>
+            
+            <div className="border-t border-slate-200 pt-4">
+              <h4 className="font-medium text-slate-700 mb-2">Productos:</h4>
+              <div className="space-y-2">
+                {order.items.map((item, index) => (
+                  <div key={index} className="flex justify-between text-sm">
+                    <span>{item.name} (x{item.quantity})</span>
+                    <span>{item.price.toFixed(2)}€</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            <div className="flex gap-2 mt-4 pt-4 border-t border-slate-200">
+              <button className="bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition-colors duration-300 text-sm">
+                Ver detalles
+              </button>
+              {order.status === 'Entregado' && (
+                <button className="bg-slate-200 text-slate-700 px-4 py-2 rounded-lg hover:bg-slate-300 transition-colors duration-300 text-sm">
+                  Recomprar
+                </button>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// Página de Favoritos
+const FavoritesPage = ({ favorites, allProducts, toggleFavorite, setPage, setSelectedProduct }) => {
+  const favoriteProducts = allProducts.filter(product => favorites.includes(product.id));
+
+  if (favoriteProducts.length === 0) {
+    return (
+      <div className="max-w-4xl mx-auto px-4 py-8 text-center">
+        <h1 className="text-3xl font-bold text-slate-800 mb-8">Mis Favoritos</h1>
+        <div className="bg-slate-50 rounded-lg p-12">
+          <svg className="mx-auto h-12 w-12 text-slate-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+          </svg>
+          <h2 className="text-xl font-semibold text-slate-800 mb-2">No tienes productos favoritos</h2>
+          <p className="text-slate-600 mb-6">¡Explora nuestros productos y marca los que más te gusten!</p>
+          <button 
+            onClick={() => setPage(PAGES.HOME)}
+            className="bg-emerald-600 text-white px-6 py-3 rounded-lg hover:bg-emerald-700 transition-colors duration-300"
+          >
+            Explorar productos
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-6xl mx-auto px-4 py-8">
+      <h1 className="text-3xl font-bold text-slate-800 mb-8">Mis Favoritos ({favoriteProducts.length})</h1>
+      
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {favoriteProducts.map(product => (
+          <div key={product.id} className="bg-white rounded-lg border border-slate-200 overflow-hidden group relative">
+            {/* Botón de eliminar favorito */}
+            <button
+              onClick={() => toggleFavorite(product.id)}
+              className="absolute top-2 right-2 z-10 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-md hover:bg-red-50 transition-colors duration-300"
+            >
+              <svg className="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+              </svg>
+            </button>
+
+            <div 
+              className="cursor-pointer"
+              onClick={() => {
+                setSelectedProduct(product);
+                setPage(PAGES.PRODUCT, product.id);
+              }}
+            >
+              <div className="aspect-w-1 aspect-h-1 w-full overflow-hidden bg-slate-100">
+                <img 
+                  src={product.details?.[0]?.image_url || 'https://placehold.co/400x400/E5E7EB/4B5563?text=OmniStyle'} 
+                  alt={product.name} 
+                  className="w-full h-48 object-center object-cover group-hover:opacity-75 transition-opacity duration-300" 
+                />
+              </div>
+              <div className="p-4">
+                <h3 className="text-sm font-medium text-slate-700 mb-1 truncate">{product.name}</h3>
+                <div className="flex items-center text-xs text-slate-500 mb-1">
+                  <span>⭐⭐⭐⭐⭐</span>
+                  <span className="ml-1">(1.2k)</span>
+                </div>
+                <p className="text-lg font-semibold text-emerald-600">{product.price.toFixed(2)}€</p>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// Página de Configuración
+const SettingsPage = ({ handleLogout, setNotification }) => {
+  const [settings, setSettings] = useState({
+    emailNotifications: true,
+    smsNotifications: false,
+    marketingEmails: true,
+    theme: 'light',
+    language: 'es'
+  });
+
+  const handleSettingChange = (key, value) => {
+    setSettings(prev => ({ ...prev, [key]: value }));
+    setNotification({
+      title: 'Configuración actualizada',
+      message: 'Tus preferencias se han guardado correctamente.',
+      product: null
+    });
+  };
+
+  const handleDeleteAccount = () => {
+    if (window.confirm('¿Estás seguro de que quieres eliminar tu cuenta? Esta acción no se puede deshacer.')) {
+      handleLogout();
+      setNotification({
+        title: 'Cuenta eliminada',
+        message: 'Tu cuenta ha sido eliminada correctamente.',
+        product: null
+      });
+    }
+  };
+
+  return (
+    <div className="max-w-4xl mx-auto px-4 py-8">
+      <h1 className="text-3xl font-bold text-slate-800 mb-8">Configuración</h1>
+      
+      <div className="space-y-6">
+        {/* Notificaciones */}
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <h2 className="text-xl font-semibold text-slate-800 mb-4">Notificaciones</h2>
+          
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="font-medium text-slate-700">Notificaciones por email</h3>
+                <p className="text-sm text-slate-500">Recibe actualizaciones de pedidos por email</p>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={settings.emailNotifications}
+                  onChange={(e) => handleSettingChange('emailNotifications', e.target.checked)}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-emerald-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+              </label>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="font-medium text-slate-700">Notificaciones SMS</h3>
+                <p className="text-sm text-slate-500">Recibe actualizaciones por SMS</p>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={settings.smsNotifications}
+                  onChange={(e) => handleSettingChange('smsNotifications', e.target.checked)}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-emerald-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+              </label>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="font-medium text-slate-700">Emails de marketing</h3>
+                <p className="text-sm text-slate-500">Recibe ofertas especiales y novedades</p>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={settings.marketingEmails}
+                  onChange={(e) => handleSettingChange('marketingEmails', e.target.checked)}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-emerald-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        {/* Preferencias */}
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <h2 className="text-xl font-semibold text-slate-800 mb-4">Preferencias</h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">Idioma</label>
+              <select
+                value={settings.language}
+                onChange={(e) => handleSettingChange('language', e.target.value)}
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+              >
+                <option value="es">Español</option>
+                <option value="en">English</option>
+                <option value="fr">Français</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">Tema</label>
+              <select
+                value={settings.theme}
+                onChange={(e) => handleSettingChange('theme', e.target.value)}
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+              >
+                <option value="light">Claro</option>
+                <option value="dark">Oscuro</option>
+                <option value="auto">Automático</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {/* Zona peligrosa */}
+        <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-red-500">
+          <h2 className="text-xl font-semibold text-red-700 mb-4">Zona peligrosa</h2>
+          
+          <div className="space-y-4">
+            <div>
+              <h3 className="font-medium text-slate-700 mb-2">Eliminar cuenta</h3>
+              <p className="text-sm text-slate-500 mb-4">
+                Esta acción eliminará permanentemente tu cuenta y todos los datos asociados. 
+                No se puede deshacer.
+              </p>
+              <button
+                onClick={handleDeleteAccount}
+                className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors duration-300"
+              >
+                Eliminar mi cuenta
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // --- COMPONENTE PRINCIPAL (LAYOUT) ---
 
-export default function App() {
-  const [currentPage, setCurrentPage] = useState(PAGES.HOME);
+// Componente de Layout principal que contiene toda la lógica de estado
+function AppContent() {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [allProducts, setAllProducts] = useState([]);
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState(null);
-  const [selectedProduct, setSelectedProduct] = useState(null); // Producto para la página de detalle
+  const [_selectedProduct, setSelectedProduct] = useState(null); // Producto para la página de detalle
+  const [user, setUser] = useState(() => {
+    // Cargar usuario desde localStorage al inicializar
+    try {
+      const savedUser = localStorage.getItem('omnistyle-user');
+      return savedUser ? JSON.parse(savedUser) : null;
+    } catch (error) {
+      console.error('Error al cargar usuario desde localStorage:', error);
+      return null;
+    }
+  }); // Estado de autenticación
+
+  const [cartItems, setCartItems] = useState(() => {
+    // Cargar carrito según el usuario inicial
+    try {
+      const savedUser = localStorage.getItem('omnistyle-user');
+      const initialUser = savedUser ? JSON.parse(savedUser) : null;
+      const cartKey = initialUser?.id ? `omnistyle-cart-user-${initialUser.id}` : 'omnistyle-cart-guest';
+      const savedCart = localStorage.getItem(cartKey);
+      return savedCart ? JSON.parse(savedCart) : [];
+    } catch (error) {
+      console.error('Error al cargar el carrito inicial:', error);
+      return [];
+    }
+  }); // Estado del carrito con carga inicial
+
+  const [isInitialized, setIsInitialized] = useState(false); // Flag para controlar la inicialización
+  const [notification, setNotification] = useState(null); // Estado para notificaciones
+  const [cartSidebarOpen, setCartSidebarOpen] = useState(false); // Estado del sidebar del carrito
+  const [favorites, setFavorites] = useState(() => {
+    // Cargar favoritos desde localStorage al inicializar
+    try {
+      const savedFavorites = localStorage.getItem('omnistyle-favorites');
+      return savedFavorites ? JSON.parse(savedFavorites) : [];
+    } catch (error) {
+      console.error('Error al cargar favoritos desde localStorage:', error);
+      return [];
+    }
+  }); // Estado de favoritos
+
+  // Función para navegar usando React Router en lugar del estado interno
+  const setPage = (page, productId = null) => {
+    switch (page) {
+      case PAGES.HOME:
+        navigate('/');
+        break;
+      case PAGES.PRODUCT:
+        if (productId) {
+          navigate(`/product/${productId}`);
+        }
+        break;
+      case PAGES.CART:
+        navigate('/cart');
+        break;
+      case PAGES.CHECKOUT:
+        navigate('/checkout');
+        break;
+      case PAGES.LOGIN:
+        navigate('/login');
+        break;
+      case PAGES.PROFILE:
+        navigate('/profile');
+        break;
+      case PAGES.ORDERS:
+        navigate('/orders');
+        break;
+      case PAGES.FAVORITES:
+        navigate('/favorites');
+        break;
+      case PAGES.SETTINGS:
+        navigate('/settings');
+        break;
+      default:
+        navigate('/');
+    }
+  };
 
   const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
+
+  // Función para obtener la clave del carrito específica del usuario
+  const getCartKey = useCallback((userId) => {
+    return userId ? `omnistyle-cart-user-${userId}` : 'omnistyle-cart-guest';
+  }, []);
+
+  // Función para cargar carrito del usuario
+  const loadUserCart = useCallback((userId) => {
+    try {
+      const cartKey = getCartKey(userId);
+      const savedCart = localStorage.getItem(cartKey);
+      return savedCart ? JSON.parse(savedCart) : [];
+    } catch (error) {
+      console.error('Error al cargar el carrito del usuario:', error);
+      return [];
+    }
+  }, [getCartKey]);
+
+  // Función para guardar carrito del usuario
+  const saveUserCart = useCallback((userId, cart) => {
+    try {
+      const cartKey = getCartKey(userId);
+      localStorage.setItem(cartKey, JSON.stringify(cart));
+    } catch (error) {
+      console.error('Error al guardar el carrito del usuario:', error);
+    }
+  }, [getCartKey]);
+
+  // Marcar como inicializado después de la primera carga
+  useEffect(() => {
+    setIsInitialized(true);
+  }, []);
+
+  // Cargar carrito cuando cambie el usuario (login/logout) - pero no en la inicialización
+  useEffect(() => {
+    if (isInitialized) {
+      const userCart = loadUserCart(user?.id);
+      setCartItems(userCart);
+    }
+  }, [user?.id, loadUserCart, isInitialized]);
+
+  // Guardar carrito en localStorage cada vez que cambie (vinculado al usuario)
+  useEffect(() => {
+    saveUserCart(user?.id, cartItems);
+  }, [cartItems, user?.id, saveUserCart]);
+
+  // Guardar usuario en localStorage cada vez que cambie
+  useEffect(() => {
+    try {
+      if (user) {
+        localStorage.setItem('omnistyle-user', JSON.stringify(user));
+      } else {
+        localStorage.removeItem('omnistyle-user');
+      }
+    } catch (error) {
+      console.error('Error al guardar usuario en localStorage:', error);
+    }
+  }, [user]);
+
+  // Guardar favoritos en localStorage cada vez que cambien
+  useEffect(() => {
+    try {
+      localStorage.setItem('omnistyle-favorites', JSON.stringify(favorites));
+    } catch (error) {
+      console.error('Error al guardar favoritos en localStorage:', error);
+    }
+  }, [favorites]);
+
+  // Migración única: mover carrito de la clave antigua a la nueva estructura
+  useEffect(() => {
+    const migrateOldCart = () => {
+      const oldCart = localStorage.getItem('omnistyle-cart');
+      if (oldCart) {
+        try {
+          // Si no hay usuario logueado, mover el carrito a la clave de invitado
+          const guestCartKey = getCartKey(null);
+          if (!localStorage.getItem(guestCartKey)) {
+            localStorage.setItem(guestCartKey, oldCart);
+          }
+          // Eliminar la clave antigua
+          localStorage.removeItem('omnistyle-cart');
+        } catch (error) {
+          console.error('Error al migrar carrito existente:', error);
+        }
+      }
+    };
+    
+    migrateOldCart();
+  }, [getCartKey]); // Solo ejecutar una vez al montar el componente
+
+
 
   // Carga inicial de catálogo
   useEffect(() => {
@@ -287,55 +2545,273 @@ export default function App() {
 
   const handleCategorySelect = (categoryId) => {
     setSelectedCategory(categoryId);
-    // Navegar a la página de catálogo si estamos en otra página
-    if (currentPage !== PAGES.CATALOG && currentPage !== PAGES.HOME) {
-      setCurrentPage(PAGES.CATALOG);
+    // Navegar a la página principal si estamos en otra página
+    if (location.pathname !== '/' && location.pathname !== '/catalog') {
+      navigate('/');
     }
   };
 
-  const renderPage = () => {
-    switch (currentPage) { // Se usa currentPage aquí
-      case PAGES.PRODUCT:
-        // Asegurarse de que selectedProduct tenga datos antes de renderizar
-        return selectedProduct ? <ProductDetailPage product={selectedProduct} /> : <p>Cargando producto...</p>;
-      case PAGES.LOGIN:
-        return <h2 className="text-2xl text-center py-20">Página de Login (PENDIENTE)</h2>;
-      case PAGES.CART:
-        return <h2 className="text-2xl text-center py-20">Página del Carrito (PENDIENTE)</h2>;
-      case PAGES.CATALOG: // CATALOG y HOME muestran lo mismo por ahora
-      case PAGES.HOME:
-      default:
-        return (
-          <HomePage
-            products={products}
-            loading={loading}
-            categories={categories}
-            onSelectCategory={handleCategorySelect} // Usamos la nueva función
-            setPage={setCurrentPage}
-            setSelectedProduct={setSelectedProduct}
-            // Pasamos el ID de la categoría seleccionada aquí
-            selectedCategoryId={selectedCategory}
-          />
-        );
+  // Funciones del carrito
+  const addToCart = (product, selectedColor, selectedSize, quantity = 1) => {
+    const cartItem = {
+      id: `${product.id}-${selectedColor}-${selectedSize}`,
+      productId: product.id,
+      name: product.name,
+      price: product.price,
+      color: selectedColor,
+      size: selectedSize,
+      quantity: quantity,
+      image: product.details?.find(d => d.color === selectedColor && d.size === selectedSize)?.image_url || product.details?.[0]?.image_url
+    };
+
+    const existingItemIndex = cartItems.findIndex(item => item.id === cartItem.id);
+    
+    if (existingItemIndex >= 0) {
+      // Si el item ya existe, actualizar cantidad
+      const updatedCart = [...cartItems];
+      updatedCart[existingItemIndex].quantity += quantity;
+      setCartItems(updatedCart);
+    } else {
+      // Si no existe, añadir nuevo item
+      setCartItems([...cartItems, cartItem]);
     }
+
+    // Mostrar notificación
+    setNotification({
+      title: '¡Producto añadido!',
+      message: 'El producto se ha añadido correctamente a tu carrito.',
+      product: {
+        name: product.name,
+        color: selectedColor,
+        size: selectedSize,
+        quantity: quantity,
+        image: cartItem.image
+      }
+    });
+  };
+
+  const getCartItemCount = () => {
+    return cartItems.reduce((count, item) => count + item.quantity, 0);
+  };
+
+  // Función para limpiar el carrito (útil para después de completar compra)
+  const clearCart = () => {
+    setCartItems([]);
+    // Limpiar el carrito del usuario actual de localStorage
+    const cartKey = getCartKey(user?.id);
+    localStorage.removeItem(cartKey);
+  };
+
+  // Función para cerrar sesión
+  const handleLogout = async () => {
+    const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
+    
+    try {
+      // Llamar al endpoint de logout si hay un token
+      if (user?.token) {
+        await fetch(`${API_URL}/api/logout`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${user.token}`,
+          },
+        });
+      }
+    } catch (error) {
+      console.error('Error during logout:', error);
+    } finally {
+      // Limpiar estado local independientemente del resultado de la API
+      setUser(null);
+      localStorage.removeItem('omnistyle-user');
+      setNotification({
+        title: '¡Hasta pronto!',
+        message: 'Has cerrado sesión correctamente.',
+        product: null
+      });
+      navigate('/');
+    }
+  };
+
+  // Funciones para manejar favoritos
+  const toggleFavorite = (productId) => {
+    setFavorites(prev => {
+      const isFavorite = prev.includes(productId);
+      const newFavorites = isFavorite 
+        ? prev.filter(id => id !== productId)
+        : [...prev, productId];
+      
+      // Mostrar notificación
+      setNotification({
+        title: isFavorite ? 'Eliminado de favoritos' : '¡Añadido a favoritos!',
+        message: isFavorite 
+          ? 'El producto se ha eliminado de tus favoritos.' 
+          : 'El producto se ha añadido a tus favoritos.',
+        product: null
+      });
+      
+      return newFavorites;
+    });
+  };
+
+  const isFavorite = (productId) => {
+    return favorites.includes(productId);
   };
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
-      <Navbar setPage={setCurrentPage} />
+      <Navbar 
+        setPage={setPage} 
+        cartItemCount={getCartItemCount()} 
+        user={user} 
+        onLogout={handleLogout}
+        onOpenCartSidebar={() => setCartSidebarOpen(true)}
+      />
+
+      {/* Sidebar del Carrito */}
+      <CartSidebar 
+        isOpen={cartSidebarOpen}
+        onClose={() => setCartSidebarOpen(false)}
+        cartItems={cartItems}
+        setCartItems={setCartItems}
+        setPage={setPage}
+      />
 
       {/* --- CORRECCIÓN DE ANCHO --- */}
       {/* Se han eliminado 'max-w-screen-xl' y 'mx-auto' para que ocupe todo el ancho */}
       <main className="flex-grow w-full py-6 sm:px-6 lg:px-8">
-        {renderPage()}
+        <Routes>
+          <Route path="/" element={
+            <HomePage
+              products={products}
+              loading={loading}
+              categories={categories}
+              onSelectCategory={handleCategorySelect}
+              setPage={setPage}
+              setSelectedProduct={setSelectedProduct}
+              selectedCategoryId={selectedCategory}
+            />
+          } />
+          <Route path="/product/:id" element={<ProductDetailPageWrapper />} />
+          <Route path="/cart" element={
+            <CartPage 
+              cartItems={cartItems} 
+              setCartItems={setCartItems} 
+              setPage={setPage} 
+              clearCart={clearCart} 
+            />
+          } />
+          <Route path="/checkout" element={
+            <CheckoutPage 
+              cartItems={cartItems} 
+              user={user} 
+              setPage={setPage} 
+              clearCart={clearCart} 
+              setNotification={setNotification} 
+            />
+          } />
+          <Route path="/login" element={
+            <LoginPage 
+              setPage={setPage} 
+              setNotification={setNotification} 
+              setUser={setUser} 
+            />
+          } />
+          <Route path="/profile" element={
+            user ? (
+              <ProfilePage 
+                user={user} 
+                setUser={setUser} 
+                setNotification={setNotification} 
+              />
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          } />
+          <Route path="/orders" element={
+            user ? <OrdersPage /> : <Navigate to="/login" replace />
+          } />
+          <Route path="/favorites" element={
+            <FavoritesPage 
+              favorites={favorites} 
+              allProducts={allProducts} 
+              toggleFavorite={toggleFavorite}
+              setPage={setPage}
+              setSelectedProduct={setSelectedProduct}
+            />
+          } />
+          <Route path="/settings" element={
+            user ? (
+              <SettingsPage 
+                handleLogout={handleLogout} 
+                setNotification={setNotification} 
+              />
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          } />
+        </Routes>
       </main>
 
       {/* Widget de Chat Flotante */}
       <ChatWidget />
 
+      {/* Notificación Toast */}
+      <Toast 
+        notification={notification} 
+        onClose={() => setNotification(null)} 
+      />
+
       <footer className="w-full text-center p-4 text-xs text-gray-500 border-t border-gray-200">
         &copy; {new Date().getFullYear()} OmniStyle - Desarrollado por Germán Peña Ruiz.
       </footer>
     </div>
+  );
+
+  // Componente wrapper para ProductDetailPage que obtiene el producto por ID de la URL
+  function ProductDetailPageWrapper() {
+    const { id } = useParams();
+    const navigate = useNavigate();
+    const productId = parseInt(id);
+    const product = allProducts.find(p => p.id === productId);
+
+    useEffect(() => {
+      if (product) {
+        setSelectedProduct(product);
+      }
+    }, [product]);
+
+    if (!product) {
+      return (
+        <div className="max-w-4xl mx-auto px-4 py-8 text-center">
+          <h1 className="text-2xl font-bold text-slate-800 mb-4">Producto no encontrado</h1>
+          <p className="text-slate-600 mb-6">El producto que buscas no existe o ha sido eliminado.</p>
+          <button 
+            onClick={() => navigate('/')}
+            className="bg-emerald-600 text-white px-6 py-3 rounded-lg hover:bg-emerald-700 transition-colors duration-300"
+          >
+            Volver al inicio
+          </button>
+        </div>
+      );
+    }
+
+    return (
+      <ProductDetailPage 
+        product={product} 
+        addToCart={addToCart} 
+        toggleFavorite={toggleFavorite}
+        isFavorite={isFavorite}
+      />
+    );
+  }
+}
+
+// Componente principal que envuelve todo con el Router
+export default function App() {
+  return (
+    <Router>
+      <AppContent />
+    </Router>
   );
 }

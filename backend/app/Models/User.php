@@ -13,6 +13,11 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
+/**
+ * @method \Laravel\Sanctum\NewAccessToken createToken(string $name, array $abilities = ['*'], \DateTimeInterface $expiresAt = null)
+ * @method \Illuminate\Database\Eloquent\Relations\MorphMany tokens()
+ * @method \Laravel\Sanctum\PersonalAccessToken currentAccessToken()
+ */
 class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
@@ -28,6 +33,9 @@ class User extends Authenticatable
         'email',
         'password',
         'role', // ¡Añadir este campo es crucial!
+        'phone',
+        'address', 
+        'birth_date',
     ];
 
     /**

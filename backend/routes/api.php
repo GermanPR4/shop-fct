@@ -10,10 +10,15 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductDetailController;
 use App\Http\Controllers\OrderItemController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\AuthController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-// NOTA: Los controladores 'Auth' (Login/Register) se crearán en la siguiente fase.
+// ----------------------------------------------------
+// AUTHENTICATION ROUTES
+// ----------------------------------------------------
+Route::post('/register', [AuthController::class, 'register']);
+Route::post('/login', [AuthController::class, 'login']);
 
 // ----------------------------------------------------
 // RUTAS PÚBLICAS (Catálogo y Lectura)
@@ -44,11 +49,10 @@ Route::middleware('web')->group(function () {
 // ----------------------------------------------------
 
 Route::middleware('auth:sanctum')->group(function () {
-    
-    // Información del Usuario Autenticado
-    Route::get('/user', function (Request $request) {
-        return $request->user();
-    });
+    // User profile and account management
+    Route::get('/user', [AuthController::class, 'user']);
+    Route::post('/logout', [AuthController::class, 'logout']);
+    Route::put('/profile', [AuthController::class, 'updateProfile']);
 
     // Gestión de Pedidos (Checkout y Historial)
     Route::post('/checkout', [OrderController::class, 'store']); 

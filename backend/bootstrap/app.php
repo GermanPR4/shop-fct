@@ -17,11 +17,10 @@ return Application::configure(basePath: dirname(__DIR__))
             'api/*',
         ]);
 
-        // Aquí puedes añadir o modificar otros middlewares globales si es necesario
-        // Ejemplo: Habilitar middleware de sesión para API (aunque lo hicimos en api.php)
-        // $middleware->api(prepend: [
-        //     \Illuminate\Session\Middleware\StartSession::class,
-        // ]);
+        // Habilitar CORS para rutas API
+        $middleware->api(append: [
+            \App\Http\Middleware\Cors::class,
+        ]);
     
     })
     ->withExceptions(function (Exceptions $exceptions) {
