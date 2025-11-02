@@ -24,9 +24,10 @@ const PAGES = {
 // --- COMPONENTES AUXILIARES ---
 
 // Navbar Mejorado con Diseño Moderno y Búsqueda Funcional
-const Navbar = ({ setPage, cartItemCount, user, onLogout, onOpenCartSidebar, onSearch }) => {
+const Navbar = ({ setPage, cartItemCount, user, onLogout, onOpenCartSidebar, onSearch, categories, selectedCategory, onCategorySelect }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [showMobileSearch, setShowMobileSearch] = useState(false);
+  const [showCategoriesDropdown, setShowCategoriesDropdown] = useState(false);
   const searchInputRef = useRef(null);
 
   const handleSearch = (e) => {
@@ -61,6 +62,20 @@ const Navbar = ({ setPage, cartItemCount, user, onLogout, onOpenCartSidebar, onS
     };
   }, []);
 
+  // Cerrar dropdown de categorías al hacer clic fuera
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (!event.target.closest('.categories-dropdown')) {
+        setShowCategoriesDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
   return (
     <nav className="bg-gradient-to-r from-white via-slate-50 to-white border-b border-slate-200/60 sticky top-0 z-50 shadow-lg backdrop-blur-sm">
     <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -78,15 +93,113 @@ const Navbar = ({ setPage, cartItemCount, user, onLogout, onOpenCartSidebar, onS
             <span>OmniStyle</span>
           </button>
           
-          <button className="hidden lg:flex items-center space-x-2 text-sm font-medium text-slate-700 hover:text-white bg-gradient-to-r from-slate-100 to-slate-200 hover:from-emerald-500 hover:to-teal-500 px-4 py-2.5 rounded-xl transition-all duration-300 shadow-sm hover:shadow-lg transform hover:scale-105 border border-slate-200 hover:border-emerald-400">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 transform transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h8M4 18h16" />
-            </svg>
-            <span>Categorías</span>
-            <svg className="h-4 w-4 transform transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-            </svg>
-          </button>
+          <div className="relative categories-dropdown">
+            <button 
+              onClick={() => setShowCategoriesDropdown(!showCategoriesDropdown)}
+              className="hidden lg:flex items-center space-x-2 text-sm font-medium text-slate-700 hover:text-white bg-gradient-to-r from-slate-100 to-slate-200 hover:from-emerald-500 hover:to-teal-500 px-4 py-2.5 rounded-xl transition-all duration-300 shadow-sm hover:shadow-lg transform hover:scale-105 border border-slate-200 hover:border-emerald-400"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 transform transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h8M4 18h16" />
+              </svg>
+              <span>{selectedCategory ? categories.find(cat => cat.id === selectedCategory)?.name || 'Categorías' : 'Categorías'}</span>
+              <svg className={`h-4 w-4 transform transition-transform duration-300 ${showCategoriesDropdown ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+
+            {/* Dropdown de Categorías */}
+            {showCategoriesDropdown && (
+              <div className="absolute left-0 mt-2 w-72 bg-white rounded-2xl shadow-2xl border border-slate-200/50 py-2 z-50 backdrop-blur-sm animate-in slide-in-from-top-2 duration-300">
+                {/* Header del dropdown */}
+                <div className="px-4 py-3 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-transparent">
+                  <h3 className="text-sm font-semibold text-slate-800 flex items-center">
+                    <svg className="w-4 h-4 mr-2 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                    </svg>
+                    Explora nuestras categorías
+                  </h3>
+                </div>
+
+                {/* Opción para mostrar todas las categorías */}
+                <button
+                  onClick={() => {
+                    onCategorySelect(null);
+                    setShowCategoriesDropdown(false);
+                    setPage(PAGES.CATALOG);
+                  }}
+                  className={`group flex items-center w-full px-4 py-3 text-sm transition-all duration-200 transform hover:translate-x-1 ${
+                    !selectedCategory 
+                      ? 'text-emerald-600 bg-gradient-to-r from-emerald-50 to-teal-50' 
+                      : 'text-slate-700 hover:text-emerald-600 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-teal-50'
+                  }`}
+                >
+                  <div className="w-8 h-8 bg-gradient-to-r from-emerald-100 to-teal-100 group-hover:from-emerald-200 group-hover:to-teal-200 rounded-lg flex items-center justify-center mr-3 transition-all duration-200">
+                    <svg className="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14-7l-7 7-7-7m14 18l-7-7-7 7" />
+                    </svg>
+                  </div>
+                  <div className="flex-1">
+                    <div className="font-medium">Todas las categorías</div>
+                    <div className="text-xs text-slate-500">Ver todos los productos</div>
+                  </div>
+                  {!selectedCategory && (
+                    <svg className="w-4 h-4 text-emerald-600" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                  )}
+                </button>
+
+                {/* Lista de categorías */}
+                <div className="max-h-64 overflow-y-auto">
+                  {categories && categories.length > 0 ? (
+                    categories.map((category) => (
+                      <button
+                        key={category.id}
+                        onClick={() => {
+                          onCategorySelect(category.id);
+                          setShowCategoriesDropdown(false);
+                          setPage(PAGES.CATALOG);
+                        }}
+                        className={`group flex items-center w-full px-4 py-3 text-sm transition-all duration-200 transform hover:translate-x-1 ${
+                          selectedCategory === category.id 
+                            ? 'text-emerald-600 bg-gradient-to-r from-emerald-50 to-teal-50' 
+                            : 'text-slate-700 hover:text-emerald-600 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-teal-50'
+                        }`}
+                      >
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center mr-3 transition-all duration-200 ${
+                          selectedCategory === category.id
+                            ? 'bg-gradient-to-r from-emerald-200 to-teal-200'
+                            : 'bg-slate-100 group-hover:bg-gradient-to-r group-hover:from-emerald-100 group-hover:to-teal-100'
+                        }`}>
+                          <span className="text-xs font-bold text-slate-600 group-hover:text-emerald-600">
+                            {category.name.charAt(0).toUpperCase()}
+                          </span>
+                        </div>
+                        <div className="flex-1 text-left">
+                          <div className="font-medium">{category.name}</div>
+                          <div className="text-xs text-slate-500">
+                            {category.description || 'Explora esta categoría'}
+                          </div>
+                        </div>
+                        {selectedCategory === category.id && (
+                          <svg className="w-4 h-4 text-emerald-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                        )}
+                      </button>
+                    ))
+                  ) : (
+                    <div className="px-4 py-6 text-center">
+                      <svg className="mx-auto w-8 h-8 text-slate-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                      </svg>
+                      <p className="text-sm text-slate-500">No hay categorías disponibles</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Barra de Búsqueda Funcional Mejorada */}
@@ -2931,6 +3044,9 @@ function AppContent() {
         onLogout={handleLogout}
         onOpenCartSidebar={() => setCartSidebarOpen(true)}
         onSearch={handleSearch}
+        categories={categories}
+        selectedCategory={selectedCategory}
+        onCategorySelect={handleCategorySelect}
       />
 
       {/* Sidebar del Carrito */}
