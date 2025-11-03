@@ -248,16 +248,7 @@ Eres OmniStyle AI, el asistente de moda oficial de la tienda OmniStyle. REGLAS C
         $processedMessage = strtolower(preg_replace('/[¿?¡!,.]/', '', $message));
         $words = explode(' ', $processedMessage);
         
-        $stopWords = [
-            'un', 'una', 'unos', 'unas', 'el', 'la', 'los', 'las', 'de', 'del', 'a', 'ante', 
-            'bajo', 'con', 'contra', 'desde', 'en', 'entre', 'hacia', 'hasta', 'para', 'por', 
-            'según', 'sin', 'sobre', 'tras', 'quiero', 'busco', 'necesito', 'algo', 'ropa', 
-            'prenda', 'dame', 'ver', 'mostrar', 'tienes', 'hay', 'puedes', 'ayudarme', 'me', 
-            'mi', 'tu', 'su', 'nos', 'os', 'le', 'les', 'se', 'que', 'como', 'donde', 'cuando',
-            'hola', 'gracias', 'por favor', 'si', 'no', 'bien', 'mal', 'muy', 'más', 'menos'
-        ];
-        
-        // Palabras clave específicas de moda y productos
+        // Solo extraer palabras clave de moda/productos específicas
         $fashionKeywords = [
             'vestido', 'vestidos', 'camisa', 'camisas', 'pantalon', 'pantalones', 'falda', 'faldas',
             'zapatos', 'zapatillas', 'botas', 'sandalia', 'sandalias', 'chaqueta', 'chaquetas',
@@ -266,20 +257,21 @@ Eres OmniStyle AI, el asistente de moda oficial de la tienda OmniStyle. REGLAS C
             'gorro', 'gorros', 'sombrero', 'sombreros', 'bolso', 'bolsos', 'mochila', 'mochilas',
             'negro', 'blanco', 'rojo', 'azul', 'verde', 'amarillo', 'rosa', 'gris', 'marron',
             'xs', 's', 'm', 'l', 'xl', 'xxl', 'talla', 'color', 'casual', 'formal', 'deportivo',
-            'hombre', 'mujer', 'unisex', 'invierno', 'verano', 'primavera', 'otoño'
+            'hombre', 'mujer', 'unisex', 'invierno', 'verano', 'primavera', 'otoño', 'nike', 'adidas',
+            'bota', 'calzado', 'ropa'
         ];
         
-        $keywords = array_filter($words, function($word) use ($stopWords, $fashionKeywords) {
-            return !in_array($word, $stopWords) && 
-                   strlen($word) > 2 && 
-                   (in_array($word, $fashionKeywords) || !in_array($word, $stopWords));
+        // Filtrar solo palabras que están en nuestra lista de moda
+        $keywords = array_filter($words, function($word) use ($fashionKeywords) {
+            return in_array($word, $fashionKeywords);
         });
         
         $result = array_values(array_unique($keywords));
         
         Log::info('Palabras clave extraídas del mensaje:', [
             'mensaje' => $message,
-            'keywords' => $result
+            'palabras_originales' => $words,
+            'keywords_filtradas' => $result
         ]);
         
         return $result;
@@ -296,37 +288,66 @@ Eres OmniStyle AI, el asistente de moda oficial de la tienda OmniStyle. REGLAS C
         $query = Product::query()->with(['details', 'categories']);
         $query->where('is_active', true);
 
-        // Buscar por cada palabra clave con diferentes variaciones
-        foreach ($keywords as $keyword) {
-            $singular = rtrim($keyword, 's');
-            $plural = $keyword . (substr($keyword, -1) !== 's' ? 's' : '');
-            
-            $query->where(function ($q) use ($keyword, $singular, $plural) {
-                // Búsqueda en nombre del producto
-                $q->where('products.name', 'LIKE', "%{$keyword}%")
-                  ->orWhere('products.name', 'LIKE', "%{$singular}%")
-                  ->orWhere('products.name', 'LIKE', "%{$plural}%")
-                  
-                  // Búsqueda en descripciones
-                  ->orWhere('products.short_description', 'LIKE', "%{$keyword}%")
-                  ->orWhere('products.long_description', 'LIKE', "%{$keyword}%")
-                  
-                  // Búsqueda en categorías
-                  ->orWhereHas('categories', function($cq) use ($keyword, $singular, $plural) {
-                      $cq->where('name', 'LIKE', "%{$keyword}%")
-                         ->orWhere('name', 'LIKE', "%{$singular}%")
-                         ->orWhere('name', 'LIKE', "%{$plural}%");
-                  })
-                  
-                  // Búsqueda en detalles (colores y tallas)
-                  ->orWhereHas('details', function ($dq) use ($keyword, $singular, $plural) {
-                      $dq->where('color', 'LIKE', "%{$keyword}%")
-                         ->orWhere('color', 'LIKE', "%{$singular}%")
-                         ->orWhere('color', 'LIKE', "%{$plural}%")
-                         ->orWhere('size', 'LIKE', "%{$keyword}%");
-                  });
-            });
+        // Filtrar solo palabras clave relevantes para productos
+        $productKeywords = array_filter($keywords, function($keyword) {
+            $fashionKeywords = [
+                'vestido', 'vestidos', 'camisa', 'camisas', 'pantalon', 'pantalones', 'falda', 'faldas',
+                'zapatos', 'zapatillas', 'botas', 'sandalia', 'sandalias', 'chaqueta', 'chaquetas',
+                'abrigo', 'abrigos', 'jersey', 'jerseys', 'sudadera', 'sudaderas', 'camiseta', 'camisetas',
+                'jeans', 'vaqueros', 'short', 'shorts', 'blazer', 'blazers', 'bufanda', 'bufandas',
+                'gorro', 'gorros', 'sombrero', 'sombreros', 'bolso', 'bolsos', 'mochila', 'mochilas',
+                'negro', 'blanco', 'rojo', 'azul', 'verde', 'amarillo', 'rosa', 'gris', 'marron',
+                'xs', 's', 'm', 'l', 'xl', 'xxl', 'casual', 'formal', 'deportivo',
+                'hombre', 'mujer', 'unisex', 'invierno', 'verano', 'primavera', 'otoño'
+            ];
+            return in_array(strtolower($keyword), $fashionKeywords);
+        });
+
+        Log::info('Palabras clave filtradas para búsqueda:', $productKeywords);
+
+        if (empty($productKeywords)) {
+            Log::info('No se encontraron palabras clave relevantes para productos');
+            return collect();
         }
+
+        // Construir la búsqueda con OR entre las diferentes palabras clave
+        $query->where(function($q) use ($productKeywords) {
+            $first = true;
+            
+            foreach ($productKeywords as $keyword) {
+                $singular = rtrim($keyword, 's');
+                $plural = $keyword . (substr($keyword, -1) !== 's' ? 's' : '');
+                
+                $searchMethod = $first ? 'where' : 'orWhere';
+                $first = false;
+                
+                $q->{$searchMethod}(function ($subQ) use ($keyword, $singular, $plural) {
+                    // Búsqueda en nombre del producto
+                    $subQ->where('products.name', 'LIKE', "%{$keyword}%")
+                         ->orWhere('products.name', 'LIKE', "%{$singular}%")
+                         ->orWhere('products.name', 'LIKE', "%{$plural}%")
+                         
+                         // Búsqueda en descripciones
+                         ->orWhere('products.short_description', 'LIKE', "%{$keyword}%")
+                         ->orWhere('products.long_description', 'LIKE', "%{$keyword}%")
+                         
+                         // Búsqueda en categorías
+                         ->orWhereHas('categories', function($cq) use ($keyword, $singular, $plural) {
+                             $cq->where('name', 'LIKE', "%{$keyword}%")
+                                ->orWhere('name', 'LIKE', "%{$singular}%")
+                                ->orWhere('name', 'LIKE', "%{$plural}%");
+                         })
+                         
+                         // Búsqueda en detalles (colores y tallas)
+                         ->orWhereHas('details', function ($dq) use ($keyword, $singular, $plural) {
+                             $dq->where('color', 'LIKE', "%{$keyword}%")
+                                ->orWhere('color', 'LIKE', "%{$singular}%")
+                                ->orWhere('color', 'LIKE', "%{$plural}%")
+                                ->orWhere('size', 'LIKE', "%{$keyword}%");
+                         });
+                });
+            }
+        });
         
         $products = $query->distinct()->limit(5)->get();
         
