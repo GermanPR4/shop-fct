@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
-// Mapeo de iconos y colores para las categorías
+// Reutilizamos la función de estilos de PopularCategories
 const getCategoryStyle = (categoryName) => {
     const name = categoryName.toLowerCase();
     
@@ -10,9 +10,9 @@ const getCategoryStyle = (categoryName) => {
         'casual': { icon: '👕', bgColor: 'bg-gradient-to-br from-orange-800/30 to-orange-700/20 hover:from-orange-700/40 hover:to-orange-600/30 border-orange-600/30' },
         'ropa casual': { icon: '👕', bgColor: 'bg-gradient-to-br from-orange-800/30 to-orange-700/20 hover:from-orange-700/40 hover:to-orange-600/30 border-orange-600/30' },
         'deportivo': { icon: '⚽', bgColor: 'bg-gradient-to-br from-red-800/30 to-red-700/20 hover:from-red-700/40 hover:to-red-600/30 border-red-600/30' },
-        'deporte': { icon: '�️', bgColor: 'bg-gradient-to-br from-red-800/30 to-red-700/20 hover:from-red-700/40 hover:to-red-600/30 border-red-600/30' },
+        'deporte': { icon: '🏃‍♂️', bgColor: 'bg-gradient-to-br from-red-800/30 to-red-700/20 hover:from-red-700/40 hover:to-red-600/30 border-red-600/30' },
         'zapatillas': { icon: '👟', bgColor: 'bg-gradient-to-br from-emerald-800/30 to-emerald-700/20 hover:from-emerald-700/40 hover:to-emerald-600/30 border-emerald-600/30' },
-        'zapatos': { icon: '�', bgColor: 'bg-gradient-to-br from-emerald-800/30 to-emerald-700/20 hover:from-emerald-700/40 hover:to-emerald-600/30 border-emerald-600/30' },
+        'zapatos': { icon: '👞', bgColor: 'bg-gradient-to-br from-emerald-800/30 to-emerald-700/20 hover:from-emerald-700/40 hover:to-emerald-600/30 border-emerald-600/30' },
         'calzado': { icon: '🥿', bgColor: 'bg-gradient-to-br from-emerald-800/30 to-emerald-700/20 hover:from-emerald-700/40 hover:to-emerald-600/30 border-emerald-600/30' },
         'invierno': { icon: '❄️', bgColor: 'bg-gradient-to-br from-cyan-800/30 to-cyan-700/20 hover:from-cyan-700/40 hover:to-cyan-600/30 border-cyan-600/30' },
         'abrigos': { icon: '🧥', bgColor: 'bg-gradient-to-br from-cyan-800/30 to-cyan-700/20 hover:from-cyan-700/40 hover:to-cyan-600/30 border-cyan-600/30' },
@@ -54,54 +54,99 @@ const getCategoryStyle = (categoryName) => {
     return { icon: '🏷️', bgColor: 'bg-gradient-to-br from-gray-700/30 to-gray-600/20 hover:from-gray-600/40 hover:to-gray-500/30 border-gray-500/30' };
 };
 
-const PopularCategories = ({ categories, onSelectCategory }) => {
+const AllCategoriesPage = ({ categories, onSelectCategory }) => {
     const navigate = useNavigate();
-    
-    // Tomar las primeras 6 categorías como populares, o todas si hay menos de 6
-    const popularCategories = categories ? categories.slice(0, 6) : [];
-    
-    // No mostrar nada si no hay categorías
-    if (!categories || categories.length === 0) {
-        return null;
-    }
-    
-    const handleViewAll = () => {
-        console.log('PopularCategories - Ver Todas clicked');
-        // Navegar a la página de todas las categorías
-        navigate('/categories');
+
+    const handleCategoryClick = (categoryId) => {
+        if (onSelectCategory) {
+            onSelectCategory(categoryId);
+        }
+        // Navegar al catálogo con la categoría seleccionada
+        navigate('/', { state: { selectedCategory: categoryId } });
     };
-    
-    return (
-        <div className="mb-12">
-            <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold text-white">Explora Categorías Populares</h2>
-                <button 
-                    onClick={handleViewAll}
-                    className="group text-sm font-medium text-emerald-400 hover:text-emerald-300 transition-all duration-200 flex items-center space-x-2 bg-emerald-400/10 hover:bg-emerald-400/20 px-3 py-2 rounded-lg border border-emerald-400/30 hover:border-emerald-400/50"
-                >
-                    <span>Ver Todas</span>
-                    <svg className="w-4 h-4 transform group-hover:translate-x-1 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-                    </svg>
-                </button>
-            </div>
-            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-4">
-                {popularCategories.map((category) => {
-                    const categoryStyle = getCategoryStyle(category.name);
-                    return (
+
+    const handleGoBack = () => {
+        navigate(-1);
+    };
+
+    if (!categories || categories.length === 0) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 px-4 py-8">
+                <div className="max-w-7xl mx-auto">
+                    <div className="flex items-center justify-between mb-8">
                         <button
-                            key={category.id}
-                            onClick={() => onSelectCategory ? onSelectCategory(category.id) : null}
-                            className={`flex flex-col items-center p-4 rounded-2xl aspect-square justify-center text-center transition-all duration-300 transform hover:scale-105 hover:shadow-2xl border-2 ${categoryStyle.bgColor}`}
+                            onClick={handleGoBack}
+                            className="flex items-center space-x-2 text-gray-400 hover:text-white transition-colors duration-200"
                         >
-                            <span className="text-4xl mb-2">{categoryStyle.icon}</span>
-                            <span className="text-sm font-medium text-gray-200">{category.name}</span>
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
+                            </svg>
+                            <span>Volver</span>
                         </button>
-                    );
-                })}
+                        <h1 className="text-3xl font-bold text-white">Todas las Categorías</h1>
+                        <div></div> {/* Spacer para centrar el título */}
+                    </div>
+                    
+                    <div className="text-center py-16">
+                        <div className="text-6xl mb-4">📂</div>
+                        <p className="text-xl text-gray-400">No hay categorías disponibles</p>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 px-4 py-8">
+            <div className="max-w-7xl mx-auto">
+                {/* Header */}
+                <div className="flex items-center justify-between mb-8">
+                    <button
+                        onClick={handleGoBack}
+                        className="flex items-center space-x-2 text-gray-400 hover:text-white transition-colors duration-200"
+                    >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
+                        </svg>
+                        <span>Volver</span>
+                    </button>
+                    <h1 className="text-3xl font-bold text-white">Todas las Categorías</h1>
+                    <div></div> {/* Spacer para centrar el título */}
+                </div>
+
+                {/* Contador de categorías */}
+                <div className="mb-8">
+                    <p className="text-gray-400 text-center">
+                        {categories.length} {categories.length === 1 ? 'categoría disponible' : 'categorías disponibles'}
+                    </p>
+                </div>
+
+                {/* Grid de categorías */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
+                    {categories.map((category) => {
+                        const categoryStyle = getCategoryStyle(category.name);
+                        return (
+                            <button
+                                key={category.id}
+                                onClick={() => handleCategoryClick(category.id)}
+                                className={`flex flex-col items-center p-6 rounded-2xl aspect-square justify-center text-center transition-all duration-300 transform hover:scale-105 hover:shadow-2xl border-2 ${categoryStyle.bgColor}`}
+                            >
+                                <span className="text-5xl mb-3">{categoryStyle.icon}</span>
+                                <span className="text-sm font-medium text-gray-200 leading-tight">{category.name}</span>
+                            </button>
+                        );
+                    })}
+                </div>
+
+                {/* Información adicional */}
+                <div className="mt-12 text-center">
+                    <p className="text-gray-500 text-sm">
+                        Haz clic en cualquier categoría para ver los productos disponibles
+                    </p>
+                </div>
             </div>
         </div>
     );
 };
 
-export default PopularCategories;
+export default AllCategoriesPage;

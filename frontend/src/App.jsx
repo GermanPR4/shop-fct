@@ -5,6 +5,8 @@ import HeroSection from './components/HeroSection.jsx';
 import PopularCategories from './components/PopularCategories.jsx';
 import ChatWidget from './components/ChatWidget.jsx';
 import CategoryFilter from './components/CategoryFilter.jsx';
+import AllCategoriesPage from './components/AllCategoriesPage.jsx';
+import AllProductsPage from './components/AllProductsPage.jsx';
 
 // --- CONFIGURACIÓN DE NAVEGACIÓN ---
 const PAGES = {
@@ -754,7 +756,18 @@ const HomePage = ({ products, loading, categories, onSelectCategory, setPage, se
     <div className="mb-12">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-white">Las Mejores Ofertas Para Ti</h2>
-        <button className="text-sm font-medium text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 px-4 py-2 rounded-lg transition-all duration-300">Ver Todas &rarr;</button>
+        <button 
+          onClick={() => {
+            console.log('Ofertas - Ver Todas clicked');
+            onSelectCategory(null);
+          }}
+          className="group text-sm font-medium text-emerald-400 hover:text-emerald-300 transition-all duration-200 flex items-center space-x-2 bg-emerald-400/10 hover:bg-emerald-400/20 px-3 py-2 rounded-lg border border-emerald-400/30 hover:border-emerald-400/50"
+        >
+          <span>Ver Todas</span>
+          <svg className="w-4 h-4 transform group-hover:translate-x-1 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {loading ? (
@@ -810,25 +823,49 @@ const ProductDetailPage = ({ product, addToCart, toggleFavorite, isFavorite }) =
     <div className="p-4 sm:p-8 flex flex-col md:flex-row gap-8 max-w-5xl mx-auto bg-gray-800 rounded-lg shadow-md border border-gray-700">
       {/* Columna Izquierda: Imágenes */}
       <div className="md:w-1/2">
-        <img src={currentDetail?.image_url || 'https://placehold.co/600x600/E5E7EB/4B5563?text=OmniStyle'} alt={product.name} className="w-full rounded-lg shadow-lg mb-4 aspect-square object-cover" />
-        <div className="flex space-x-2 overflow-x-auto">
+        <div className="relative group">
+          <img 
+            src={currentDetail?.image_url || 'https://placehold.co/600x600/374151/9CA3AF?text=OmniStyle'} 
+            alt={product.name} 
+            className="w-full rounded-2xl shadow-2xl mb-6 aspect-square object-cover border border-gray-700 group-hover:shadow-emerald-500/20 transition-all duration-300" 
+          />
+          <div className="absolute top-4 left-4 bg-emerald-500 text-white px-3 py-1 rounded-full text-xs font-semibold shadow-lg">
+            ✨ Nuevo
+          </div>
+        </div>
+        
+        <div className="flex space-x-3 overflow-x-auto pb-2">
           {/* Muestra miniaturas únicas por color */}
           {[...new Map(product.details.map(item => [item['color'], item])).values()].map(detail => (
-            <img key={detail.id} src={detail.image_url || 'https://placehold.co/100x100/E5E7EB/4B5563?text=Var'} alt={`${product.name} ${detail.color}`} className={`w-16 h-16 rounded object-cover cursor-pointer border-2 ${selectedColor === detail.color ? 'border-indigo-500' : 'border-transparent hover:border-gray-300'}`} onClick={() => setSelectedColor(detail.color)} />
+            <div key={detail.id} className="relative flex-shrink-0">
+              <img 
+                src={detail.image_url || 'https://placehold.co/100x100/374151/9CA3AF?text=Var'} 
+                alt={`${product.name} ${detail.color}`} 
+                className={`w-20 h-20 rounded-xl object-cover cursor-pointer border-3 transition-all duration-300 hover:scale-110 ${selectedColor === detail.color ? 'border-emerald-400 shadow-lg shadow-emerald-400/50' : 'border-gray-600 hover:border-emerald-400/70'}`} 
+                onClick={() => setSelectedColor(detail.color)} 
+              />
+              {selectedColor === detail.color && (
+                <div className="absolute -top-1 -right-1 w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center">
+                  <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                  </svg>
+                </div>
+              )}
+            </div>
           ))}
         </div>
       </div>
 
       {/* Columna Derecha: Información y Compra */}
       <div className="md:w-1/2">
-        <div className="flex items-start justify-between mb-2">
-          <h1 className="text-3xl font-bold text-gray-900">{product.name}</h1>
+        <div className="flex items-start justify-between mb-3">
+          <h1 className="text-3xl font-bold text-white leading-tight">{product.name}</h1>
           <button
             onClick={() => toggleFavorite(product.id)}
-            className="p-2 rounded-full hover:bg-slate-100 transition-colors duration-300"
+            className="p-2 rounded-full hover:bg-gray-700 transition-all duration-300 group"
           >
             <svg 
-              className={`w-6 h-6 ${isFavorite(product.id) ? 'text-red-500 fill-current' : 'text-slate-400'}`} 
+              className={`w-6 h-6 transition-colors duration-300 ${isFavorite(product.id) ? 'text-red-400 fill-current' : 'text-gray-400 group-hover:text-red-400'}`} 
               fill={isFavorite(product.id) ? 'currentColor' : 'none'} 
               stroke="currentColor" 
               viewBox="0 0 24 24"
@@ -838,28 +875,42 @@ const ProductDetailPage = ({ product, addToCart, toggleFavorite, isFavorite }) =
           </button>
         </div>
         <div className="flex items-center mb-4">
-          <span className="text-xs text-yellow-500">⭐⭐⭐⭐⭐</span> <span className="text-xs text-gray-500 ml-1">(50)</span>
+          <div className="flex items-center bg-yellow-500/20 px-2 py-1 rounded-lg">
+            <span className="text-sm text-yellow-400">⭐⭐⭐⭐⭐</span> 
+            <span className="text-sm text-gray-300 ml-2">(50 reseñas)</span>
+          </div>
         </div>
-        <p className="text-3xl font-semibold text-emerald-600 mb-6">{product.price.toFixed(2)}€</p>
-        <p className="text-gray-600 mb-6">{product.short_description}</p>
+        <div className="mb-6">
+          <p className="text-4xl font-bold text-emerald-400 mb-2">{product.price.toFixed(2)}€</p>
+          <p className="text-sm text-gray-500 line-through">29.99€</p>
+        </div>
+        <div className="bg-gray-700/50 rounded-lg p-4 mb-6">
+          <p className="text-gray-200 leading-relaxed">{product.short_description}</p>
+        </div>
 
         {/* Selector de Color */}
         <div className="mb-6">
-          <h3 className="text-sm font-medium text-gray-900 mb-2">Color: <span className="font-semibold">{selectedColor}</span></h3>
-          <div className="flex space-x-2">
+          <h3 className="text-lg font-semibold text-white mb-3">Color: <span className="text-emerald-400">{selectedColor}</span></h3>
+          <div className="flex space-x-3">
             {availableColors.map(color => (
-              <button key={color} onClick={() => setSelectedColor(color)} className={`w-8 h-8 rounded-full border-2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-all duration-300 hover:scale-110 ${selectedColor === color ? 'border-emerald-600 ring-2 ring-emerald-300 shadow-lg' : 'border-slate-300 hover:border-emerald-400'}`} style={{ backgroundColor: color.toLowerCase() }} title={color}></button>
+              <button key={color} onClick={() => setSelectedColor(color)} className={`w-10 h-10 rounded-xl border-3 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-400 transition-all duration-300 hover:scale-110 shadow-lg ${selectedColor === color ? 'border-emerald-400 ring-2 ring-emerald-400/50 shadow-emerald-400/30' : 'border-gray-600 hover:border-emerald-400/70'}`} style={{ backgroundColor: color.toLowerCase() }} title={color}>
+                {selectedColor === color && (
+                  <svg className="w-5 h-5 text-white mx-auto" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                  </svg>
+                )}
+              </button>
             ))}
           </div>
         </div>
 
         {/* Selector de Talla */}
-        <div className="mb-6">
-          <h3 className="text-sm font-medium text-gray-900 mb-2">Talla: <span className="font-semibold">{selectedSize}</span></h3>
-          <div className="flex flex-wrap gap-2">
+        <div className="mb-8">
+          <h3 className="text-lg font-semibold text-white mb-3">Talla: <span className="text-emerald-400">{selectedSize}</span></h3>
+          <div className="grid grid-cols-4 gap-3">
             {/* Mostrar solo las tallas disponibles para el color seleccionado */}
             {availableSizes.map(size => (
-              <button key={size} onClick={() => setSelectedSize(size)} className={`px-4 py-2 border rounded-lg text-sm font-medium transition-all duration-300 ${selectedSize === size ? 'bg-emerald-600 text-white border-emerald-600 shadow-md' : 'bg-gray-700 text-white border-gray-600 hover:bg-emerald-700 hover:border-emerald-500'}`}>
+              <button key={size} onClick={() => setSelectedSize(size)} className={`py-3 px-4 border-2 rounded-xl text-sm font-semibold transition-all duration-300 hover:scale-105 ${selectedSize === size ? 'bg-emerald-600 text-white border-emerald-600 shadow-lg shadow-emerald-600/30' : 'bg-gray-700 text-white border-gray-600 hover:bg-emerald-700/20 hover:border-emerald-500'}`}>
                 {size}
               </button>
             ))}
@@ -867,40 +918,68 @@ const ProductDetailPage = ({ product, addToCart, toggleFavorite, isFavorite }) =
         </div>
 
         {/* Cantidad y Añadir al Carrito */}
-        <div className="flex items-center space-x-4 mb-6">
-          <div className="flex items-center border border-slate-300 rounded-lg overflow-hidden">
-            <button 
-              onClick={() => setQuantity(Math.max(1, quantity - 1))}
-              className="px-3 py-2 text-slate-600 hover:bg-slate-100 disabled:opacity-50 transition-colors duration-300"
-              disabled={quantity <= 1}
-            >
-              -
-            </button>
-            <span className="px-4 py-2 font-medium text-white">{quantity}</span>
-            <button 
-              onClick={() => setQuantity(quantity + 1)}
-              className="px-3 py-2 text-slate-600 hover:bg-slate-100 transition-colors duration-300"
-            >
-              +
-            </button>
+        <div className="space-y-4 mb-8">
+          <div className="flex items-center justify-between">
+            <span className="text-lg font-semibold text-white">Cantidad:</span>
+            <div className="flex items-center bg-gray-700 rounded-xl overflow-hidden shadow-lg">
+              <button 
+                onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                className="px-4 py-3 text-white hover:bg-gray-600 disabled:opacity-50 transition-all duration-300 hover:scale-110"
+                disabled={quantity <= 1}
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 12H4" />
+                </svg>
+              </button>
+              <span className="px-6 py-3 font-bold text-white bg-gray-800 min-w-[3rem] text-center">{quantity}</span>
+              <button 
+                onClick={() => setQuantity(quantity + 1)}
+                className="px-4 py-3 text-white hover:bg-gray-600 transition-all duration-300 hover:scale-110"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+                </svg>
+              </button>
+            </div>
           </div>
+          
           <button 
             onClick={() => {
               if (currentDetail && currentDetail.stock > 0) {
                 addToCart(product, selectedColor, selectedSize, quantity);
               }
             }}
-            className="flex-1 bg-emerald-600 text-white py-3 rounded-lg font-semibold hover:bg-emerald-700 active:bg-emerald-800 transition-all duration-300 shadow-md hover:shadow-lg disabled:opacity-75" 
+            className="w-full bg-gradient-to-r from-emerald-600 to-green-600 text-white py-4 rounded-xl font-bold text-lg hover:from-emerald-700 hover:to-green-700 active:from-emerald-800 active:to-green-800 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 disabled:opacity-75 disabled:cursor-not-allowed transform" 
             disabled={!currentDetail || currentDetail.stock <= 0}
           >
-            {currentDetail && currentDetail.stock > 0 ? 'Añadir al Carrito' : 'Agotado'}
+            {currentDetail && currentDetail.stock > 0 ? '🛒 Añadir al Carrito' : '❌ Agotado'}
           </button>
         </div>
 
-        {/* Acordeones */}
-        <div className="border-t pt-4">
-          <h4 className="font-medium mb-1">Descripción</h4>
-          <p className="text-sm text-gray-600">{product.long_description || product.short_description}</p>
+        {/* Información adicional */}
+        <div className="border-t border-gray-700 pt-6">
+          <div className="space-y-4">
+            <div className="bg-gray-700/30 rounded-xl p-4">
+              <h4 className="text-lg font-semibold text-white mb-3 flex items-center">
+                <svg className="w-5 h-5 mr-2 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Descripción del Producto
+              </h4>
+              <p className="text-gray-200 leading-relaxed">{product.long_description || product.short_description}</p>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-gray-700/30 rounded-xl p-4">
+                <h5 className="font-semibold text-emerald-400 mb-2">📦 Envío Gratis</h5>
+                <p className="text-sm text-gray-300">En pedidos superiores a 50€</p>
+              </div>
+              <div className="bg-gray-700/30 rounded-xl p-4">
+                <h5 className="font-semibold text-emerald-400 mb-2">↩️ Devoluciones</h5>
+                <p className="text-sm text-gray-300">30 días para cambios</p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -2903,6 +2982,7 @@ function AppContent() {
 
 
   const handleCategorySelect = (categoryId) => {
+    console.log('handleCategorySelect called with:', categoryId);
     setSelectedCategory(categoryId);
     // Navegar a la página principal si estamos en otra página
     if (location.pathname !== '/' && location.pathname !== '/catalog') {
@@ -3121,6 +3201,21 @@ function AppContent() {
             ) : (
               <Navigate to="/login" replace />
             )
+          } />
+          <Route path="/categories" element={
+            <AllCategoriesPage 
+              categories={categories} 
+              onSelectCategory={handleCategorySelect}
+            />
+          } />
+          <Route path="/products" element={
+            <AllProductsPage 
+              products={products}
+              setSelectedProduct={setSelectedProduct}
+              addToCart={addToCart}
+              toggleFavorite={toggleFavorite}
+              favorites={favorites}
+            />
           } />
         </Routes>
       </main>
