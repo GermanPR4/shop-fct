@@ -26,8 +26,9 @@ const ChatWidget = () => {
 
     // Función para ver producto completo
     const handleViewProduct = (productId) => {
-        // Abrir la página del producto en una nueva pestaña
-        window.open(`http://localhost:5173/product/${productId}`, '_blank');
+        // Usar la URL base actual para abrir la página del producto
+        const baseUrl = window.location.origin;
+        window.open(`${baseUrl}/product/${productId}`, '_blank');
         
         // Añadir mensaje informativo al chat
         setMessages(prev => [...prev, { 
