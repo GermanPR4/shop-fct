@@ -7,6 +7,8 @@ use App\Models\AiMessage;
 use App\Models\Product;
 use App\Models\Category;
 use App\Models\ProductDetail;
+use App\Models\ShoppingCart;
+use App\Models\CartItem;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 use Illuminate\Http\Request;
@@ -456,7 +458,7 @@ Eres OmniStyle AI, el asistente de moda oficial de la tienda OmniStyle. REGLAS C
             }
 
             // Obtener o crear el carrito
-            $cartQuery = \App\Models\ShoppingCart::query();
+            $cartQuery = ShoppingCart::query();
             
             if ($userId) {
                 $cart = $cartQuery->where('user_id', $userId)->first();
@@ -470,7 +472,7 @@ Eres OmniStyle AI, el asistente de moda oficial de la tienda OmniStyle. REGLAS C
             }
 
             if (!$cart) {
-                $cart = \App\Models\ShoppingCart::create([
+                $cart = ShoppingCart::create([
                     'user_id' => $userId,
                     'session_token' => $sessionToken,
                 ]);
@@ -480,7 +482,7 @@ Eres OmniStyle AI, el asistente de moda oficial de la tienda OmniStyle. REGLAS C
             $cartItemId = $productId . '-' . ($color ?? 'default') . '-' . ($size ?? 'default');
 
             // Verificar si ya existe este item en el carrito
-            $existingItem = \App\Models\CartItem::where('shopping_cart_id', $cart->id)
+            $existingItem = CartItem::where('shopping_cart_id', $cart->id)
                 ->where('product_id', $productId)
                 ->where('color', $color)
                 ->where('size', $size)
@@ -507,7 +509,7 @@ Eres OmniStyle AI, el asistente de moda oficial de la tienda OmniStyle. REGLAS C
                 ]);
             } else {
                 // Crear nuevo item
-                $cartItem = \App\Models\CartItem::create([
+                $cartItem = CartItem::create([
                     'shopping_cart_id' => $cart->id,
                     'product_id' => $productId,
                     'quantity' => $quantity,
