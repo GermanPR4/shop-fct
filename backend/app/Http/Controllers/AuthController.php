@@ -27,6 +27,7 @@ class AuthController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
+        // Crear token de acceso usando Laravel Sanctum
         $token = $user->createToken('auth-token')->plainTextToken;
 
         return response()->json([

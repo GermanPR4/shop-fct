@@ -14,9 +14,29 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
 /**
+ * App\Models\User
+ * 
+ * @property int $id
+ * @property string $name
+ * @property string $email
+ * @property \Illuminate\Support\Carbon|null $email_verified_at
+ * @property string $password
+ * @property string|null $remember_token
+ * @property string $role
+ * @property string|null $phone
+ * @property string|null $address
+ * @property \Illuminate\Support\Carbon|null $birth_date
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * 
  * @method \Laravel\Sanctum\NewAccessToken createToken(string $name, array $abilities = ['*'], \DateTimeInterface $expiresAt = null)
  * @method \Illuminate\Database\Eloquent\Relations\MorphMany tokens()
- * @method \Laravel\Sanctum\PersonalAccessToken currentAccessToken()
+ * @method \Laravel\Sanctum\PersonalAccessToken|null currentAccessToken()
+ * @method void tokenCan(string $ability)
+ * @method bool tokenCant(string $ability)
+ * @method \Illuminate\Database\Eloquent\Collection|\Laravel\Sanctum\PersonalAccessToken[] tokens
+ * 
+ * @mixin \Eloquent
  */
 class User extends Authenticatable
 {

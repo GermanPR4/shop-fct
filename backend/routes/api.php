@@ -77,3 +77,12 @@ Route::middleware('auth:sanctum')->group(function () {
     // Consulta de Pedidos y Detalles
     Route::resource('admin/order-items', OrderItemController::class)->only(['index', 'show']);
 });
+
+// Ruta de prueba para verificar conectividad
+Route::get('/test', function () {
+    return response()->json([
+        'message' => 'API funcionando correctamente',
+        'timestamp' => now(),
+        'environment' => app()->environment()
+    ]);
+});
