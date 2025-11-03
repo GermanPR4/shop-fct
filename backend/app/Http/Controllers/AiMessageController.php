@@ -436,25 +436,31 @@ Eres OmniStyle AI, el asistente de moda oficial de la tienda OmniStyle. REGLAS C
                 ], 400);
             }
 
-            // Si se especifica color y/o talla, verificar que existan
-            if ($color || $size) {
-                $detailQuery = $product->details();
-                
-                if ($color) {
-                    $detailQuery->where('color', $color);
-                }
-                if ($size) {
-                    $detailQuery->where('size', $size);
-                }
-                
-                $detail = $detailQuery->first();
-                
-                if (!$detail) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => "La combinación de color '{$color}' y talla '{$size}' no está disponible para este producto."
-                    ], 400);
-                }
+            // Buscar el ProductDetail correcto
+            $productDetail = null;
+            if ($color && $size) {
+                $productDetail = $product->details()
+                    ->where('color', $color)
+                    ->where('size', $size)
+                    ->first();
+            } elseif ($color) {
+                $productDetail = $product->details()
+                    ->where('color', $color)
+                    ->first();
+            } elseif ($size) {
+                $productDetail = $product->details()
+                    ->where('size', $size)
+                    ->first();
+            } else {
+                // Tomar el primer ProductDetail disponible
+                $productDetail = $product->details()->first();
+            }
+            
+            if (!$productDetail) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "No se encontró esta variante del producto."
+                ], 400);
             }
 
             // Obtener o crear el carrito
@@ -478,14 +484,9 @@ Eres OmniStyle AI, el asistente de moda oficial de la tienda OmniStyle. REGLAS C
                 ]);
             }
 
-            // Crear el ID único para el item del carrito
-            $cartItemId = $productId . '-' . ($color ?? 'default') . '-' . ($size ?? 'default');
-
             // Verificar si ya existe este item en el carrito
-            $existingItem = CartItem::where('shopping_cart_id', $cart->id)
-                ->where('product_id', $productId)
-                ->where('color', $color)
-                ->where('size', $size)
+            $existingItem = CartItem::where('cart_id', $cart->id)
+                ->where('product_detail_id', $productDetail->id)
                 ->first();
 
             if ($existingItem) {
@@ -497,12 +498,12 @@ Eres OmniStyle AI, el asistente de moda oficial de la tienda OmniStyle. REGLAS C
                     'success' => true,
                     'message' => "Se ha actualizado la cantidad de '{$product->name}' en tu carrito.",
                     'cart_item' => [
-                        'id' => $cartItemId,
+                        'id' => $existingItem->id,
                         'product_id' => $product->id,
                         'name' => $product->name,
                         'price' => $product->price,
-                        'color' => $color,
-                        'size' => $size,
+                        'color' => $productDetail->color,
+                        'size' => $productDetail->size,
                         'quantity' => $existingItem->quantity,
                         'total' => $product->price * $existingItem->quantity
                     ]
@@ -510,24 +511,21 @@ Eres OmniStyle AI, el asistente de moda oficial de la tienda OmniStyle. REGLAS C
             } else {
                 // Crear nuevo item
                 $cartItem = CartItem::create([
-                    'shopping_cart_id' => $cart->id,
-                    'product_id' => $productId,
+                    'cart_id' => $cart->id,
+                    'product_detail_id' => $productDetail->id,
                     'quantity' => $quantity,
-                    'price' => $product->price,
-                    'color' => $color,
-                    'size' => $size,
                 ]);
 
                 return response()->json([
                     'success' => true,
                     'message' => "'{$product->name}' ha sido añadido a tu carrito.",
                     'cart_item' => [
-                        'id' => $cartItemId,
+                        'id' => $cartItem->id,
                         'product_id' => $product->id,
                         'name' => $product->name,
                         'price' => $product->price,
-                        'color' => $color,
-                        'size' => $size,
+                        'color' => $productDetail->color,
+                        'size' => $productDetail->size,
                         'quantity' => $quantity,
                         'total' => $product->price * $quantity
                     ]
