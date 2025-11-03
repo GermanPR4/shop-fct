@@ -7,8 +7,6 @@ use App\Models\AiMessage;
 use App\Models\Product;
 use App\Models\Category;
 use App\Models\ProductDetail;
-use App\Models\ShoppingCart;
-use App\Models\CartItem;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 use Illuminate\Http\Request;
@@ -113,31 +111,39 @@ class AiMessageController extends Controller
 
             $contents = [];
             $systemInstruction = "
-Eres OmniStyle AI, el asistente de moda oficial de la tienda OmniStyle. REGLAS CRÍTICAS:
+Eres OmniStyle AI, el asistente personal de moda de OmniStyle. Tu misión es ayudar a encontrar el estilo perfecto. REGLAS CRÍTICAS:
 
-🎯 SOBRE PRODUCTOS:
+🛍️ SOBRE PRODUCTOS:
 - SOLO menciona productos que aparezcan en el contexto de catálogo que te proporciono
 - NUNCA inventes productos, precios, colores o tallas que no estén en el contexto
 - Si no hay productos en el contexto, di claramente que no tenemos ese tipo de producto disponible
 - Siempre usa los nombres exactos, precios y detalles del contexto proporcionado
 
-💬 ESTILO DE COMUNICACIÓN:
-- Sé amable, profesional y conciso (máximo 3-4 oraciones por respuesta)
-- Enfócate en ayudar al cliente a encontrar lo que busca
+� ASISTENTE DE MODA:
+- Ayuda a buscar productos específicos cuando el cliente pregunte
+- Sugiere outfits y combinaciones usando los productos del catálogo
+- Puedes recomendar cómo combinar diferentes prendas para crear looks
+- Da consejos de estilo basándote en los productos disponibles
+
+�💬 ESTILO DE COMUNICACIÓN:
+- Sé amable, profesional y entusiasta sobre la moda
+- Respuestas concisas (máximo 3-4 oraciones por respuesta)
 - Si encuentras productos relevantes, menciona: nombre, precio, y detalles clave
-- Pregunta si quiere más información o ayuda con algo específico
+- Sugiere combinaciones cuando sea relevante
+- Indica que pueden 'Ver Producto' para más detalles y compra
 
 ❌ PROHIBIDO:
 - Inventar productos que no existen en el catálogo
+- Mencionar gestión de carrito o compras directas
 - Dar precios aproximados o inventados
 - Mencionar productos de otras tiendas
 - Respuestas muy largas o técnicas
 
-✅ OBJETIVO: Ayudar al cliente basándote ÚNICAMENTE en nuestro catálogo real.
+✅ OBJETIVO: Ser un consultor de moda experto basándote ÚNICAMENTE en nuestro catálogo real.
 ";
 
             $contents[] = ['role' => 'user', 'parts' => [['text' => $systemInstruction]]];
-            $contents[] = ['role' => 'model', 'parts' => [['text' => 'Entendido. Soy OmniStyle AI. ¡Vamos a encontrar el estilo perfecto! Pregúntame lo que necesites sobre nuestro catálogo.']]];
+            $contents[] = ['role' => 'model', 'parts' => [['text' => 'Hola! Soy OmniStyle AI, tu asistente personal de moda. Estoy aqui para ayudarte a encontrar el estilo perfecto, sugerir outfits y buscar productos en nuestro catalogo. Que tipo de look estas buscando hoy?']]];
 
             $last_user_message = array_pop($history);
 
@@ -400,149 +406,11 @@ Eres OmniStyle AI, el asistente de moda oficial de la tienda OmniStyle. REGLAS C
         }
         
         $context .= "\n⚠️ IMPORTANTE: Solo menciona y recomienda estos productos específicos. No inventes otros productos que no aparezcan en esta lista.\n";
-        $context .= "Si el usuario quiere añadir un producto al carrito, usa el ID del producto que aparece arriba.\n";
+        $context .= "Los usuarios pueden usar 'Ver Producto' para obtener más detalles y realizar la compra.\n";
         
         return $context;
     }
 
-    /**
-     * Método para que la IA añada productos al carrito
-     */
-    public function addToCart(Request $request)
-    {
-        try {
-            $validated = $request->validate([
-                'product_id' => 'required|exists:products,id',
-                'color' => 'sometimes|string',
-                'size' => 'sometimes|string',
-                'quantity' => 'sometimes|integer|min:1|max:10',
-                'session_token' => 'sometimes|nullable|string'
-            ]);
 
-            $productId = $validated['product_id'];
-            $color = $validated['color'] ?? null;
-            $size = $validated['size'] ?? null;
-            $quantity = $validated['quantity'] ?? 1;
-            $sessionToken = $validated['session_token'] ?? null;
-            $userId = $request->user()?->id;
-
-            // Buscar el producto
-            $product = Product::with('details')->findOrFail($productId);
-            
-            if (!$product->is_active) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Este producto ya no está disponible.'
-                ], 400);
-            }
-
-            // Buscar el ProductDetail correcto
-            $productDetail = null;
-            if ($color && $size) {
-                $productDetail = $product->details()
-                    ->where('color', $color)
-                    ->where('size', $size)
-                    ->first();
-            } elseif ($color) {
-                $productDetail = $product->details()
-                    ->where('color', $color)
-                    ->first();
-            } elseif ($size) {
-                $productDetail = $product->details()
-                    ->where('size', $size)
-                    ->first();
-            } else {
-                // Tomar el primer ProductDetail disponible
-                $productDetail = $product->details()->first();
-            }
-            
-            if (!$productDetail) {
-                return response()->json([
-                    'success' => false,
-                    'message' => "No se encontró esta variante del producto."
-                ], 400);
-            }
-
-            // Obtener o crear el carrito
-            $cartQuery = ShoppingCart::query();
-            
-            if ($userId) {
-                $cart = $cartQuery->where('user_id', $userId)->first();
-            } elseif ($sessionToken) {
-                $cart = $cartQuery->where('session_token', $sessionToken)->first();
-            } else {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Se requiere sesión para añadir productos al carrito.'
-                ], 400);
-            }
-
-            if (!$cart) {
-                $cart = ShoppingCart::create([
-                    'user_id' => $userId,
-                    'session_token' => $sessionToken,
-                ]);
-            }
-
-            // Verificar si ya existe este item en el carrito
-            $existingItem = CartItem::where('cart_id', $cart->id)
-                ->where('product_detail_id', $productDetail->id)
-                ->first();
-
-            if ($existingItem) {
-                // Actualizar cantidad
-                $existingItem->quantity += $quantity;
-                $existingItem->save();
-                
-                return response()->json([
-                    'success' => true,
-                    'message' => "Se ha actualizado la cantidad de '{$product->name}' en tu carrito.",
-                    'cart_item' => [
-                        'id' => $existingItem->id,
-                        'product_id' => $product->id,
-                        'name' => $product->name,
-                        'price' => $product->price,
-                        'color' => $productDetail->color,
-                        'size' => $productDetail->size,
-                        'quantity' => $existingItem->quantity,
-                        'total' => $product->price * $existingItem->quantity
-                    ]
-                ]);
-            } else {
-                // Crear nuevo item
-                $cartItem = CartItem::create([
-                    'cart_id' => $cart->id,
-                    'product_detail_id' => $productDetail->id,
-                    'quantity' => $quantity,
-                ]);
-
-                return response()->json([
-                    'success' => true,
-                    'message' => "'{$product->name}' ha sido añadido a tu carrito.",
-                    'cart_item' => [
-                        'id' => $cartItem->id,
-                        'product_id' => $product->id,
-                        'name' => $product->name,
-                        'price' => $product->price,
-                        'color' => $productDetail->color,
-                        'size' => $productDetail->size,
-                        'quantity' => $quantity,
-                        'total' => $product->price * $quantity
-                    ]
-                ]);
-            }
-
-        } catch (\Exception $e) {
-            Log::error('Error al añadir producto al carrito desde IA:', [
-                'error' => $e->getMessage(),
-                'request' => $request->all()
-            ]);
-            
-            return response()->json([
-                'success' => false,
-                'message' => 'Hubo un error al añadir el producto al carrito. Inténtalo de nuevo.'
-            ], 500);
-        }
-    }
 }
 

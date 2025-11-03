@@ -40,10 +40,7 @@ Route::middleware('web')->group(function () {
     Route::put('cart/{cart}', [CartItemController::class, 'update']); 
     
     // Chat de IA: También necesita la sesión para rastrear al invitado (session_token)
-    Route::post('/chat', [AiMessageController::class, 'store']);
-    
-    // Ruta para que la IA pueda añadir productos al carrito
-    Route::post('/ai/add-to-cart', [AiMessageController::class, 'addToCart']); 
+    Route::post('/chat', [AiMessageController::class, 'store']); 
 });
 
 

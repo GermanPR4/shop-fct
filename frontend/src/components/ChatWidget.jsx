@@ -24,61 +24,18 @@ const ChatWidget = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [messages]);
 
-    // Función para añadir producto al carrito desde el chat
-    const handleAddToCart = async (productId, color = null, size = null, quantity = 1) => {
-        setIsLoading(true);
+    // Función para ver producto completo
+    const handleViewProduct = (productId) => {
+        // Por ahora, mostrar mensaje informativo
+        // En el futuro, esto abrirá la página del producto
+        alert(`Producto ID: ${productId}\n\nEsta funcionalidad abrirá la página completa del producto donde podrás ver todas las imágenes, detalles y añadirlo al carrito.`);
         
-        try {
-            const payload = {
-                product_id: productId,
-                color: color,
-                size: size,
-                quantity: quantity,
-                session_token: sessionToken
-            };
-
-            const response = await fetch(`${API_URL}/api/ai/add-to-cart`, {
-                method: 'POST',
-                credentials: 'include',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                },
-                body: JSON.stringify(payload),
-            });
-
-            const data = await response.json();
-
-            if (data.success) {
-                // Añadir mensaje de confirmación al chat
-                setMessages(prev => [...prev, { 
-                    role: 'assistant', 
-                    content: `✅ ${data.message}`,
-                    isSystemMessage: true
-                }]);
-                
-                // Actualizar el carrito en la aplicación principal si es posible
-                if (window.updateCartCount) {
-                    window.updateCartCount();
-                }
-            } else {
-                setMessages(prev => [...prev, { 
-                    role: 'assistant', 
-                    content: `❌ ${data.message}`,
-                    isSystemMessage: true
-                }]);
-            }
-
-        } catch (error) {
-            console.error("Error al añadir producto al carrito:", error);
-            setMessages(prev => [...prev, { 
-                role: 'assistant', 
-                content: '❌ Hubo un error al añadir el producto al carrito. Inténtalo de nuevo.',
-                isSystemMessage: true
-            }]);
-        } finally {
-            setIsLoading(false);
-        }
+        // Añadir mensaje informativo al chat
+        setMessages(prev => [...prev, { 
+            role: 'assistant', 
+            content: '� Próximamente podrás ver la página completa del producto con todas las imágenes y opciones de compra.',
+            isSystemMessage: true
+        }]);
     };
 
     // Función para manejar el envío del formulario (cuando el usuario presiona Enter)
@@ -191,10 +148,10 @@ const ChatWidget = () => {
                                                         <div className="text-xs text-gray-600">Tallas: {product.sizes}</div>
                                                     )}
                                                     <button
-                                                        onClick={() => handleAddToCart(product.id)}
-                                                        className="mt-1 px-2 py-1 bg-indigo-500 text-white text-xs rounded hover:bg-indigo-600 transition-colors"
+                                                        onClick={() => handleViewProduct(product.id)}
+                                                        className="mt-1 px-2 py-1 bg-green-500 text-white text-xs rounded hover:bg-green-600 transition-colors"
                                                     >
-                                                        Añadir al Carrito
+                                                        Ver Producto
                                                     </button>
                                                 </div>
                                             ))}
