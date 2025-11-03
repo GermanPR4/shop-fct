@@ -254,7 +254,7 @@ Eres OmniStyle AI, el asistente de moda oficial de la tienda OmniStyle. REGLAS C
             'zapatos', 'zapatillas', 'botas', 'sandalia', 'sandalias', 'chaqueta', 'chaquetas',
             'abrigo', 'abrigos', 'jersey', 'jerseys', 'sudadera', 'sudaderas', 'camiseta', 'camisetas',
             'jeans', 'vaqueros', 'short', 'shorts', 'blazer', 'blazers', 'bufanda', 'bufandas',
-            'gorro', 'gorros', 'sombrero', 'sombreros', 'bolso', 'bolsos', 'mochila', 'mochilas',
+            'gorro', 'gorros', 'gorra', 'gorras', 'sombrero', 'sombreros', 'bolso', 'bolsos', 'mochila', 'mochilas',
             'negro', 'blanco', 'rojo', 'azul', 'verde', 'amarillo', 'rosa', 'gris', 'marron',
             'xs', 's', 'm', 'l', 'xl', 'xxl', 'talla', 'color', 'casual', 'formal', 'deportivo',
             'hombre', 'mujer', 'unisex', 'invierno', 'verano', 'primavera', 'otoño', 'nike', 'adidas',
@@ -295,7 +295,7 @@ Eres OmniStyle AI, el asistente de moda oficial de la tienda OmniStyle. REGLAS C
                 'zapatos', 'zapatillas', 'botas', 'sandalia', 'sandalias', 'chaqueta', 'chaquetas',
                 'abrigo', 'abrigos', 'jersey', 'jerseys', 'sudadera', 'sudaderas', 'camiseta', 'camisetas',
                 'jeans', 'vaqueros', 'short', 'shorts', 'blazer', 'blazers', 'bufanda', 'bufandas',
-                'gorro', 'gorros', 'sombrero', 'sombreros', 'bolso', 'bolsos', 'mochila', 'mochilas',
+                'gorro', 'gorros', 'gorra', 'gorras', 'sombrero', 'sombreros', 'bolso', 'bolsos', 'mochila', 'mochilas',
                 'negro', 'blanco', 'rojo', 'azul', 'verde', 'amarillo', 'rosa', 'gris', 'marron',
                 'xs', 's', 'm', 'l', 'xl', 'xxl', 'casual', 'formal', 'deportivo',
                 'hombre', 'mujer', 'unisex', 'invierno', 'verano', 'primavera', 'otoño'
