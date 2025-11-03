@@ -77,18 +77,18 @@ const Navbar = ({ setPage, cartItemCount, user, onLogout, onOpenCartSidebar, onS
   }, []);
 
   return (
-    <nav className="bg-gradient-to-r from-white via-slate-50 to-white border-b border-slate-200/60 sticky top-0 z-50 shadow-lg backdrop-blur-sm">
+    <nav className="bg-gradient-to-r from-gray-900 via-black to-gray-900 border-b border-gray-700/60 sticky top-0 z-50 shadow-2xl backdrop-blur-sm">
     <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8">
       <div className="flex justify-between items-center h-18 py-2">
         {/* Logo y Categorías */}
         <div className="flex items-center space-x-6">
           <button 
             onClick={() => setPage(PAGES.HOME)} 
-            className="group flex items-center space-x-2 text-2xl font-bold bg-gradient-to-r from-purple-600 via-violet-600 to-indigo-600 bg-clip-text text-transparent hover:from-emerald-600 hover:via-teal-600 hover:to-cyan-600 transition-all duration-500 transform hover:scale-105"
+            className="group flex items-center space-x-2 text-2xl font-bold bg-gradient-to-r from-purple-500 via-indigo-500 to-purple-600 bg-clip-text text-transparent hover:from-emerald-500 hover:via-green-500 hover:to-emerald-600 transition-all duration-500 transform hover:scale-105"
           >
-            <svg className="h-8 w-8 text-purple-600 group-hover:text-emerald-600 transition-colors duration-500 transform group-hover:rotate-12" fill="currentColor" viewBox="0 0 24 24">
+            <svg className="h-8 w-8 text-purple-500 group-hover:text-emerald-500 transition-colors duration-500 transform group-hover:rotate-12" fill="currentColor" viewBox="0 0 24 24">
               <path d="M12 2L2 7v10c0 5.55 3.84 10 9 10s9-4.45 9-10V7L12 2z"/>
-              <circle cx="12" cy="12" r="3" fill="white"/>
+              <circle cx="12" cy="12" r="3" fill="black"/>
             </svg>
             <span>OmniStyle</span>
           </button>
@@ -96,7 +96,7 @@ const Navbar = ({ setPage, cartItemCount, user, onLogout, onOpenCartSidebar, onS
           <div className="relative categories-dropdown">
             <button 
               onClick={() => setShowCategoriesDropdown(!showCategoriesDropdown)}
-              className="hidden lg:flex items-center space-x-2 text-sm font-medium text-slate-700 hover:text-white bg-gradient-to-r from-slate-100 to-slate-200 hover:from-emerald-500 hover:to-teal-500 px-4 py-2.5 rounded-xl transition-all duration-300 shadow-sm hover:shadow-lg transform hover:scale-105 border border-slate-200 hover:border-emerald-400"
+              className="hidden lg:flex items-center space-x-2 text-sm font-medium text-gray-200 hover:text-white bg-gradient-to-r from-gray-800 to-gray-900 hover:from-emerald-500 hover:to-green-500 px-4 py-2.5 rounded-xl transition-all duration-300 shadow-sm hover:shadow-lg transform hover:scale-105 border border-gray-700 hover:border-emerald-400"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 transform transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h8M4 18h16" />
@@ -109,11 +109,11 @@ const Navbar = ({ setPage, cartItemCount, user, onLogout, onOpenCartSidebar, onS
 
             {/* Dropdown de Categorías */}
             {showCategoriesDropdown && (
-              <div className="absolute left-0 mt-2 w-72 bg-white rounded-2xl shadow-2xl border border-slate-200/50 py-2 z-50 backdrop-blur-sm animate-in slide-in-from-top-2 duration-300">
+              <div className="absolute left-0 mt-2 w-72 bg-gray-800 rounded-2xl shadow-2xl border border-gray-600/50 py-2 z-50 backdrop-blur-sm animate-in slide-in-from-top-2 duration-300">
                 {/* Header del dropdown */}
-                <div className="px-4 py-3 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-transparent">
-                  <h3 className="text-sm font-semibold text-slate-800 flex items-center">
-                    <svg className="w-4 h-4 mr-2 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="px-4 py-3 border-b border-gray-700 bg-gradient-to-r from-gray-700 to-transparent">
+                  <h3 className="text-sm font-semibold text-white flex items-center">
+                    <svg className="w-4 h-4 mr-2 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
                     </svg>
                     Explora nuestras categorías
@@ -129,21 +129,21 @@ const Navbar = ({ setPage, cartItemCount, user, onLogout, onOpenCartSidebar, onS
                   }}
                   className={`group flex items-center w-full px-4 py-3 text-sm transition-all duration-200 transform hover:translate-x-1 ${
                     !selectedCategory 
-                      ? 'text-emerald-600 bg-gradient-to-r from-emerald-50 to-teal-50' 
-                      : 'text-slate-700 hover:text-emerald-600 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-teal-50'
+                      ? 'text-emerald-400 bg-gradient-to-r from-emerald-900/30 to-green-900/30' 
+                      : 'text-gray-200 hover:text-emerald-400 hover:bg-gradient-to-r hover:from-emerald-900/30 hover:to-green-900/30'
                   }`}
                 >
-                  <div className="w-8 h-8 bg-gradient-to-r from-emerald-100 to-teal-100 group-hover:from-emerald-200 group-hover:to-teal-200 rounded-lg flex items-center justify-center mr-3 transition-all duration-200">
-                    <svg className="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="w-8 h-8 bg-gradient-to-r from-emerald-800/50 to-green-800/50 group-hover:from-emerald-700/60 group-hover:to-green-700/60 rounded-lg flex items-center justify-center mr-3 transition-all duration-200">
+                    <svg className="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14-7l-7 7-7-7m14 18l-7-7-7 7" />
                     </svg>
                   </div>
                   <div className="flex-1">
                     <div className="font-medium">Todas las categorías</div>
-                    <div className="text-xs text-slate-500">Ver todos los productos</div>
+                    <div className="text-xs text-gray-400">Ver todos los productos</div>
                   </div>
                   {!selectedCategory && (
-                    <svg className="w-4 h-4 text-emerald-600" fill="currentColor" viewBox="0 0 20 20">
+                    <svg className="w-4 h-4 text-emerald-400" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                     </svg>
                   )}
@@ -162,27 +162,27 @@ const Navbar = ({ setPage, cartItemCount, user, onLogout, onOpenCartSidebar, onS
                         }}
                         className={`group flex items-center w-full px-4 py-3 text-sm transition-all duration-200 transform hover:translate-x-1 ${
                           selectedCategory === category.id 
-                            ? 'text-emerald-600 bg-gradient-to-r from-emerald-50 to-teal-50' 
-                            : 'text-slate-700 hover:text-emerald-600 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-teal-50'
+                            ? 'text-emerald-400 bg-gradient-to-r from-emerald-900/30 to-green-900/30' 
+                            : 'text-gray-200 hover:text-emerald-400 hover:bg-gradient-to-r hover:from-emerald-900/30 hover:to-green-900/30'
                         }`}
                       >
                         <div className={`w-8 h-8 rounded-lg flex items-center justify-center mr-3 transition-all duration-200 ${
                           selectedCategory === category.id
-                            ? 'bg-gradient-to-r from-emerald-200 to-teal-200'
-                            : 'bg-slate-100 group-hover:bg-gradient-to-r group-hover:from-emerald-100 group-hover:to-teal-100'
+                            ? 'bg-gradient-to-r from-emerald-700/60 to-green-700/60'
+                            : 'bg-gray-700 group-hover:bg-gradient-to-r group-hover:from-emerald-800/50 group-hover:to-green-800/50'
                         }`}>
-                          <span className="text-xs font-bold text-slate-600 group-hover:text-emerald-600">
+                          <span className="text-xs font-bold text-gray-200 group-hover:text-emerald-400">
                             {category.name.charAt(0).toUpperCase()}
                           </span>
                         </div>
                         <div className="flex-1 text-left">
                           <div className="font-medium">{category.name}</div>
-                          <div className="text-xs text-slate-500">
+                          <div className="text-xs text-gray-400">
                             {category.description || 'Explora esta categoría'}
                           </div>
                         </div>
                         {selectedCategory === category.id && (
-                          <svg className="w-4 h-4 text-emerald-600" fill="currentColor" viewBox="0 0 20 20">
+                          <svg className="w-4 h-4 text-emerald-400" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                           </svg>
                         )}
@@ -190,10 +190,10 @@ const Navbar = ({ setPage, cartItemCount, user, onLogout, onOpenCartSidebar, onS
                     ))
                   ) : (
                     <div className="px-4 py-6 text-center">
-                      <svg className="mx-auto w-8 h-8 text-slate-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="mx-auto w-8 h-8 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
                       </svg>
-                      <p className="text-sm text-slate-500">No hay categorías disponibles</p>
+                      <p className="text-sm text-gray-400">No hay categorías disponibles</p>
                     </div>
                   )}
                 </div>
@@ -206,7 +206,7 @@ const Navbar = ({ setPage, cartItemCount, user, onLogout, onOpenCartSidebar, onS
         <div className="flex-1 max-w-xl mx-6 hidden md:block">
           <form onSubmit={handleSearch} className="relative group">
             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-              <svg className="h-5 w-5 text-slate-400 group-focus-within:text-emerald-500 transition-colors duration-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="h-5 w-5 text-gray-400 group-focus-within:text-emerald-400 transition-colors duration-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             </div>
@@ -217,14 +217,14 @@ const Navbar = ({ setPage, cartItemCount, user, onLogout, onOpenCartSidebar, onS
               onChange={(e) => setSearchTerm(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="Descubre productos increíbles..." 
-              className="w-full pl-12 pr-20 py-3 bg-white border-2 border-slate-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-emerald-500/20 focus:border-emerald-500 text-sm placeholder-slate-400 transition-all duration-300 shadow-sm hover:shadow-md focus:shadow-lg"
+              className="w-full pl-12 pr-20 py-3 bg-gray-800 border-2 border-gray-600 rounded-2xl focus:outline-none focus:ring-4 focus:ring-emerald-500/20 focus:border-emerald-500 text-sm placeholder-gray-400 text-white transition-all duration-300 shadow-sm hover:shadow-md focus:shadow-lg"
             />
             <div className="absolute inset-y-0 right-0 pr-2 flex items-center space-x-1">
               {searchTerm && (
                 <button
                   type="button"
                   onClick={() => setSearchTerm('')}
-                  className="p-1 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100 transition-colors duration-200"
+                  className="p-1 text-gray-400 hover:text-gray-200 rounded-full hover:bg-gray-700 transition-colors duration-200"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
@@ -234,13 +234,13 @@ const Navbar = ({ setPage, cartItemCount, user, onLogout, onOpenCartSidebar, onS
               <button
                 type="submit"
                 disabled={!searchTerm.trim()}
-                className="p-1.5 text-slate-400 hover:text-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg hover:bg-emerald-50 transition-colors duration-200"
+                className="p-1.5 text-gray-400 hover:text-emerald-400 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg hover:bg-emerald-900/30 transition-colors duration-200"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
               </button>
-              <kbd className="hidden sm:inline-flex items-center px-2 py-1 text-xs font-medium text-slate-400 bg-slate-100 border border-slate-200 rounded">
+              <kbd className="hidden sm:inline-flex items-center px-2 py-1 text-xs font-medium text-gray-400 bg-gray-700 border border-gray-600 rounded">
                 ⌘K
               </kbd>
             </div>
@@ -271,31 +271,20 @@ const Navbar = ({ setPage, cartItemCount, user, onLogout, onOpenCartSidebar, onS
             count={cartItemCount} 
           />
           
-          <div className="hidden sm:block w-px h-8 bg-slate-200"></div>
+          <div className="hidden sm:block w-px h-8 bg-gray-600"></div>
           
           {user ? (
             <UserDropdown user={user} onLogout={onLogout} setPage={setPage} />
           ) : (
-            <div className="flex items-center space-x-2">
-              <NavIconButton 
-                onClick={() => setPage(PAGES.LOGIN)} 
-                icon={
-                  <svg className="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                  </svg>
-                } 
-                label="Perfil" 
-              />
-              <button 
-                onClick={() => setPage(PAGES.LOGIN)}
-                className="hidden sm:flex items-center space-x-2 text-sm font-medium text-white bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 px-4 py-2.5 rounded-xl transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105 border border-emerald-400"
-              >
-                <span>Iniciar Sesión</span>
-                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+            <NavIconButton 
+              onClick={() => setPage(PAGES.LOGIN)} 
+              icon={
+                <svg className="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
-              </button>
-            </div>
+              } 
+              label="Iniciar Sesión" 
+            />
           )}
         </div>
       </div>
@@ -361,20 +350,20 @@ const Navbar = ({ setPage, cartItemCount, user, onLogout, onOpenCartSidebar, onS
 const NavIconButton = ({ icon, label, count, onClick, className = '' }) => (
   <button 
     onClick={onClick} 
-    className={`group relative p-3 text-slate-600 hover:text-emerald-600 hover:bg-gradient-to-br hover:from-emerald-50 hover:to-teal-50 rounded-xl transition-all duration-300 transform hover:scale-110 hover:shadow-md border border-transparent hover:border-emerald-200 ${className}`}
+    className={`group relative p-3 text-gray-300 hover:text-emerald-400 hover:bg-gradient-to-br hover:from-emerald-900/30 hover:to-green-900/30 rounded-xl transition-all duration-300 transform hover:scale-110 hover:shadow-md border border-transparent hover:border-emerald-500/30 ${className}`}
   >
     <div className="transform transition-transform duration-300 group-hover:scale-110">
       {icon}
     </div>
     {count !== undefined && count > 0 && (
-      <span className="absolute -top-1 -right-1 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-gradient-to-r from-amber-500 to-orange-500 rounded-full shadow-lg animate-pulse border-2 border-white">
+      <span className="absolute -top-1 -right-1 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-gradient-to-r from-purple-500 to-indigo-500 rounded-full shadow-lg animate-pulse border-2 border-gray-900">
         {count > 99 ? '99+' : count}
       </span>
     )}
     {/* Tooltip mejorado */}
-    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs font-medium text-white bg-slate-800 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none whitespace-nowrap z-50">
+    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs font-medium text-white bg-gray-700 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none whitespace-nowrap z-50">
       {label}
-      <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-2 h-2 bg-slate-800 rotate-45"></div>
+      <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-2 h-2 bg-gray-700 rotate-45"></div>
     </div>
     <span className="sr-only">{label}</span>
   </button>
@@ -433,18 +422,18 @@ const CartSidebar = ({ isOpen, onClose, cartItems, setCartItems, setPage }) => {
       )}
 
       {/* Sidebar */}
-      <div className={`fixed top-0 right-0 h-full w-80 bg-white shadow-2xl z-50 transform transition-transform duration-300 ease-in-out ${
+      <div className={`fixed top-0 right-0 h-full w-80 bg-gray-900 shadow-2xl z-50 transform transition-transform duration-300 ease-in-out border-l border-gray-700 backdrop-blur-sm ${
         isOpen ? 'translate-x-0' : 'translate-x-full'
       }`}>
         <div className="flex flex-col h-full">
           {/* Header */}
-          <div className="flex items-center justify-between p-3 border-b border-slate-200">
-            <h2 className="text-base font-semibold text-slate-800">
+          <div className="flex items-center justify-between p-3 border-b border-gray-700 bg-gradient-to-r from-gray-800 to-transparent">
+            <h2 className="text-base font-semibold text-white">
               Mi Carrito ({cartItems.length})
             </h2>
             <button
               onClick={onClose}
-              className="p-1.5 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors duration-200"
+              className="p-1.5 text-gray-400 hover:text-white hover:bg-gray-700 rounded-lg transition-colors duration-200"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
@@ -456,52 +445,54 @@ const CartSidebar = ({ isOpen, onClose, cartItems, setCartItems, setPage }) => {
           <div className="flex-1 overflow-y-auto">
             {cartItems.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full p-4 text-center">
-                <svg className="w-12 h-12 text-slate-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                </svg>
-                <h3 className="text-base font-medium text-slate-800 mb-2">Tu carrito está vacío</h3>
-                <p className="text-sm text-slate-500 mb-4">¡Explora nuestros productos!</p>
+                <div className="w-16 h-16 bg-gradient-to-r from-gray-700 to-gray-600 rounded-2xl flex items-center justify-center mb-4 shadow-lg">
+                  <svg className="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-semibold text-white mb-2">Tu carrito está vacío</h3>
+                <p className="text-sm text-gray-400 mb-6">¡Descubre productos increíbles!</p>
                 <button
                   onClick={() => {
                     setPage(PAGES.HOME);
                     onClose();
                   }}
-                  className="bg-emerald-600 text-white px-4 py-2 text-sm rounded-lg hover:bg-emerald-700 transition-colors duration-300"
+                  className="bg-gradient-to-r from-emerald-600 to-green-600 text-white px-6 py-3 text-sm font-medium rounded-xl hover:from-emerald-700 hover:to-green-700 transition-all duration-300 transform hover:scale-105 shadow-lg"
                 >
                   Explorar productos
                 </button>
               </div>
             ) : (
-              <div className="p-3 space-y-2">
+              <div className="p-3 space-y-3">
                 {cartItems.map(item => (
-                  <div key={item.id} className="flex items-center space-x-2 p-2 bg-slate-50 rounded-lg">
+                  <div key={item.id} className="flex items-center space-x-3 p-3 bg-gray-800 rounded-xl border border-gray-700/50 shadow-sm hover:bg-gray-700/50 transition-all duration-200">
                     <img
-                      src={item.image || 'https://placehold.co/40x40/E5E7EB/4B5563?text=P'}
+                      src={item.image || 'https://placehold.co/48x48/374151/9CA3AF?text=P'}
                       alt={item.name}
-                      className="w-10 h-10 object-cover rounded flex-shrink-0"
+                      className="w-12 h-12 object-cover rounded-lg shadow-md flex-shrink-0 ring-2 ring-gray-700"
                     />
                     <div className="flex-1 min-w-0">
-                      <h4 className="text-xs font-medium text-slate-800 truncate leading-tight">{item.name}</h4>
-                      <div className="text-xs text-slate-500">
-                        <span>{item.color} • {item.size}</span>
+                      <h4 className="text-xs font-medium text-white truncate leading-tight">{item.name}</h4>
+                      <div className="text-xs text-gray-400">
+                        <span className="bg-gray-700 px-2 py-1 rounded-md">{item.color} • {item.size}</span>
                       </div>
                       <div className="flex items-center justify-between mt-1">
-                        <span className="text-xs font-semibold text-emerald-600">
+                        <span className="text-sm font-bold text-emerald-400">
                           {item.price.toFixed(2)}€
                         </span>
                         <div className="flex items-center space-x-1">
                           <button
                             onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                            className="w-5 h-5 flex items-center justify-center text-slate-500 hover:text-slate-700 hover:bg-white rounded"
+                            className="w-5 h-5 flex items-center justify-center text-gray-400 hover:text-white hover:bg-gray-700 rounded"
                           >
                             <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 12H4" />
                             </svg>
                           </button>
-                          <span className="text-xs font-medium w-4 text-center">{item.quantity}</span>
+                          <span className="text-xs font-medium w-6 text-center text-white bg-gray-700 rounded px-1">{item.quantity}</span>
                           <button
                             onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                            className="w-5 h-5 flex items-center justify-center text-slate-500 hover:text-slate-700 hover:bg-white rounded"
+                            className="w-5 h-5 flex items-center justify-center text-gray-400 hover:text-white hover:bg-gray-700 rounded"
                           >
                             <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
@@ -512,7 +503,7 @@ const CartSidebar = ({ isOpen, onClose, cartItems, setCartItems, setPage }) => {
                     </div>
                     <button
                       onClick={() => removeItem(item.id)}
-                      className="p-0.5 text-slate-400 hover:text-red-500 transition-colors duration-200 flex-shrink-0"
+                      className="p-1.5 text-gray-400 hover:text-red-400 hover:bg-red-900/30 rounded-lg transition-all duration-200 flex-shrink-0"
                     >
                       <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -526,24 +517,24 @@ const CartSidebar = ({ isOpen, onClose, cartItems, setCartItems, setPage }) => {
 
           {/* Footer con total y botones */}
           {cartItems.length > 0 && (
-            <div className="p-3 border-t border-slate-200 space-y-3">
+            <div className="p-4 border-t border-gray-700 space-y-3 bg-gradient-to-t from-gray-800 to-transparent">
               <div className="flex justify-between items-center">
-                <span className="text-sm font-medium text-slate-800">Subtotal:</span>
-                <span className="text-base font-bold text-emerald-600">{subtotal.toFixed(2)}€</span>
+                <span className="text-sm font-medium text-white">Subtotal:</span>
+                <span className="text-lg font-bold text-emerald-400">{subtotal.toFixed(2)}€</span>
               </div>
               
               <div className="space-y-2">
                 <button
                   onClick={goToCheckout}
-                  className="w-full bg-emerald-600 text-white py-2.5 rounded-lg text-sm font-semibold hover:bg-emerald-700 transition-colors duration-300"
+                  className="w-full bg-gradient-to-r from-emerald-600 to-green-600 text-white py-3 rounded-xl text-sm font-semibold hover:from-emerald-700 hover:to-green-700 transition-all duration-300 transform hover:scale-105 shadow-lg"
                 >
-                  Finalizar Compra
+                  💳 Finalizar Compra
                 </button>
                 <button
                   onClick={goToCart}
-                  className="w-full bg-slate-100 text-slate-700 py-2 rounded-lg text-sm font-medium hover:bg-slate-200 transition-colors duration-300"
+                  className="w-full bg-gray-700 text-white py-2.5 rounded-xl text-sm font-medium hover:bg-gray-600 transition-all duration-300 border border-gray-600 hover:border-gray-500"
                 >
-                  Ver Carrito Completo
+                  🛍️ Ver Carrito Completo
                 </button>
               </div>
             </div>
@@ -575,24 +566,24 @@ const UserDropdown = ({ user, onLogout, setPage }) => {
     <div className="relative user-dropdown">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="group flex items-center space-x-3 p-3 text-slate-600 hover:text-emerald-600 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-teal-50 rounded-xl transition-all duration-300 transform hover:scale-105 border border-transparent hover:border-emerald-200 hover:shadow-lg"
+        className="group flex items-center space-x-3 p-3 text-gray-200 hover:text-emerald-400 hover:bg-gradient-to-r hover:from-emerald-900/30 hover:to-green-900/30 rounded-xl transition-all duration-300 transform hover:scale-105 border border-transparent hover:border-emerald-500/30 hover:shadow-lg"
       >
         <div className="relative">
-          <div className="w-10 h-10 bg-gradient-to-r from-emerald-400 to-teal-400 rounded-full flex items-center justify-center shadow-md ring-2 ring-white group-hover:ring-emerald-200 transition-all duration-300">
+          <div className="w-10 h-10 bg-gradient-to-r from-emerald-500 to-green-500 rounded-full flex items-center justify-center shadow-md ring-2 ring-gray-800 group-hover:ring-emerald-500/50 transition-all duration-300">
             <span className="text-sm font-bold text-white">
               {user.name.charAt(0).toUpperCase()}
             </span>
           </div>
-          <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-400 border-2 border-white rounded-full"></div>
+          <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-400 border-2 border-gray-900 rounded-full"></div>
         </div>
         <div className="hidden sm:block text-left">
-          <div className="text-sm font-medium text-slate-800 group-hover:text-emerald-600 transition-colors duration-300">
+          <div className="text-sm font-medium text-white group-hover:text-emerald-400 transition-colors duration-300">
             {user.name.split(' ')[0]}
           </div>
-          <div className="text-xs text-slate-500">Mi cuenta</div>
+          <div className="text-xs text-gray-400">Mi cuenta</div>
         </div>
         <svg
-          className={`w-4 h-4 transition-all duration-300 ${isOpen ? 'rotate-180 text-emerald-600' : 'text-slate-400 group-hover:text-emerald-500'}`}
+          className={`w-4 h-4 transition-all duration-300 ${isOpen ? 'rotate-180 text-emerald-400' : 'text-gray-400 group-hover:text-emerald-400'}`}
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -602,18 +593,18 @@ const UserDropdown = ({ user, onLogout, setPage }) => {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-3 w-64 bg-white rounded-2xl shadow-2xl border border-slate-200/50 py-2 z-50 backdrop-blur-sm animate-in slide-in-from-top-2 duration-300">
+        <div className="absolute right-0 mt-3 w-64 bg-gray-800 rounded-2xl shadow-2xl border border-gray-600/50 py-2 z-50 backdrop-blur-sm animate-in slide-in-from-top-2 duration-300">
           {/* Header del usuario mejorado */}
-          <div className="px-5 py-4 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-transparent">
+          <div className="px-5 py-4 border-b border-gray-700 bg-gradient-to-r from-gray-700 to-transparent">
             <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-gradient-to-r from-emerald-400 to-teal-400 rounded-xl flex items-center justify-center shadow-lg">
+              <div className="w-12 h-12 bg-gradient-to-r from-emerald-500 to-green-500 rounded-xl flex items-center justify-center shadow-lg">
                 <span className="text-lg font-bold text-white">
                   {user.name.charAt(0).toUpperCase()}
                 </span>
               </div>
               <div>
-                <p className="text-sm font-semibold text-slate-800">{user.name}</p>
-                <p className="text-xs text-slate-500 flex items-center">
+                <p className="text-sm font-semibold text-white">{user.name}</p>
+                <p className="text-xs text-gray-400 flex items-center">
                   <span className="w-2 h-2 bg-green-400 rounded-full mr-2 animate-pulse"></span>
                   {user.email}
                 </p>
@@ -628,16 +619,16 @@ const UserDropdown = ({ user, onLogout, setPage }) => {
                 setPage(PAGES.PROFILE);
                 setIsOpen(false);
               }}
-              className="group flex items-center w-full px-5 py-3 text-sm text-slate-700 hover:text-emerald-600 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-teal-50 transition-all duration-200 transform hover:translate-x-1"
+              className="group flex items-center w-full px-5 py-3 text-sm text-gray-200 hover:text-emerald-400 hover:bg-gradient-to-r hover:from-emerald-900/30 hover:to-green-900/30 transition-all duration-200 transform hover:translate-x-1"
             >
-              <div className="w-8 h-8 bg-blue-100 group-hover:bg-blue-200 rounded-lg flex items-center justify-center mr-3 transition-all duration-200">
-                <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-8 h-8 bg-purple-800/50 group-hover:bg-purple-700/60 rounded-lg flex items-center justify-center mr-3 transition-all duration-200">
+                <svg className="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
               </div>
               <div className="flex-1">
                 <div className="font-medium">Mi Perfil</div>
-                <div className="text-xs text-slate-500">Datos personales</div>
+                <div className="text-xs text-gray-400">Datos personales</div>
               </div>
             </button>
 
@@ -646,16 +637,16 @@ const UserDropdown = ({ user, onLogout, setPage }) => {
                 setPage(PAGES.ORDERS);
                 setIsOpen(false);
               }}
-              className="group flex items-center w-full px-5 py-3 text-sm text-slate-700 hover:text-emerald-600 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-teal-50 transition-all duration-200 transform hover:translate-x-1"
+              className="group flex items-center w-full px-5 py-3 text-sm text-gray-200 hover:text-emerald-400 hover:bg-gradient-to-r hover:from-emerald-900/30 hover:to-green-900/30 transition-all duration-200 transform hover:translate-x-1"
             >
-              <div className="w-8 h-8 bg-purple-100 group-hover:bg-purple-200 rounded-lg flex items-center justify-center mr-3 transition-all duration-200">
-                <svg className="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-8 h-8 bg-indigo-800/50 group-hover:bg-indigo-700/60 rounded-lg flex items-center justify-center mr-3 transition-all duration-200">
+                <svg className="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                 </svg>
               </div>
               <div className="flex-1">
                 <div className="font-medium">Mis Pedidos</div>
-                <div className="text-xs text-slate-500">Historial de compras</div>
+                <div className="text-xs text-gray-400">Historial de compras</div>
               </div>
             </button>
 
@@ -664,37 +655,37 @@ const UserDropdown = ({ user, onLogout, setPage }) => {
                 setPage(PAGES.FAVORITES);
                 setIsOpen(false);
               }}
-              className="group flex items-center w-full px-5 py-3 text-sm text-slate-700 hover:text-emerald-600 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-teal-50 transition-all duration-200 transform hover:translate-x-1"
+              className="group flex items-center w-full px-5 py-3 text-sm text-gray-200 hover:text-emerald-400 hover:bg-gradient-to-r hover:from-emerald-900/30 hover:to-green-900/30 transition-all duration-200 transform hover:translate-x-1"
             >
-              <div className="w-8 h-8 bg-pink-100 group-hover:bg-pink-200 rounded-lg flex items-center justify-center mr-3 transition-all duration-200">
-                <svg className="w-4 h-4 text-pink-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-8 h-8 bg-pink-800/50 group-hover:bg-pink-700/60 rounded-lg flex items-center justify-center mr-3 transition-all duration-200">
+                <svg className="w-4 h-4 text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                 </svg>
               </div>
               <div className="flex-1">
                 <div className="font-medium">Favoritos</div>
-                <div className="text-xs text-slate-500">Lista de deseos</div>
+                <div className="text-xs text-gray-400">Lista de deseos</div>
               </div>
             </button>
 
-            <hr className="my-2 mx-3 border-slate-100" />
+            <hr className="my-2 mx-3 border-gray-700" />
 
             <button
               onClick={() => {
                 setPage(PAGES.SETTINGS);
                 setIsOpen(false);
               }}
-              className="group flex items-center w-full px-5 py-3 text-sm text-slate-700 hover:text-emerald-600 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-teal-50 transition-all duration-200 transform hover:translate-x-1"
+              className="group flex items-center w-full px-5 py-3 text-sm text-gray-200 hover:text-emerald-400 hover:bg-gradient-to-r hover:from-emerald-900/30 hover:to-green-900/30 transition-all duration-200 transform hover:translate-x-1"
             >
-              <div className="w-8 h-8 bg-amber-100 group-hover:bg-amber-200 rounded-lg flex items-center justify-center mr-3 transition-all duration-200">
-                <svg className="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-8 h-8 bg-amber-800/50 group-hover:bg-amber-700/60 rounded-lg flex items-center justify-center mr-3 transition-all duration-200">
+                <svg className="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
               </div>
               <div className="flex-1">
                 <div className="font-medium">Configuración</div>
-                <div className="text-xs text-slate-500">Ajustes de cuenta</div>
+                <div className="text-xs text-gray-400">Ajustes de cuenta</div>
               </div>
             </button>
 
@@ -703,16 +694,16 @@ const UserDropdown = ({ user, onLogout, setPage }) => {
                 onLogout();
                 setIsOpen(false);
               }}
-              className="group flex items-center w-full px-5 py-3 text-sm text-red-600 hover:text-white hover:bg-gradient-to-r hover:from-red-500 hover:to-red-600 transition-all duration-200 transform hover:translate-x-1 border-t border-slate-100 mt-2"
+              className="group flex items-center w-full px-5 py-3 text-sm text-red-400 hover:text-white hover:bg-gradient-to-r hover:from-red-600 hover:to-red-700 transition-all duration-200 transform hover:translate-x-1 border-t border-gray-700 mt-2"
             >
-              <div className="w-8 h-8 bg-red-100 group-hover:bg-red-200 rounded-lg flex items-center justify-center mr-3 transition-all duration-200">
-                <svg className="w-4 h-4 text-red-600 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-8 h-8 bg-red-800/50 group-hover:bg-red-700/60 rounded-lg flex items-center justify-center mr-3 transition-all duration-200">
+                <svg className="w-4 h-4 text-red-400 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                 </svg>
               </div>
               <div className="flex-1">
                 <div className="font-medium">Cerrar Sesión</div>
-                <div className="text-xs text-slate-500 group-hover:text-red-200">Salir de mi cuenta</div>
+                <div className="text-xs text-gray-400 group-hover:text-red-200">Salir de mi cuenta</div>
               </div>
             </button>
           </div>
@@ -733,17 +724,17 @@ const ProductCard = ({ product, setPage, setSelectedProduct }) => {
   };
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden group transition hover:shadow-md cursor-pointer" onClick={handleViewDetails}>
-      <div className="aspect-w-1 aspect-h-1 w-full overflow-hidden bg-gray-100">
-        <img src={defaultDetail?.image_url || 'https://placehold.co/400x400/E5E7EB/4B5563?text=OmniStyle'} alt={product.name} className="w-full h-full object-center object-cover group-hover:opacity-75" onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/400x400/E5E7EB/4B5563?text=OmniStyle' }} />
+    <div className="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden group transition hover:shadow-xl hover:border-emerald-500/30 cursor-pointer" onClick={handleViewDetails}>
+      <div className="aspect-w-1 aspect-h-1 w-full overflow-hidden bg-gray-700">
+        <img src={defaultDetail?.image_url || 'https://placehold.co/400x400/374151/9CA3AF?text=OmniStyle'} alt={product.name} className="w-full h-full object-center object-cover group-hover:opacity-75" onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/400x400/374151/9CA3AF?text=OmniStyle' }} />
       </div>
       <div className="p-4 text-left">
-        <h3 className="text-sm font-medium text-gray-700 mb-1 truncate">{product.name}</h3>
-        <div className="flex items-center text-xs text-gray-500 mb-1">
-          <span>⭐</span><span>⭐</span><span>⭐</span><span>⭐</span><span className="text-gray-300">⭐</span>
+        <h3 className="text-sm font-medium text-white mb-1 truncate">{product.name}</h3>
+        <div className="flex items-center text-xs text-gray-400 mb-1">
+          <span className="text-yellow-400">⭐</span><span className="text-yellow-400">⭐</span><span className="text-yellow-400">⭐</span><span className="text-yellow-400">⭐</span><span className="text-gray-600">⭐</span>
           <span className="ml-1">(1.2k)</span>
         </div>
-        <p className="text-md font-semibold text-gray-900">{product.price.toFixed(2)}€</p>
+        <p className="text-md font-semibold text-emerald-400">{product.price.toFixed(2)}€</p>
       </div>
     </div>
   );
@@ -762,7 +753,7 @@ const HomePage = ({ products, loading, categories, onSelectCategory, setPage, se
 
     <div className="mb-12">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-800">Las Mejores Ofertas Para Ti</h2>
+        <h2 className="text-2xl font-bold text-white">Las Mejores Ofertas Para Ti</h2>
         <button className="text-sm font-medium text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 px-4 py-2 rounded-lg transition-all duration-300">Ver Todas &rarr;</button>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -816,7 +807,7 @@ const ProductDetailPage = ({ product, addToCart, toggleFavorite, isFavorite }) =
   const availableSizes = [...new Set(product.details.filter(d => d.color === selectedColor).map(d => d.size))];
 
   return (
-    <div className="p-4 sm:p-8 flex flex-col md:flex-row gap-8 max-w-5xl mx-auto bg-white rounded-lg shadow-md">
+    <div className="p-4 sm:p-8 flex flex-col md:flex-row gap-8 max-w-5xl mx-auto bg-gray-800 rounded-lg shadow-md border border-gray-700">
       {/* Columna Izquierda: Imágenes */}
       <div className="md:w-1/2">
         <img src={currentDetail?.image_url || 'https://placehold.co/600x600/E5E7EB/4B5563?text=OmniStyle'} alt={product.name} className="w-full rounded-lg shadow-lg mb-4 aspect-square object-cover" />
@@ -868,7 +859,7 @@ const ProductDetailPage = ({ product, addToCart, toggleFavorite, isFavorite }) =
           <div className="flex flex-wrap gap-2">
             {/* Mostrar solo las tallas disponibles para el color seleccionado */}
             {availableSizes.map(size => (
-              <button key={size} onClick={() => setSelectedSize(size)} className={`px-4 py-2 border rounded-lg text-sm font-medium transition-all duration-300 ${selectedSize === size ? 'bg-emerald-600 text-white border-emerald-600 shadow-md' : 'bg-white text-slate-700 border-slate-300 hover:bg-emerald-50 hover:border-emerald-300'}`}>
+              <button key={size} onClick={() => setSelectedSize(size)} className={`px-4 py-2 border rounded-lg text-sm font-medium transition-all duration-300 ${selectedSize === size ? 'bg-emerald-600 text-white border-emerald-600 shadow-md' : 'bg-gray-700 text-white border-gray-600 hover:bg-emerald-700 hover:border-emerald-500'}`}>
                 {size}
               </button>
             ))}
@@ -885,7 +876,7 @@ const ProductDetailPage = ({ product, addToCart, toggleFavorite, isFavorite }) =
             >
               -
             </button>
-            <span className="px-4 py-2 font-medium text-slate-800">{quantity}</span>
+            <span className="px-4 py-2 font-medium text-white">{quantity}</span>
             <button 
               onClick={() => setQuantity(quantity + 1)}
               className="px-3 py-2 text-slate-600 hover:bg-slate-100 transition-colors duration-300"
@@ -944,12 +935,12 @@ const CartPage = ({ cartItems, setCartItems, setPage, clearCart }) => {
   if (cartItems.length === 0) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-16 text-center">
-        <div className="bg-slate-50 rounded-lg p-12">
-          <svg className="mx-auto h-12 w-12 text-slate-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div className="bg-gray-800 rounded-lg p-12 border border-gray-700">
+          <svg className="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
           </svg>
-          <h2 className="text-2xl font-semibold text-slate-800 mb-2">Tu carrito está vacío</h2>
-          <p className="text-slate-600 mb-6">¡Descubre nuestros productos y añade algunos a tu carrito!</p>
+          <h2 className="text-2xl font-semibold text-white mb-2">Tu carrito está vacío</h2>
+          <p className="text-gray-400 mb-6">¡Descubre nuestros productos y añade algunos a tu carrito!</p>
           <button 
             onClick={() => setPage(PAGES.HOME)}
             className="bg-emerald-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-emerald-700 transition-all duration-300 shadow-md hover:shadow-lg"
@@ -964,7 +955,7 @@ const CartPage = ({ cartItems, setCartItems, setPage, clearCart }) => {
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-slate-800">Mi Carrito de Compras</h1>
+        <h1 className="text-3xl font-bold text-white">Mi Carrito de Compras</h1>
         <button 
           onClick={() => {
             if (window.confirm('¿Estás seguro de que quieres vaciar el carrito?')) {
@@ -981,7 +972,7 @@ const CartPage = ({ cartItems, setCartItems, setPage, clearCart }) => {
         {/* Lista de productos */}
         <div className="lg:col-span-2 space-y-4">
           {cartItems.map(item => (
-            <div key={item.id} className="bg-white border border-slate-200 rounded-lg p-6 shadow-sm">
+            <div key={item.id} className="bg-gray-800 border border-gray-700 rounded-lg p-6 shadow-sm">
               <div className="flex flex-col sm:flex-row gap-4">
                 <img 
                   src={item.image || 'https://placehold.co/150x150/E5E7EB/4B5563?text=Producto'} 
@@ -991,7 +982,7 @@ const CartPage = ({ cartItems, setCartItems, setPage, clearCart }) => {
                 
                 <div className="flex-1">
                   <div className="flex justify-between items-start mb-2">
-                    <h3 className="text-lg font-semibold text-slate-800">{item.name}</h3>
+                    <h3 className="text-lg font-semibold text-white">{item.name}</h3>
                     <button 
                       onClick={() => removeFromCart(item.id)}
                       className="text-slate-400 hover:text-red-500 transition-colors duration-300"
@@ -1017,7 +1008,7 @@ const CartPage = ({ cartItems, setCartItems, setPage, clearCart }) => {
                       >
                         -
                       </button>
-                      <span className="px-4 py-1 font-medium text-slate-800">{item.quantity}</span>
+                      <span className="px-4 py-1 font-medium text-white">{item.quantity}</span>
                       <button 
                         onClick={() => updateQuantity(item.id, item.quantity + 1)}
                         className="px-3 py-1 text-slate-600 hover:bg-slate-100 transition-colors duration-300"
@@ -1041,8 +1032,8 @@ const CartPage = ({ cartItems, setCartItems, setPage, clearCart }) => {
 
         {/* Resumen del pedido */}
         <div className="lg:col-span-1">
-          <div className="bg-slate-50 rounded-lg p-6 sticky top-24">
-            <h2 className="text-xl font-semibold text-slate-800 mb-4">Resumen del Pedido</h2>
+          <div className="bg-gray-800 rounded-lg p-6 sticky top-24 border border-gray-700">
+            <h2 className="text-xl font-semibold text-white mb-4">Resumen del Pedido</h2>
             
             <div className="space-y-3 mb-6">
               <div className="flex justify-between text-slate-600">
@@ -1054,7 +1045,7 @@ const CartPage = ({ cartItems, setCartItems, setPage, clearCart }) => {
                 <span className="text-emerald-600 font-medium">Gratis</span>
               </div>
               <hr className="border-slate-300" />
-              <div className="flex justify-between text-lg font-semibold text-slate-800">
+              <div className="flex justify-between text-lg font-semibold text-white">
                 <span>Total</span>
                 <span className="text-emerald-600">{getTotal().toFixed(2)}€</span>
               </div>
@@ -1069,7 +1060,7 @@ const CartPage = ({ cartItems, setCartItems, setPage, clearCart }) => {
             
             <button 
               onClick={() => setPage(PAGES.HOME)}
-              className="w-full bg-slate-200 text-slate-700 py-3 rounded-lg font-medium hover:bg-slate-300 transition-all duration-300"
+              className="w-full bg-gray-700 text-white py-3 rounded-lg font-medium hover:bg-gray-600 transition-all duration-300"
             >
               Seguir Comprando
             </button>
@@ -1231,11 +1222,11 @@ const CheckoutPage = ({ cartItems, user, setPage, clearCart, setNotification }) 
 
   const renderShippingStep = () => (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-slate-800 mb-6">Información de Envío</h2>
+      <h2 className="text-2xl font-bold text-white mb-6">Información de Envío</h2>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-2">Nombre completo *</label>
+          <label className="block text-sm font-medium text-gray-200 mb-2">Nombre completo *</label>
           <input
             type="text"
             name="name"
@@ -1247,7 +1238,7 @@ const CheckoutPage = ({ cartItems, user, setPage, clearCart, setNotification }) 
         </div>
         
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-2">Email *</label>
+          <label className="block text-sm font-medium text-gray-200 mb-2">Email *</label>
           <input
             type="email"
             name="email"
@@ -1259,7 +1250,7 @@ const CheckoutPage = ({ cartItems, user, setPage, clearCart, setNotification }) 
         </div>
         
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-2">Teléfono *</label>
+          <label className="block text-sm font-medium text-gray-200 mb-2">Teléfono *</label>
           <input
             type="tel"
             name="phone"
@@ -1271,7 +1262,7 @@ const CheckoutPage = ({ cartItems, user, setPage, clearCart, setNotification }) 
         </div>
         
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-2">País</label>
+          <label className="block text-sm font-medium text-gray-200 mb-2">País</label>
           <select
             name="country"
             value={shippingData.country}
@@ -1285,7 +1276,7 @@ const CheckoutPage = ({ cartItems, user, setPage, clearCart, setNotification }) 
         </div>
         
         <div className="md:col-span-2">
-          <label className="block text-sm font-medium text-slate-700 mb-2">Dirección *</label>
+          <label className="block text-sm font-medium text-gray-200 mb-2">Dirección *</label>
           <input
             type="text"
             name="address"
@@ -1298,7 +1289,7 @@ const CheckoutPage = ({ cartItems, user, setPage, clearCart, setNotification }) 
         </div>
         
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-2">Ciudad *</label>
+          <label className="block text-sm font-medium text-gray-200 mb-2">Ciudad *</label>
           <input
             type="text"
             name="city"
@@ -1310,7 +1301,7 @@ const CheckoutPage = ({ cartItems, user, setPage, clearCart, setNotification }) 
         </div>
         
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-2">Código Postal *</label>
+          <label className="block text-sm font-medium text-gray-200 mb-2">Código Postal *</label>
           <input
             type="text"
             name="postalCode"
@@ -1326,7 +1317,7 @@ const CheckoutPage = ({ cartItems, user, setPage, clearCart, setNotification }) 
 
   const renderPaymentStep = () => (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-slate-800 mb-6">Método de Pago</h2>
+      <h2 className="text-2xl font-bold text-white mb-6">Método de Pago</h2>
       
       <div className="space-y-4">
         <div className="flex items-center space-x-3">
@@ -1339,7 +1330,7 @@ const CheckoutPage = ({ cartItems, user, setPage, clearCart, setNotification }) 
             onChange={handlePaymentChange}
             className="w-4 h-4 text-emerald-600"
           />
-          <label htmlFor="card" className="text-sm font-medium text-slate-700">
+          <label htmlFor="card" className="text-sm font-medium text-gray-200">
             💳 Tarjeta de Crédito/Débito
           </label>
         </div>
@@ -1354,7 +1345,7 @@ const CheckoutPage = ({ cartItems, user, setPage, clearCart, setNotification }) 
             onChange={handlePaymentChange}
             className="w-4 h-4 text-emerald-600"
           />
-          <label htmlFor="paypal" className="text-sm font-medium text-slate-700">
+          <label htmlFor="paypal" className="text-sm font-medium text-gray-200">
             🅿️ PayPal
           </label>
         </div>
@@ -1369,7 +1360,7 @@ const CheckoutPage = ({ cartItems, user, setPage, clearCart, setNotification }) 
             onChange={handlePaymentChange}
             className="w-4 h-4 text-emerald-600"
           />
-          <label htmlFor="transfer" className="text-sm font-medium text-slate-700">
+          <label htmlFor="transfer" className="text-sm font-medium text-gray-200">
             🏦 Transferencia Bancaria
           </label>
         </div>
@@ -1449,11 +1440,11 @@ const CheckoutPage = ({ cartItems, user, setPage, clearCart, setNotification }) 
 
   const renderReviewStep = () => (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-slate-800 mb-6">Revisar Pedido</h2>
+      <h2 className="text-2xl font-bold text-white mb-6">Revisar Pedido</h2>
       
       {/* Productos */}
-      <div className="bg-white border border-slate-200 rounded-lg p-6">
-        <h3 className="text-lg font-semibold text-slate-800 mb-4">Productos ({cartItems.length})</h3>
+      <div className="bg-gray-800 border border-gray-700 rounded-lg p-6">
+        <h3 className="text-lg font-semibold text-white mb-4">Productos ({cartItems.length})</h3>
         <div className="space-y-4">
           {cartItems.map(item => (
             <div key={item.id} className="flex justify-between items-center">
@@ -1475,9 +1466,9 @@ const CheckoutPage = ({ cartItems, user, setPage, clearCart, setNotification }) 
       </div>
       
       {/* Dirección de envío */}
-      <div className="bg-white border border-slate-200 rounded-lg p-6">
-        <h3 className="text-lg font-semibold text-slate-800 mb-4">Dirección de Envío</h3>
-        <div className="text-slate-600">
+      <div className="bg-gray-800 border border-gray-700 rounded-lg p-6">
+        <h3 className="text-lg font-semibold text-white mb-4">Dirección de Envío</h3>
+        <div className="text-gray-200">
           <p className="font-medium">{shippingData.name}</p>
           <p>{shippingData.address}</p>
           <p>{shippingData.postalCode} {shippingData.city}</p>
@@ -1490,9 +1481,9 @@ const CheckoutPage = ({ cartItems, user, setPage, clearCart, setNotification }) 
       </div>
       
       {/* Método de pago */}
-      <div className="bg-white border border-slate-200 rounded-lg p-6">
-        <h3 className="text-lg font-semibold text-slate-800 mb-4">Método de Pago</h3>
-        <div className="text-slate-600">
+      <div className="bg-gray-800 border border-gray-700 rounded-lg p-6">
+        <h3 className="text-lg font-semibold text-white mb-4">Método de Pago</h3>
+        <div className="text-gray-200">
           {paymentData.method === 'card' && (
             <div>
               <p>💳 Tarjeta terminada en ****{paymentData.cardNumber.slice(-4)}</p>
@@ -1507,7 +1498,7 @@ const CheckoutPage = ({ cartItems, user, setPage, clearCart, setNotification }) 
   );
 
   const renderOrderSummary = () => (
-    <div className="bg-slate-50 rounded-lg p-6 sticky top-4">
+    <div className="bg-gray-800 rounded-lg p-6 sticky top-4 border border-gray-700">
       <h3 className="text-lg font-semibold text-slate-800 mb-4">Resumen del Pedido</h3>
       
       <div className="space-y-3">
@@ -1697,7 +1688,7 @@ const Toast = ({ notification, onClose }) => {
 
   return (
     <div className="fixed top-4 right-4 z-50 animate-slide-in">
-      <div className={`bg-white border ${borderColor} rounded-lg shadow-lg p-4 max-w-sm w-full`}>
+      <div className={`bg-gray-800 border ${borderColor} rounded-lg shadow-lg p-4 max-w-sm w-full backdrop-blur-sm`}>
         <div className="flex items-start space-x-3">
           <div className="flex-shrink-0">
             <div className={`w-8 h-8 ${bgColor} rounded-full flex items-center justify-center`}>
@@ -1708,19 +1699,19 @@ const Toast = ({ notification, onClose }) => {
           </div>
           
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-slate-800">{notification.title}</p>
-            <p className="text-sm text-slate-600 mt-1">{notification.message}</p>
+            <p className="text-sm font-semibold text-white">{notification.title}</p>
+            <p className="text-sm text-gray-300 mt-1">{notification.message}</p>
             
             {notification.product && (
-              <div className="flex items-center mt-3 p-2 bg-slate-50 rounded-md">
+              <div className="flex items-center mt-3 p-2 bg-gray-700 rounded-md">
                 <img 
-                  src={notification.product.image || 'https://placehold.co/40x40/E5E7EB/4B5563?text=P'} 
+                  src={notification.product.image || 'https://placehold.co/40x40/374151/9CA3AF?text=P'} 
                   alt={notification.product.name}
                   className="w-10 h-10 rounded object-cover"
                 />
                 <div className="ml-3 flex-1">
-                  <p className="text-xs font-medium text-slate-800 truncate">{notification.product.name}</p>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs font-medium text-white truncate">{notification.product.name}</p>
+                  <p className="text-xs text-gray-400">
                     {notification.product.color} • {notification.product.size} • Cantidad: {notification.product.quantity}
                   </p>
                 </div>
@@ -1941,7 +1932,7 @@ const LoginPage = ({ setPage, setNotification, setUser }) => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <div>
           <div className="mx-auto h-12 w-12 flex items-center justify-center rounded-full bg-emerald-100">
@@ -2095,7 +2086,7 @@ const LoginPage = ({ setPage, setNotification, setUser }) => {
             <button
               type="button"
               onClick={() => setPage('HOME')}
-              className="w-full flex justify-center py-3 px-4 border border-slate-300 text-sm font-medium rounded-lg text-slate-700 bg-white hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-all duration-300"
+              className="w-full flex justify-center py-3 px-4 border border-gray-600 text-sm font-medium rounded-lg text-white bg-gray-700 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-all duration-300"
             >
               Volver al inicio
             </button>
@@ -2108,12 +2099,12 @@ const LoginPage = ({ setPage, setNotification, setUser }) => {
               <div className="w-full border-t border-slate-300" />
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-slate-50 text-slate-500">O continúa con</span>
+              <span className="px-2 bg-gray-800 text-gray-400">O continúa con</span>
             </div>
           </div>
 
           <div className="mt-6 grid grid-cols-2 gap-3">
-            <button className="w-full inline-flex justify-center py-2 px-4 border border-slate-300 rounded-lg shadow-sm bg-white text-sm font-medium text-slate-500 hover:bg-slate-50 transition-colors duration-300">
+            <button className="w-full inline-flex justify-center py-2 px-4 border border-gray-600 rounded-lg shadow-sm bg-gray-700 text-sm font-medium text-gray-200 hover:bg-gray-600 transition-colors duration-300">
               <svg className="h-5 w-5" viewBox="0 0 24 24">
                 <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                 <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -2123,7 +2114,7 @@ const LoginPage = ({ setPage, setNotification, setUser }) => {
               <span className="ml-2">Google</span>
             </button>
 
-            <button className="w-full inline-flex justify-center py-2 px-4 border border-slate-300 rounded-lg shadow-sm bg-white text-sm font-medium text-slate-500 hover:bg-slate-50 transition-colors duration-300">
+            <button className="w-full inline-flex justify-center py-2 px-4 border border-gray-600 rounded-lg shadow-sm bg-gray-700 text-sm font-medium text-gray-200 hover:bg-gray-600 transition-colors duration-300">
               <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
               </svg>
@@ -2396,13 +2387,13 @@ const OrdersPage = () => {
   if (orders.length === 0) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-8 text-center">
-        <h1 className="text-3xl font-bold text-slate-800 mb-8">Mis Pedidos</h1>
-        <div className="bg-slate-50 rounded-lg p-12">
-          <svg className="mx-auto h-12 w-12 text-slate-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <h1 className="text-3xl font-bold text-white mb-8">Mis Pedidos</h1>
+        <div className="bg-gray-800 rounded-lg p-12 border border-gray-700">
+          <svg className="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
           </svg>
-          <h2 className="text-xl font-semibold text-slate-800 mb-2">Aún no tienes pedidos</h2>
-          <p className="text-slate-600">¡Explora nuestros productos y realiza tu primer pedido!</p>
+          <h2 className="text-xl font-semibold text-white mb-2">Aún no tienes pedidos</h2>
+          <p className="text-gray-400">¡Explora nuestros productos y realiza tu primer pedido!</p>
         </div>
       </div>
     );
@@ -2414,7 +2405,7 @@ const OrdersPage = () => {
       
       <div className="space-y-6">
         {orders.map(order => (
-          <div key={order.id} className="bg-white rounded-lg shadow-md p-6">
+          <div key={order.id} className="bg-gray-800 rounded-lg shadow-md p-6 border border-gray-700">
             <div className="flex justify-between items-start mb-4">
               <div>
                 <h3 className="text-lg font-semibold text-slate-800">Pedido #{order.id}</h3>
@@ -2464,13 +2455,13 @@ const FavoritesPage = ({ favorites, allProducts, toggleFavorite, setPage, setSel
   if (favoriteProducts.length === 0) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-8 text-center">
-        <h1 className="text-3xl font-bold text-slate-800 mb-8">Mis Favoritos</h1>
-        <div className="bg-slate-50 rounded-lg p-12">
-          <svg className="mx-auto h-12 w-12 text-slate-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <h1 className="text-3xl font-bold text-white mb-8">Mis Favoritos</h1>
+        <div className="bg-gray-800 rounded-lg p-12 border border-gray-700">
+          <svg className="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
           </svg>
-          <h2 className="text-xl font-semibold text-slate-800 mb-2">No tienes productos favoritos</h2>
-          <p className="text-slate-600 mb-6">¡Explora nuestros productos y marca los que más te gusten!</p>
+          <h2 className="text-xl font-semibold text-white mb-2">No tienes productos favoritos</h2>
+          <p className="text-gray-400 mb-6">¡Explora nuestros productos y marca los que más te gusten!</p>
           <button 
             onClick={() => setPage(PAGES.HOME)}
             className="bg-emerald-600 text-white px-6 py-3 rounded-lg hover:bg-emerald-700 transition-colors duration-300"
@@ -2488,11 +2479,11 @@ const FavoritesPage = ({ favorites, allProducts, toggleFavorite, setPage, setSel
       
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {favoriteProducts.map(product => (
-          <div key={product.id} className="bg-white rounded-lg border border-slate-200 overflow-hidden group relative">
+          <div key={product.id} className="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden group relative">
             {/* Botón de eliminar favorito */}
             <button
               onClick={() => toggleFavorite(product.id)}
-              className="absolute top-2 right-2 z-10 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-md hover:bg-red-50 transition-colors duration-300"
+              className="absolute top-2 right-2 z-10 w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center shadow-md hover:bg-red-600 transition-colors duration-300"
             >
               <svg className="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
@@ -2561,18 +2552,18 @@ const SettingsPage = ({ handleLogout, setNotification }) => {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold text-slate-800 mb-8">Configuración</h1>
+      <h1 className="text-3xl font-bold text-white mb-8">Configuración</h1>
       
       <div className="space-y-6">
         {/* Notificaciones */}
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-xl font-semibold text-slate-800 mb-4">Notificaciones</h2>
+        <div className="bg-gray-800 rounded-lg shadow-md p-6 border border-gray-700">
+          <h2 className="text-xl font-semibold text-white mb-4">Notificaciones</h2>
           
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="font-medium text-slate-700">Notificaciones por email</h3>
-                <p className="text-sm text-slate-500">Recibe actualizaciones de pedidos por email</p>
+                <h3 className="font-medium text-white">Notificaciones por email</h3>
+                <p className="text-sm text-gray-400">Recibe actualizaciones de pedidos por email</p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
                 <input
@@ -2587,8 +2578,8 @@ const SettingsPage = ({ handleLogout, setNotification }) => {
 
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="font-medium text-slate-700">Notificaciones SMS</h3>
-                <p className="text-sm text-slate-500">Recibe actualizaciones por SMS</p>
+                <h3 className="font-medium text-white">Notificaciones SMS</h3>
+                <p className="text-sm text-gray-400">Recibe actualizaciones por SMS</p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
                 <input
@@ -2603,8 +2594,8 @@ const SettingsPage = ({ handleLogout, setNotification }) => {
 
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="font-medium text-slate-700">Emails de marketing</h3>
-                <p className="text-sm text-slate-500">Recibe ofertas especiales y novedades</p>
+                <h3 className="font-medium text-white">Emails de marketing</h3>
+                <p className="text-sm text-gray-400">Recibe ofertas especiales y novedades</p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
                 <input
@@ -2620,8 +2611,8 @@ const SettingsPage = ({ handleLogout, setNotification }) => {
         </div>
 
         {/* Preferencias */}
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-xl font-semibold text-slate-800 mb-4">Preferencias</h2>
+        <div className="bg-gray-800 rounded-lg shadow-md p-6 border border-gray-700">
+          <h2 className="text-xl font-semibold text-white mb-4">Preferencias</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
@@ -2653,13 +2644,13 @@ const SettingsPage = ({ handleLogout, setNotification }) => {
         </div>
 
         {/* Zona peligrosa */}
-        <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-red-500">
-          <h2 className="text-xl font-semibold text-red-700 mb-4">Zona peligrosa</h2>
+        <div className="bg-gray-800 rounded-lg shadow-md p-6 border-l-4 border-red-500 border border-gray-700">
+          <h2 className="text-xl font-semibold text-red-400 mb-4">Zona peligrosa</h2>
           
           <div className="space-y-4">
             <div>
-              <h3 className="font-medium text-slate-700 mb-2">Eliminar cuenta</h3>
-              <p className="text-sm text-slate-500 mb-4">
+              <h3 className="font-medium text-white mb-2">Eliminar cuenta</h3>
+              <p className="text-sm text-gray-400 mb-4">
                 Esta acción eliminará permanentemente tu cuenta y todos los datos asociados. 
                 No se puede deshacer.
               </p>
@@ -3036,7 +3027,7 @@ function AppContent() {
   };
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-gray-800 via-gray-900 to-gray-800 flex flex-col">
       <Navbar 
         setPage={setPage} 
         cartItemCount={getCartItemCount()} 
@@ -3165,11 +3156,11 @@ function AppContent() {
     if (!product) {
       return (
         <div className="max-w-4xl mx-auto px-4 py-8 text-center">
-          <h1 className="text-2xl font-bold text-slate-800 mb-4">Producto no encontrado</h1>
-          <p className="text-slate-600 mb-6">El producto que buscas no existe o ha sido eliminado.</p>
+          <h1 className="text-2xl font-bold text-white mb-4">Producto no encontrado</h1>
+          <p className="text-gray-400 mb-6">El producto que buscas no existe o ha sido eliminado.</p>
           <button 
             onClick={() => navigate('/')}
-            className="bg-emerald-600 text-white px-6 py-3 rounded-lg hover:bg-emerald-700 transition-colors duration-300"
+            className="bg-gradient-to-r from-emerald-500 to-green-500 text-white px-6 py-3 rounded-lg hover:from-emerald-600 hover:to-green-600 transition-all duration-300 shadow-lg transform hover:scale-105"
           >
             Volver al inicio
           </button>

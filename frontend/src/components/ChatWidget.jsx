@@ -26,16 +26,8 @@ const ChatWidget = () => {
 
     // Función para ver producto completo
     const handleViewProduct = (productId) => {
-        // Usar la URL base actual para abrir la página del producto
-        const baseUrl = window.location.origin;
-        window.open(`${baseUrl}/product/${productId}`, '_blank');
-        
-        // Añadir mensaje informativo al chat
-        setMessages(prev => [...prev, { 
-            role: 'assistant', 
-            content: '🔗 He abierto la página del producto en una nueva ventana donde puedes ver todos los detalles y añadirlo al carrito.',
-            isSystemMessage: true
-        }]);
+        // Navegar a la página del producto en la misma ventana
+        window.location.href = `/product/${productId}`;
     };
 
     // Función para manejar el envío del formulario (cuando el usuario presiona Enter)
@@ -103,7 +95,7 @@ const ChatWidget = () => {
             {/* Botón flotante */}
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="fixed bottom-6 right-6 bg-indigo-600 text-white p-4 rounded-full shadow-lg hover:bg-indigo-700 transition z-50 transform hover:scale-110"
+                className="fixed bottom-6 right-6 bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-4 rounded-full shadow-2xl hover:from-purple-700 hover:to-indigo-700 transition-all duration-300 z-50 transform hover:scale-110 ring-4 ring-purple-500/20"
                 aria-label="Abrir chat de IA"
             >
                 {/* Icono de Chat */}
@@ -114,23 +106,31 @@ const ChatWidget = () => {
 
             {/* Panel del Chat */}
             {isOpen && (
-                <div className="fixed bottom-24 right-6 w-80 sm:w-96 max-h-[70vh] bg-white rounded-lg shadow-xl border border-gray-200 z-40 flex flex-col">
+                <div className="fixed bottom-24 right-6 w-80 sm:w-96 max-h-[70vh] bg-gray-900 rounded-lg shadow-2xl border border-gray-700 z-40 flex flex-col">
                     {/* Cabecera */}
-                    <div className="bg-indigo-600 text-white p-3 rounded-t-lg flex justify-between items-center cursor-pointer" onClick={() => setIsOpen(false)}>
+                    <div className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-3 rounded-t-lg flex justify-between items-center">
                         <h3 className="font-semibold">Asistente OmniStyle</h3>
-                        <button className="text-indigo-100 hover:text-white text-2xl leading-none">&times;</button>
+                        <button 
+                            onClick={() => setIsOpen(false)}
+                            className="text-purple-100 hover:text-white hover:bg-white/20 rounded-full p-1 transition-all duration-200 transform hover:scale-110"
+                            aria-label="Cerrar chat"
+                        >
+                            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
                     </div>
 
                     {/* Área de Mensajes */}
-                    <div className="flex-1 p-4 overflow-y-auto space-y-3">
+                    <div className="flex-1 p-4 overflow-y-auto space-y-3 bg-gray-900">
                         {messages.map((msg, index) => (
                             <div key={index} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                                 <div className={`px-3 py-2 rounded-lg max-w-[80%] text-sm ${
                                     msg.role === 'user'
-                                        ? 'bg-indigo-500 text-white'
+                                        ? 'bg-gradient-to-r from-purple-500 to-indigo-500 text-white shadow-lg'
                                         : msg.isSystemMessage 
-                                        ? 'bg-green-100 text-green-800 border border-green-200'
-                                        : 'bg-gray-200 text-gray-800'
+                                        ? 'bg-emerald-900/30 text-emerald-300 border border-emerald-700'
+                                        : 'bg-gray-800 text-gray-200 border border-gray-700'
                                     }`}>
                                     <div className="whitespace-pre-wrap">{msg.content}</div>
                                     
@@ -138,18 +138,18 @@ const ChatWidget = () => {
                                     {msg.products && msg.products.length > 0 && (
                                         <div className="mt-3 space-y-2">
                                             {msg.products.map((product) => (
-                                                <div key={product.id} className="bg-white p-2 rounded border border-gray-300">
-                                                    <div className="font-medium text-gray-900">{product.name}</div>
-                                                    <div className="text-xs text-gray-600">{product.price}€</div>
+                                                <div key={product.id} className="bg-gray-700 p-3 rounded-lg border border-gray-600 shadow-lg">
+                                                    <div className="font-medium text-white">{product.name}</div>
+                                                    <div className="text-sm text-emerald-400 font-semibold">{product.price}€</div>
                                                     {product.colors && (
-                                                        <div className="text-xs text-gray-600">Colores: {product.colors}</div>
+                                                        <div className="text-xs text-gray-300">Colores: {product.colors}</div>
                                                     )}
                                                     {product.sizes && (
-                                                        <div className="text-xs text-gray-600">Tallas: {product.sizes}</div>
+                                                        <div className="text-xs text-gray-300">Tallas: {product.sizes}</div>
                                                     )}
                                                     <button
                                                         onClick={() => handleViewProduct(product.id)}
-                                                        className="mt-1 px-2 py-1 bg-green-500 text-white text-xs rounded hover:bg-green-600 transition-colors"
+                                                        className="mt-2 px-3 py-1.5 bg-gradient-to-r from-emerald-500 to-green-500 text-white text-xs rounded-lg hover:from-emerald-600 hover:to-green-600 transition-all duration-200 transform hover:scale-105 shadow-md"
                                                     >
                                                         Ver Producto
                                                     </button>
@@ -163,8 +163,15 @@ const ChatWidget = () => {
                         {/* Indicador de carga */}
                         {isLoading && (
                             <div className="flex justify-start">
-                                <div className="px-3 py-2 rounded-lg bg-gray-200 text-gray-500 text-sm">
-                                    Pensando...
+                                <div className="px-3 py-2 rounded-lg bg-gray-800 text-gray-300 text-sm border border-gray-700 animate-pulse">
+                                    <div className="flex items-center space-x-2">
+                                        <div className="flex space-x-1">
+                                            <div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce"></div>
+                                            <div className="w-2 h-2 bg-indigo-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                                            <div className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                                        </div>
+                                        <span>Pensando...</span>
+                                    </div>
                                 </div>
                             </div>
                         )}
@@ -173,11 +180,11 @@ const ChatWidget = () => {
                     </div>
 
                     {/* Input para escribir */}
-                    <form onSubmit={handleSubmit} className="p-3 border-t border-gray-200">
+                    <form onSubmit={handleSubmit} className="p-3 border-t border-gray-700 bg-gray-800 rounded-b-lg">
                         <input
                             type="text"
                             placeholder="Pregúntame sobre moda..."
-                            className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+                            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 text-white placeholder-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm transition-all duration-200"
                             value={inputMessage}
                             onChange={(e) => setInputMessage(e.target.value)}
                             disabled={isLoading} // Deshabilita mientras carga

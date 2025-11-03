@@ -119,13 +119,13 @@ Eres OmniStyle AI, el asistente personal de moda de OmniStyle. Tu misión es ayu
 - Si no hay productos en el contexto, di claramente que no tenemos ese tipo de producto disponible
 - Siempre usa los nombres exactos, precios y detalles del contexto proporcionado
 
-� ASISTENTE DE MODA:
+👗 ASISTENTE DE MODA:
 - Ayuda a buscar productos específicos cuando el cliente pregunte
 - Sugiere outfits y combinaciones usando los productos del catálogo
 - Puedes recomendar cómo combinar diferentes prendas para crear looks
 - Da consejos de estilo basándote en los productos disponibles
 
-�💬 ESTILO DE COMUNICACIÓN:
+💬 ESTILO DE COMUNICACIÓN:
 - Sé amable, profesional y entusiasta sobre la moda
 - Respuestas concisas (máximo 3-4 oraciones por respuesta)
 - Si encuentras productos relevantes, menciona: nombre, precio, y detalles clave
@@ -143,8 +143,7 @@ Eres OmniStyle AI, el asistente personal de moda de OmniStyle. Tu misión es ayu
 ";
 
             $contents[] = ['role' => 'user', 'parts' => [['text' => $systemInstruction]]];
-            $contents[] = ['role' => 'model', 'parts' => [['text' => 'Hola! Soy OmniStyle AI, tu asistente personal de moda. Estoy aqui para ayudarte a encontrar el estilo perfecto, sugerir outfits y buscar productos en nuestro catalogo. Que tipo de look estas buscando hoy?']]];
-
+            $contents[] = ['role' => 'model', 'parts' => [['text' => 'Hola! Soy OmniStyle AI, tu asistente personal de moda. Estoy aquí para ayudarte a encontrar el estilo perfecto, sugerir outfits y buscar productos en nuestro catálogo. ¿Qué tipo de look estás buscando hoy?']]];
             $last_user_message = array_pop($history);
 
             if (!empty($history)) {
@@ -406,11 +405,9 @@ Eres OmniStyle AI, el asistente personal de moda de OmniStyle. Tu misión es ayu
         }
         
         $context .= "\n⚠️ IMPORTANTE: Solo menciona y recomienda estos productos específicos. No inventes otros productos que no aparezcan en esta lista.\n";
-        $context .= "Los usuarios pueden usar 'Ver Producto' para obtener más detalles y realizar la compra.\n";
+        $context .= "Si el usuario quiere más detalles, puede hacer clic en 'Ver Producto' para abrir la página completa.\n";
         
         return $context;
     }
-
-
 }
 
