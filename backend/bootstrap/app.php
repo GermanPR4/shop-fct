@@ -17,9 +17,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'api/*',
         ]);
 
-        // Habilitar CORS para rutas API
-        $middleware->api(append: [
-            \App\Http\Middleware\Cors::class,
+        // Habilitar CORS para todas las rutas API usando el middleware nativo de Laravel
+        $middleware->api(prepend: [
+            \Illuminate\Http\Middleware\HandleCors::class,
         ]);
     
     })

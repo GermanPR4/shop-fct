@@ -39,6 +39,7 @@ const ChatWidget = () => {
 
             const response = await fetch(`${API_URL}/api/ai/add-to-cart`, {
                 method: 'POST',
+                credentials: 'include',
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
@@ -102,6 +103,7 @@ const ChatWidget = () => {
             // Llama a la API del backend
             const response = await fetch(`${API_URL}/api/chat`, {
                 method: 'POST',
+                credentials: 'include',
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
