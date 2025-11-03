@@ -26,14 +26,13 @@ const ChatWidget = () => {
 
     // Función para ver producto completo
     const handleViewProduct = (productId) => {
-        // Por ahora, mostrar mensaje informativo
-        // En el futuro, esto abrirá la página del producto
-        alert(`Producto ID: ${productId}\n\nEsta funcionalidad abrirá la página completa del producto donde podrás ver todas las imágenes, detalles y añadirlo al carrito.`);
+        // Abrir la página del producto en una nueva pestaña
+        window.open(`http://localhost:5173/product/${productId}`, '_blank');
         
         // Añadir mensaje informativo al chat
         setMessages(prev => [...prev, { 
             role: 'assistant', 
-            content: '� Próximamente podrás ver la página completa del producto con todas las imágenes y opciones de compra.',
+            content: '🔗 He abierto la página del producto en una nueva ventana donde puedes ver todos los detalles y añadirlo al carrito.',
             isSystemMessage: true
         }]);
     };
