@@ -22,30 +22,25 @@ class AiMessageController extends Controller
         Log::info('Datos recibidos:', $request->all());
 
         try {
-            // --- CORRECCIÓN AQUÍ ---
-            // Hemos quitado la regla 'exists:ai_sessions,session_token'
-            // La lógica firstOrCreate manejará si existe o no, evitando el error 422.
             $validated = $request->validate([
                 'session_token' => 'sometimes|nullable|string',
                 'message' => 'required|string|max:1000',
             ]);
-            // --- FIN CORRECCIÓN ---
 
             Log::info('Validación pasada.');
 
             $userId = $request->user()?->id;
             $receivedToken = $request->input('session_token');
+            
             // Lógica de token mejorada
             $sessionToken = $receivedToken;
-            if (!$sessionToken && !$userId) { // Invitado nuevo
+            if (!$sessionToken && !$userId) {
                 $sessionToken = Str::uuid()->toString();
-            } elseif ($userId && !$receivedToken) { // Usuario logueado sin token
+            } elseif ($userId && !$receivedToken) {
                 $existingUserSession = AiSession::where('user_id', $userId)->latest('last_message_at')->first();
-                $sessionToken = $existingUserSession?->session_token ?? Str::uuid()->toString(); // Usar existente o crear nuevo
+                $sessionToken = $existingUserSession?->session_token ?? Str::uuid()->toString();
             }
 
-            // Si $receivedToken existe pero no está en la BD (porque hicimos migrate:fresh),
-            // firstOrCreate creará uno nuevo con ese token.
             Log::info('Token de sesión a usar:', ['token' => $sessionToken, 'recibido' => $receivedToken, 'userId' => $userId]);
 
             // 1. Encontrar o crear la sesión de IA
@@ -76,6 +71,8 @@ class AiMessageController extends Controller
             Log::info('Mensaje de usuario guardado:', ['message_id' => $userAiMessage->id, 'is_query' => $isProductQuery]);
 
             $productContext = "";
+            $foundProducts = collect(); // Inicializar como colección vacía
+            
             if ($isProductQuery) {
                 Log::info('Palabras clave extraídas:', $keywords);
                 $foundProducts = $this->searchProducts($keywords);
@@ -113,7 +110,29 @@ class AiMessageController extends Controller
             $apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=' . $apiKey;
 
             $contents = [];
-            $systemInstruction = "Eres OmniStyle AI, un asistente de moda experto y amable de la tienda OmniStyle. Tu objetivo principal es ayudar al usuario a encontrar prendas en nuestro catálogo. Usa el historial de conversación y el contexto de productos proporcionado para dar recomendaciones relevantes y específicas de OmniStyle. Si encuentras productos adecuados basados en la consulta y el contexto, menciónalos brevemente (Nombre, Colores/Tallas disponibles si aplican, Precio) y pregunta directamente al usuario si quiere añadir alguno al carrito. Si no encuentras productos exactos en el contexto, informa al usuario amablemente y sugiere alternativas generales basadas en su consulta. Sé siempre conciso, amigable y enfocado en la venta.";
+            $systemInstruction = "
+Eres OmniStyle AI, el asistente de moda oficial de la tienda OmniStyle. REGLAS CRÍTICAS:
+
+🎯 SOBRE PRODUCTOS:
+- SOLO menciona productos que aparezcan en el contexto de catálogo que te proporciono
+- NUNCA inventes productos, precios, colores o tallas que no estén en el contexto
+- Si no hay productos en el contexto, di claramente que no tenemos ese tipo de producto disponible
+- Siempre usa los nombres exactos, precios y detalles del contexto proporcionado
+
+💬 ESTILO DE COMUNICACIÓN:
+- Sé amable, profesional y conciso (máximo 3-4 oraciones por respuesta)
+- Enfócate en ayudar al cliente a encontrar lo que busca
+- Si encuentras productos relevantes, menciona: nombre, precio, y detalles clave
+- Pregunta si quiere más información o ayuda con algo específico
+
+❌ PROHIBIDO:
+- Inventar productos que no existen en el catálogo
+- Dar precios aproximados o inventados
+- Mencionar productos de otras tiendas
+- Respuestas muy largas o técnicas
+
+✅ OBJETIVO: Ayudar al cliente basándote ÚNICAMENTE en nuestro catálogo real.
+";
 
             $contents[] = ['role' => 'user', 'parts' => [['text' => $systemInstruction]]];
             $contents[] = ['role' => 'model', 'parts' => [['text' => 'Entendido. Soy OmniStyle AI. ¡Vamos a encontrar el estilo perfecto! Pregúntame lo que necesites sobre nuestro catálogo.']]];
@@ -185,10 +204,27 @@ class AiMessageController extends Controller
             ]);
             Log::info('Respuesta de asistente guardada:', ['message_id' => $assistantAiMessage->id]);
 
-            // 7. Devolver la respuesta al frontend
+            // 7. Preparar productos para el frontend (si encontró alguno)
+            $productsForFrontend = [];
+            if ($isProductQuery && !empty($foundProducts)) {
+                $productsForFrontend = $foundProducts->map(function($product) {
+                    return [
+                        'id' => $product->id,
+                        'name' => $product->name,
+                        'price' => $product->price,
+                        'colors' => $product->details->pluck('color')->unique()->filter()->implode(', '),
+                        'sizes' => $product->details->pluck('size')->unique()->filter()->sort()->implode(', '),
+                        'image' => $product->image_url ?? null,
+                        'short_description' => $product->short_description
+                    ];
+                })->toArray();
+            }
+
+            // 8. Devolver la respuesta al frontend
             return response()->json([
                 'reply' => $assistantMessage,
-                'session_token' => $session->session_token
+                'session_token' => $session->session_token,
+                'products' => $productsForFrontend
             ]);
 
         } catch (ValidationException $e) {
@@ -211,65 +247,281 @@ class AiMessageController extends Controller
     {
         $processedMessage = strtolower(preg_replace('/[¿?¡!,.]/', '', $message));
         $words = explode(' ', $processedMessage);
-        $stopWords = ['un', 'una', 'unos', 'unas', 'el', 'la', 'los', 'las', 'de', 'del', 'a', 'ante', 'bajo', 'con', 'contra', 'desde', 'en', 'entre', 'hacia', 'hasta', 'para', 'por', 'según', 'sin', 'sobre', 'tras', 'quiero', 'busco', 'necesito', 'algo', 'ropa', 'prenda', 'dame', 'ver', 'mostrar', 'tienes', 'hay', 'puedes', 'ayudarme'];
-        $keywords = array_filter($words, fn($word) => !in_array($word, $stopWords) && strlen($word) > 2);
-        return array_values(array_unique($keywords));
+        
+        $stopWords = [
+            'un', 'una', 'unos', 'unas', 'el', 'la', 'los', 'las', 'de', 'del', 'a', 'ante', 
+            'bajo', 'con', 'contra', 'desde', 'en', 'entre', 'hacia', 'hasta', 'para', 'por', 
+            'según', 'sin', 'sobre', 'tras', 'quiero', 'busco', 'necesito', 'algo', 'ropa', 
+            'prenda', 'dame', 'ver', 'mostrar', 'tienes', 'hay', 'puedes', 'ayudarme', 'me', 
+            'mi', 'tu', 'su', 'nos', 'os', 'le', 'les', 'se', 'que', 'como', 'donde', 'cuando',
+            'hola', 'gracias', 'por favor', 'si', 'no', 'bien', 'mal', 'muy', 'más', 'menos'
+        ];
+        
+        // Palabras clave específicas de moda y productos
+        $fashionKeywords = [
+            'vestido', 'vestidos', 'camisa', 'camisas', 'pantalon', 'pantalones', 'falda', 'faldas',
+            'zapatos', 'zapatillas', 'botas', 'sandalia', 'sandalias', 'chaqueta', 'chaquetas',
+            'abrigo', 'abrigos', 'jersey', 'jerseys', 'sudadera', 'sudaderas', 'camiseta', 'camisetas',
+            'jeans', 'vaqueros', 'short', 'shorts', 'blazer', 'blazers', 'bufanda', 'bufandas',
+            'gorro', 'gorros', 'sombrero', 'sombreros', 'bolso', 'bolsos', 'mochila', 'mochilas',
+            'negro', 'blanco', 'rojo', 'azul', 'verde', 'amarillo', 'rosa', 'gris', 'marron',
+            'xs', 's', 'm', 'l', 'xl', 'xxl', 'talla', 'color', 'casual', 'formal', 'deportivo',
+            'hombre', 'mujer', 'unisex', 'invierno', 'verano', 'primavera', 'otoño'
+        ];
+        
+        $keywords = array_filter($words, function($word) use ($stopWords, $fashionKeywords) {
+            return !in_array($word, $stopWords) && 
+                   strlen($word) > 2 && 
+                   (in_array($word, $fashionKeywords) || !in_array($word, $stopWords));
+        });
+        
+        $result = array_values(array_unique($keywords));
+        
+        Log::info('Palabras clave extraídas del mensaje:', [
+            'mensaje' => $message,
+            'keywords' => $result
+        ]);
+        
+        return $result;
     }
 
     private function searchProducts(array $keywords)
     {
-        $query = Product::query()->with(['details', 'categories']);
-        $query->where('is_active', true);
-
+        Log::info('Buscando productos con palabras clave:', $keywords);
+        
         if (empty($keywords)) {
             return collect();
         }
 
+        $query = Product::query()->with(['details', 'categories']);
+        $query->where('is_active', true);
+
+        // Buscar por cada palabra clave con diferentes variaciones
         foreach ($keywords as $keyword) {
             $singular = rtrim($keyword, 's');
-            $plural = $keyword . 's';
-
+            $plural = $keyword . (substr($keyword, -1) !== 's' ? 's' : '');
+            
             $query->where(function ($q) use ($keyword, $singular, $plural) {
+                // Búsqueda en nombre del producto
                 $q->where('products.name', 'LIKE', "%{$keyword}%")
-                    ->orWhere('products.name', 'LIKE', "%{$singular}%")
-                    ->orWhere('products.name', 'LIKE', "%{$plural}%")
-                    ->orWhere('products.short_description', 'LIKE', "%{$keyword}%")
-                    ->orWhere('products.long_description', 'LIKE', "%{$keyword}%")
-                    ->orWhereHas(
-                        'categories',
-                        fn($cq) => $cq->where('name', 'LIKE', "%{$keyword}%")
-                            ->orWhere('name', 'LIKE', "%{$singular}%")
-                            ->orWhere('name', 'LIKE', "%{$plural}%")
-                    )
-                    ->orWhereHas('details', function ($dq) use ($keyword) {
-                        if (!is_numeric($keyword)) {
-                            $dq->where('color', 'LIKE', "%{$keyword}%")
-                                ->orWhere('size', 'LIKE', "%{$keyword}%");
-                        } else {
-                            $dq->where('size', 'LIKE', "%{$keyword}%")
-                                ->orWhere('color', 'LIKE', "%{$keyword}%");
-                        }
-                    });
+                  ->orWhere('products.name', 'LIKE', "%{$singular}%")
+                  ->orWhere('products.name', 'LIKE', "%{$plural}%")
+                  
+                  // Búsqueda en descripciones
+                  ->orWhere('products.short_description', 'LIKE', "%{$keyword}%")
+                  ->orWhere('products.long_description', 'LIKE', "%{$keyword}%")
+                  
+                  // Búsqueda en categorías
+                  ->orWhereHas('categories', function($cq) use ($keyword, $singular, $plural) {
+                      $cq->where('name', 'LIKE', "%{$keyword}%")
+                         ->orWhere('name', 'LIKE', "%{$singular}%")
+                         ->orWhere('name', 'LIKE', "%{$plural}%");
+                  })
+                  
+                  // Búsqueda en detalles (colores y tallas)
+                  ->orWhereHas('details', function ($dq) use ($keyword, $singular, $plural) {
+                      $dq->where('color', 'LIKE', "%{$keyword}%")
+                         ->orWhere('color', 'LIKE', "%{$singular}%")
+                         ->orWhere('color', 'LIKE', "%{$plural}%")
+                         ->orWhere('size', 'LIKE', "%{$keyword}%");
+                  });
             });
         }
-        return $query->take(3)->get();
+        
+        $products = $query->distinct()->limit(5)->get();
+        
+        Log::info('Productos encontrados:', [
+            'count' => $products->count(),
+            'products' => $products->pluck('name')->toArray()
+        ]);
+        
+        return $products;
     }
 
     private function formatProductContext($products): string
     {
-        $context = "";
-        foreach ($products as $product) {
-            $context .= "Producto: " . $product->name . "\n";
-            $context .= "  Precio: " . number_format($product->price, 2, ',', '.') . "€\n";
-            if ($product->details->isNotEmpty()) {
-                $colors = $product->details->pluck('color')->unique()->implode(', ');
-                $sizes = $product->details->pluck('size')->unique()->sort()->implode(', ');
-                $context .= "  Colores: " . $colors . "\n";
-                $context .= "  Tallas: " . $sizes . "\n";
-            }
-            $context .= "---\n";
+        if ($products->isEmpty()) {
+            return "No se encontraron productos que coincidan exactamente con la búsqueda en nuestro catálogo actual.";
         }
-        return Str::limit(trim($context), 2000);
+        
+        $context = "=== PRODUCTOS DISPONIBLES EN OMNISTYLE ===\n";
+        $context .= "Solo estos productos existen realmente en nuestra tienda:\n\n";
+        
+        foreach ($products as $product) {
+            $context .= "🛍️ **{$product->name}**\n";
+            $context .= "   💰 Precio: " . number_format($product->price, 2, ',', '.') . "€\n";
+            $context .= "   📝 ID del producto: {$product->id}\n";
+            
+            if ($product->short_description) {
+                $context .= "   📄 Descripción: {$product->short_description}\n";
+            }
+            
+            if ($product->details->isNotEmpty()) {
+                $colors = $product->details->pluck('color')->unique()->filter()->implode(', ');
+                $sizes = $product->details->pluck('size')->unique()->filter()->sort()->implode(', ');
+                
+                if ($colors) {
+                    $context .= "   🎨 Colores disponibles: {$colors}\n";
+                }
+                if ($sizes) {
+                    $context .= "   📏 Tallas disponibles: {$sizes}\n";
+                }
+            }
+            
+            if ($product->categories->isNotEmpty()) {
+                $categories = $product->categories->pluck('name')->implode(', ');
+                $context .= "   🏷️ Categorías: {$categories}\n";
+            }
+            
+            $context .= "\n";
+        }
+        
+        $context .= "\n⚠️ IMPORTANTE: Solo menciona y recomienda estos productos específicos. No inventes otros productos que no aparezcan en esta lista.\n";
+        $context .= "Si el usuario quiere añadir un producto al carrito, usa el ID del producto que aparece arriba.\n";
+        
+        return $context;
+    }
+
+    /**
+     * Método para que la IA añada productos al carrito
+     */
+    public function addToCart(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'product_id' => 'required|exists:products,id',
+                'color' => 'sometimes|string',
+                'size' => 'sometimes|string',
+                'quantity' => 'sometimes|integer|min:1|max:10',
+                'session_token' => 'sometimes|nullable|string'
+            ]);
+
+            $productId = $validated['product_id'];
+            $color = $validated['color'] ?? null;
+            $size = $validated['size'] ?? null;
+            $quantity = $validated['quantity'] ?? 1;
+            $sessionToken = $validated['session_token'] ?? null;
+            $userId = $request->user()?->id;
+
+            // Buscar el producto
+            $product = Product::with('details')->findOrFail($productId);
+            
+            if (!$product->is_active) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Este producto ya no está disponible.'
+                ], 400);
+            }
+
+            // Si se especifica color y/o talla, verificar que existan
+            if ($color || $size) {
+                $detailQuery = $product->details();
+                
+                if ($color) {
+                    $detailQuery->where('color', $color);
+                }
+                if ($size) {
+                    $detailQuery->where('size', $size);
+                }
+                
+                $detail = $detailQuery->first();
+                
+                if (!$detail) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => "La combinación de color '{$color}' y talla '{$size}' no está disponible para este producto."
+                    ], 400);
+                }
+            }
+
+            // Obtener o crear el carrito
+            $cartQuery = \App\Models\ShoppingCart::query();
+            
+            if ($userId) {
+                $cart = $cartQuery->where('user_id', $userId)->first();
+            } elseif ($sessionToken) {
+                $cart = $cartQuery->where('session_token', $sessionToken)->first();
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Se requiere sesión para añadir productos al carrito.'
+                ], 400);
+            }
+
+            if (!$cart) {
+                $cart = \App\Models\ShoppingCart::create([
+                    'user_id' => $userId,
+                    'session_token' => $sessionToken,
+                ]);
+            }
+
+            // Crear el ID único para el item del carrito
+            $cartItemId = $productId . '-' . ($color ?? 'default') . '-' . ($size ?? 'default');
+
+            // Verificar si ya existe este item en el carrito
+            $existingItem = \App\Models\CartItem::where('shopping_cart_id', $cart->id)
+                ->where('product_id', $productId)
+                ->where('color', $color)
+                ->where('size', $size)
+                ->first();
+
+            if ($existingItem) {
+                // Actualizar cantidad
+                $existingItem->quantity += $quantity;
+                $existingItem->save();
+                
+                return response()->json([
+                    'success' => true,
+                    'message' => "Se ha actualizado la cantidad de '{$product->name}' en tu carrito.",
+                    'cart_item' => [
+                        'id' => $cartItemId,
+                        'product_id' => $product->id,
+                        'name' => $product->name,
+                        'price' => $product->price,
+                        'color' => $color,
+                        'size' => $size,
+                        'quantity' => $existingItem->quantity,
+                        'total' => $product->price * $existingItem->quantity
+                    ]
+                ]);
+            } else {
+                // Crear nuevo item
+                $cartItem = \App\Models\CartItem::create([
+                    'shopping_cart_id' => $cart->id,
+                    'product_id' => $productId,
+                    'quantity' => $quantity,
+                    'price' => $product->price,
+                    'color' => $color,
+                    'size' => $size,
+                ]);
+
+                return response()->json([
+                    'success' => true,
+                    'message' => "'{$product->name}' ha sido añadido a tu carrito.",
+                    'cart_item' => [
+                        'id' => $cartItemId,
+                        'product_id' => $product->id,
+                        'name' => $product->name,
+                        'price' => $product->price,
+                        'color' => $color,
+                        'size' => $size,
+                        'quantity' => $quantity,
+                        'total' => $product->price * $quantity
+                    ]
+                ]);
+            }
+
+        } catch (\Exception $e) {
+            Log::error('Error al añadir producto al carrito desde IA:', [
+                'error' => $e->getMessage(),
+                'request' => $request->all()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Hubo un error al añadir el producto al carrito. Inténtalo de nuevo.'
+            ], 500);
+        }
     }
 }
 

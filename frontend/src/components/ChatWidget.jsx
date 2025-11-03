@@ -24,6 +24,62 @@ const ChatWidget = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [messages]);
 
+    // Función para añadir producto al carrito desde el chat
+    const handleAddToCart = async (productId, color = null, size = null, quantity = 1) => {
+        setIsLoading(true);
+        
+        try {
+            const payload = {
+                product_id: productId,
+                color: color,
+                size: size,
+                quantity: quantity,
+                session_token: sessionToken
+            };
+
+            const response = await fetch(`${API_URL}/api/ai/add-to-cart`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify(payload),
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                // Añadir mensaje de confirmación al chat
+                setMessages(prev => [...prev, { 
+                    role: 'assistant', 
+                    content: `✅ ${data.message}`,
+                    isSystemMessage: true
+                }]);
+                
+                // Actualizar el carrito en la aplicación principal si es posible
+                if (window.updateCartCount) {
+                    window.updateCartCount();
+                }
+            } else {
+                setMessages(prev => [...prev, { 
+                    role: 'assistant', 
+                    content: `❌ ${data.message}`,
+                    isSystemMessage: true
+                }]);
+            }
+
+        } catch (error) {
+            console.error("Error al añadir producto al carrito:", error);
+            setMessages(prev => [...prev, { 
+                role: 'assistant', 
+                content: '❌ Hubo un error al añadir el producto al carrito. Inténtalo de nuevo.',
+                isSystemMessage: true
+            }]);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     // Función para manejar el envío del formulario (cuando el usuario presiona Enter)
     const handleSubmit = async (event) => {
         event.preventDefault(); // Evita que la página se recargue
@@ -62,7 +118,11 @@ const ChatWidget = () => {
             const data = await response.json();
 
             // Añade la respuesta del asistente al historial
-            setMessages(prev => [...prev, { role: 'assistant', content: data.reply }]);
+            setMessages(prev => [...prev, { 
+                role: 'assistant', 
+                content: data.reply,
+                products: data.products || null // Si la IA encontró productos
+            }]);
 
             // Guarda el nuevo token de sesión si es la primera vez o ha cambiado
             if (data.session_token && data.session_token !== sessionToken) {
@@ -106,11 +166,38 @@ const ChatWidget = () => {
                     <div className="flex-1 p-4 overflow-y-auto space-y-3">
                         {messages.map((msg, index) => (
                             <div key={index} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                                <div className={`px-3 py-2 rounded-lg max-w-[80%] text-sm ${msg.role === 'user'
+                                <div className={`px-3 py-2 rounded-lg max-w-[80%] text-sm ${
+                                    msg.role === 'user'
                                         ? 'bg-indigo-500 text-white'
+                                        : msg.isSystemMessage 
+                                        ? 'bg-green-100 text-green-800 border border-green-200'
                                         : 'bg-gray-200 text-gray-800'
                                     }`}>
-                                    {msg.content}
+                                    <div className="whitespace-pre-wrap">{msg.content}</div>
+                                    
+                                    {/* Mostrar productos si los hay */}
+                                    {msg.products && msg.products.length > 0 && (
+                                        <div className="mt-3 space-y-2">
+                                            {msg.products.map((product) => (
+                                                <div key={product.id} className="bg-white p-2 rounded border border-gray-300">
+                                                    <div className="font-medium text-gray-900">{product.name}</div>
+                                                    <div className="text-xs text-gray-600">{product.price}€</div>
+                                                    {product.colors && (
+                                                        <div className="text-xs text-gray-600">Colores: {product.colors}</div>
+                                                    )}
+                                                    {product.sizes && (
+                                                        <div className="text-xs text-gray-600">Tallas: {product.sizes}</div>
+                                                    )}
+                                                    <button
+                                                        onClick={() => handleAddToCart(product.id)}
+                                                        className="mt-1 px-2 py-1 bg-indigo-500 text-white text-xs rounded hover:bg-indigo-600 transition-colors"
+                                                    >
+                                                        Añadir al Carrito
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         ))}
