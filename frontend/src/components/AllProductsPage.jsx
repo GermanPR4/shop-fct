@@ -1,12 +1,170 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+
+// Función para normalizar texto (eliminar acentos y convertir a minúsculas)
+const normalizeText = (text) => {
+    if (!text) return '';
+    return text
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '') // Eliminar acentos
+        .trim();
+};
+
+// Función para obtener la raíz de una palabra (stemming básico en español)
+const getStem = (word) => {
+    // Eliminar plurales comunes en español
+    word = word.replace(/s$/, ''); // zapatos -> zapato
+    word = word.replace(/es$/, ''); // pantalones -> pantalone
+    word = word.replace(/as$/, ''); // camisas -> camisa
+    word = word.replace(/os$/, ''); // vestidos -> vestid
+    
+    // Eliminar terminaciones comunes
+    word = word.replace(/ción$/, ''); // colección -> colecc
+    word = word.replace(/dad$/, ''); // calidad -> cali
+    word = word.replace(/mente$/, ''); // rápidamente -> rápida
+    
+    return word;
+};
+
+// Función para calcular la distancia de Levenshtein (para errores tipográficos)
+const levenshteinDistance = (str1, str2) => {
+    const matrix = [];
+    
+    for (let i = 0; i <= str2.length; i++) {
+        matrix[i] = [i];
+    }
+    
+    for (let j = 0; j <= str1.length; j++) {
+        matrix[0][j] = j;
+    }
+    
+    for (let i = 1; i <= str2.length; i++) {
+        for (let j = 1; j <= str1.length; j++) {
+            if (str2.charAt(i - 1) === str1.charAt(j - 1)) {
+                matrix[i][j] = matrix[i - 1][j - 1];
+            } else {
+                matrix[i][j] = Math.min(
+                    matrix[i - 1][j - 1] + 1, // sustitución
+                    matrix[i][j - 1] + 1,     // inserción
+                    matrix[i - 1][j] + 1      // eliminación
+                );
+            }
+        }
+    }
+    
+    return matrix[str2.length][str1.length];
+};
+
+// Función para calcular la puntuación de relevancia
+const calculateRelevance = (product, searchTerms) => {
+    let score = 0;
+    const productName = normalizeText(product.name);
+    const productDesc = normalizeText(product.description || '');
+    const productCategories = product.categories?.map(c => normalizeText(c.name)).join(' ') || '';
+    
+    searchTerms.forEach(term => {
+        const termStem = getStem(term);
+        
+        // Coincidencia exacta en nombre (puntuación alta)
+        if (productName.includes(term)) {
+            score += 100;
+        }
+        
+        // Coincidencia con raíz en nombre (plurales, etc.)
+        if (productName.includes(termStem)) {
+            score += 80;
+        }
+        
+        // Coincidencia exacta en descripción
+        if (productDesc.includes(term)) {
+            score += 50;
+        }
+        
+        // Coincidencia con raíz en descripción
+        if (productDesc.includes(termStem)) {
+            score += 40;
+        }
+        
+        // Coincidencia en categorías
+        if (productCategories.includes(term)) {
+            score += 70;
+        }
+        
+        if (productCategories.includes(termStem)) {
+            score += 60;
+        }
+        
+        // Búsqueda difusa (errores tipográficos) - solo para palabras de más de 3 caracteres
+        if (term.length > 3) {
+            const words = productName.split(/\s+/);
+            words.forEach(word => {
+                const distance = levenshteinDistance(term, word);
+                // Si la distancia es pequeña (1-2 caracteres de diferencia), añadir puntos
+                if (distance === 1) {
+                    score += 30;
+                } else if (distance === 2) {
+                    score += 15;
+                }
+            });
+        }
+    });
+    
+    return score;
+};
 
 const AllProductsPage = ({ products, setSelectedProduct, addToCart, toggleFavorite, favorites = [] }) => {
     const navigate = useNavigate();
-    const [sortBy, setSortBy] = useState('name');
-    const [sortOrder, setSortOrder] = useState('asc');
+    const [searchParams] = useSearchParams();
+    const searchQuery = searchParams.get('search') || '';
+    const dealsFilter = searchParams.get('deals') || '';
+    
+    const [sortBy, setSortBy] = useState(searchQuery ? 'relevance' : 'name');
+    const [sortOrder, setSortOrder] = useState(searchQuery ? 'desc' : 'asc');
     const [currentPage, setCurrentPage] = useState(1);
+    const [filteredProducts, setFilteredProducts] = useState(products);
     const productsPerPage = 12;
+
+    // Efecto para filtrar productos según la búsqueda o descuentos
+    useEffect(() => {
+        let result = products;
+
+        // Filtrar por búsqueda
+        if (searchQuery) {
+            const normalizedQuery = normalizeText(searchQuery);
+            const searchTerms = normalizedQuery.split(/\s+/).filter(term => term.length > 0);
+            
+            // Filtrar y puntuar productos
+            result = result
+                .map(product => ({
+                    ...product,
+                    relevanceScore: calculateRelevance(product, searchTerms)
+                }))
+                .filter(product => product.relevanceScore > 0)
+                .sort((a, b) => b.relevanceScore - a.relevanceScore);
+            
+            setSortBy('relevance');
+            setSortOrder('desc');
+        }
+        
+        // Filtrar por descuento (usando ofertas)
+        if (dealsFilter) {
+            const minDiscount = parseFloat(dealsFilter);
+            result = result.filter(product => {
+                // Verificar si tiene ofertas activas
+                if (!product.offers || product.offers.length === 0) return false;
+                
+                // Buscar si alguna oferta cumple con el descuento mínimo
+                return product.offers.some(offer => {
+                    const discount = parseFloat(offer.discount_percentage || 0);
+                    return discount >= minDiscount;
+                });
+            });
+        }
+
+        setFilteredProducts(result);
+        setCurrentPage(1);
+    }, [searchQuery, dealsFilter, products]);
 
     const handleGoBack = () => {
         navigate(-1);
@@ -23,6 +181,11 @@ const AllProductsPage = ({ products, setSelectedProduct, addToCart, toggleFavori
             let aValue, bValue;
             
             switch (sortBy) {
+                case 'relevance':
+                    // Si hay búsqueda, ordenar por relevancia
+                    aValue = a.relevanceScore || 0;
+                    bValue = b.relevanceScore || 0;
+                    break;
                 case 'name':
                     aValue = a.name.toLowerCase();
                     bValue = b.name.toLowerCase();
@@ -45,11 +208,11 @@ const AllProductsPage = ({ products, setSelectedProduct, addToCart, toggleFavori
         });
     };
 
-    if (!products || products.length === 0) {
+    if (!filteredProducts || filteredProducts.length === 0) {
         return (
             <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 px-4 py-8">
                 <div className="max-w-7xl mx-auto">
-                    <div className="flex items-center justify-between mb-8">
+                    <div className="flex items-center justify-between mb-12">
                         <button
                             onClick={handleGoBack}
                             className="flex items-center space-x-2 text-gray-400 hover:text-white transition-colors duration-200"
@@ -59,20 +222,24 @@ const AllProductsPage = ({ products, setSelectedProduct, addToCart, toggleFavori
                             </svg>
                             <span>Volver</span>
                         </button>
-                        <h1 className="text-3xl font-bold text-white">Todos los Productos</h1>
+                        <h1 className="text-3xl font-bold text-white">
+                            {searchQuery ? `Resultados para "${searchQuery}"` : 'Productos con +50% de Descuento'}
+                        </h1>
                         <div></div>
                     </div>
                     
                     <div className="text-center py-16">
                         <div className="text-6xl mb-4">📦</div>
-                        <p className="text-xl text-gray-400">No hay productos disponibles</p>
+                        <p className="text-xl text-gray-400">
+                            {searchQuery ? 'No se encontraron productos que coincidan con tu búsqueda' : 'No hay productos disponibles'}
+                        </p>
                     </div>
                 </div>
             </div>
         );
     }
 
-    const sortedProducts = sortProducts(products);
+    const sortedProducts = sortProducts(filteredProducts);
     const totalPages = Math.ceil(sortedProducts.length / productsPerPage);
     const startIndex = (currentPage - 1) * productsPerPage;
     const endIndex = startIndex + productsPerPage;
@@ -82,7 +249,7 @@ const AllProductsPage = ({ products, setSelectedProduct, addToCart, toggleFavori
         <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 px-4 py-8">
             <div className="max-w-7xl mx-auto">
                 {/* Header */}
-                <div className="flex items-center justify-between mb-8">
+                <div className="flex items-center justify-between mb-12">
                     <button
                         onClick={handleGoBack}
                         className="flex items-center space-x-2 text-gray-400 hover:text-white transition-colors duration-200"
@@ -92,14 +259,48 @@ const AllProductsPage = ({ products, setSelectedProduct, addToCart, toggleFavori
                         </svg>
                         <span>Volver</span>
                     </button>
-                    <h1 className="text-3xl font-bold text-white">Todos los Productos</h1>
-                    <div></div>
+                    <h1 className="text-3xl font-bold text-white">
+                        {searchQuery 
+                            ? `Resultados para "${searchQuery}"` 
+                            : dealsFilter 
+                            ? `Ofertas con ${dealsFilter}% o más de descuento`
+                            : 'Todos los Productos'}
+                    </h1>
                 </div>
+
+                {/* Mostrar información de resultados de búsqueda */}
+                {searchQuery && (
+                    <div className="mb-6 p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-lg">
+                        <p className="text-emerald-400">
+                            Se encontraron <span className="font-bold">{filteredProducts.length}</span> productos que coinciden con "{searchQuery}"
+                        </p>
+                    </div>
+                )}
+
+                {/* Mostrar información de ofertas especiales */}
+                {dealsFilter && (
+                    <div className="mb-6 p-4 bg-gradient-to-r from-purple-500/10 to-indigo-500/10 border border-purple-500/20 rounded-lg">
+                        <div className="flex items-center gap-3">
+                            <span className="text-3xl">🔥</span>
+                            <div>
+                                <p className="text-purple-400 font-semibold">
+                                    {filteredProducts.length === 0 
+                                        ? `No hay productos con ${dealsFilter}% o más de descuento en este momento` 
+                                        : filteredProducts.length === 1
+                                        ? `¡Encontramos 1 producto con ${dealsFilter}% o más de descuento!`
+                                        : `¡Encontramos ${filteredProducts.length} productos con ${dealsFilter}% o más de descuento!`
+                                    }
+                                </p>
+                                <p className="text-gray-400 text-sm mt-1">Vuelve pronto para ver nuevas ofertas increíbles</p>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 {/* Contador y controles de ordenación */}
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
                     <p className="text-gray-400">
-                        {products.length} {products.length === 1 ? 'producto disponible' : 'productos disponibles'}
+                        {filteredProducts.length} {filteredProducts.length === 1 ? 'producto disponible' : 'productos disponibles'}
                     </p>
                     
                     <div className="flex items-center space-x-4">
@@ -109,6 +310,7 @@ const AllProductsPage = ({ products, setSelectedProduct, addToCart, toggleFavori
                             onChange={(e) => setSortBy(e.target.value)}
                             className="bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-emerald-500 text-sm"
                         >
+                            {searchQuery && <option value="relevance">Relevancia</option>}
                             <option value="name">Nombre</option>
                             <option value="price">Precio</option>
                             <option value="rating">Rating</option>
@@ -208,7 +410,7 @@ const ProductCard = ({ product, onProductClick, addToCart, toggleFavorite, isFav
         >
             <div className="aspect-square overflow-hidden relative">
                 <img
-                    src={product.image_url || '/api/placeholder/300/300'}
+                    src={product.details?.[0]?.image_url || product.image_url || '/api/placeholder/300/300'}
                     alt={product.name}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                 />
@@ -240,9 +442,31 @@ const ProductCard = ({ product, onProductClick, addToCart, toggleFavorite, isFav
                 </h3>
                 
                 <div className="flex items-center justify-between mb-3">
-                    <span className="text-2xl font-bold text-emerald-400">
-                        ${parseFloat(product.price).toFixed(2)}
-                    </span>
+                    <div className="flex flex-col">
+                        {/* Verificar si tiene ofertas activas */}
+                        {product.offers && product.offers.length > 0 ? (
+                            <>
+                                {/* Precio con descuento */}
+                                <span className="text-2xl font-bold text-emerald-400">
+                                    ${(parseFloat(product.price) * (1 - parseFloat(product.offers[0].discount_percentage) / 100)).toFixed(2)}
+                                </span>
+                                {/* Precio original tachado y badge de descuento */}
+                                <div className="flex items-center gap-2">
+                                    <span className="text-sm text-gray-500 line-through">
+                                        ${parseFloat(product.price).toFixed(2)}
+                                    </span>
+                                    <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full font-semibold">
+                                        -{product.offers[0].discount_percentage}%
+                                    </span>
+                                </div>
+                            </>
+                        ) : (
+                            /* Precio normal sin oferta */
+                            <span className="text-2xl font-bold text-emerald-400">
+                                ${parseFloat(product.price).toFixed(2)}
+                            </span>
+                        )}
+                    </div>
                     
                     {product.rating && (
                         <div className="flex items-center space-x-1">

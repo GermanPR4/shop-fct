@@ -13,7 +13,9 @@ class ProductController extends Controller
     public function index()
     {
         // Obtiene todos los productos activos y sus relaciones para el catálogo
-        $products = Product::with(['details', 'categories'])->active()->get();
+        $products = Product::with(['details', 'categories', 'offers' => function($query) {
+            $query->vigente(); // Carga solo ofertas vigentes
+        }])->active()->get();
 
         return response()->json($products);
     }

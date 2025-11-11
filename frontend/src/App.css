@@ -2,11 +2,13 @@
   width: 100%;
   margin: 0;
   padding: 0;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
 }
 
 /* Estilos adicionales para transiciones suaves */
 button, a, input {
-  transition: all 0.3s ease;
+  transition: all var(--transition-base);
 }
 
 /* Mejoras visuales para botones hover */
@@ -54,11 +56,13 @@ button:active {
   will-change: filter;
   transition: filter 300ms;
 }
+
 .logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
+  filter: drop-shadow(0 0 2em var(--accent-secondary));
 }
+
 .logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+  filter: drop-shadow(0 0 2em var(--accent-primary));
 }
 
 @keyframes logo-spin {
@@ -78,8 +82,12 @@ button:active {
 
 .card {
   padding: 2em;
+  background-color: var(--bg-elevated);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-md);
 }
 
 .read-the-docs {
-  color: #888;
+  color: var(--text-tertiary);
 }

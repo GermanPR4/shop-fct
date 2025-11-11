@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation, Navigate, useParams } from 'react-router-dom';
+import { useTheme } from './contexts/ThemeContext.jsx';
 // Importa los componentes
 import HeroSection from './components/HeroSection.jsx';
-import PopularCategories from './components/PopularCategories.jsx';
 import ChatWidget from './components/ChatWidget.jsx';
 import CategoryFilter from './components/CategoryFilter.jsx';
 import AllCategoriesPage from './components/AllCategoriesPage.jsx';
@@ -26,7 +26,8 @@ const PAGES = {
 // --- COMPONENTES AUXILIARES ---
 
 // Navbar Mejorado con Diseño Moderno y Búsqueda Funcional
-const Navbar = ({ setPage, cartItemCount, user, onLogout, onOpenCartSidebar, onSearch, categories, selectedCategory, onCategorySelect }) => {
+const Navbar = ({ setPage, cartItemCount, user, onLogout, onOpenCartSidebar, categories, selectedCategory, onCategorySelect }) => {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [showMobileSearch, setShowMobileSearch] = useState(false);
   const [showCategoriesDropdown, setShowCategoriesDropdown] = useState(false);
@@ -35,8 +36,7 @@ const Navbar = ({ setPage, cartItemCount, user, onLogout, onOpenCartSidebar, onS
   const handleSearch = (e) => {
     e.preventDefault();
     if (searchTerm.trim()) {
-      onSearch(searchTerm.trim());
-      setPage(PAGES.CATALOG);
+      navigate(`/products?search=${encodeURIComponent(searchTerm.trim())}`);
       setShowMobileSearch(false);
     }
   };
@@ -79,14 +79,14 @@ const Navbar = ({ setPage, cartItemCount, user, onLogout, onOpenCartSidebar, onS
   }, []);
 
   return (
-    <nav className="bg-gradient-to-r from-gray-900 via-black to-gray-900 border-b border-gray-700/60 sticky top-0 z-50 shadow-2xl backdrop-blur-sm">
+    <nav className="nav-gradient sticky top-0 z-50 shadow-adapted-xl backdrop-blur-sm">
     <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8">
       <div className="flex justify-between items-center h-18 py-2">
         {/* Logo y Categorías */}
         <div className="flex items-center space-x-6">
           <button 
             onClick={() => setPage(PAGES.HOME)} 
-            className="group flex items-center space-x-2 text-2xl font-bold bg-gradient-to-r from-purple-500 via-indigo-500 to-purple-600 bg-clip-text text-transparent hover:from-emerald-500 hover:via-green-500 hover:to-emerald-600 transition-all duration-500 transform hover:scale-105"
+            className="group flex items-center space-x-2 text-2xl font-bold bg-gradient-to-r from-purple-500 via-indigo-500 to-purple-600 bg-clip-text text-transparent hover:from-emerald-500 hover:via-green-500 hover:to-emerald-600 transition-all duration-500 transform hover:scale-105 border-0 shadow-none hover:border-0 hover:shadow-none focus:border-0 focus:shadow-none outline-none"
           >
             <svg className="h-8 w-8 text-purple-500 group-hover:text-emerald-500 transition-colors duration-500 transform group-hover:rotate-12" fill="currentColor" viewBox="0 0 24 24">
               <path d="M12 2L2 7v10c0 5.55 3.84 10 9 10s9-4.45 9-10V7L12 2z"/>
@@ -98,7 +98,7 @@ const Navbar = ({ setPage, cartItemCount, user, onLogout, onOpenCartSidebar, onS
           <div className="relative categories-dropdown">
             <button 
               onClick={() => setShowCategoriesDropdown(!showCategoriesDropdown)}
-              className="hidden lg:flex items-center space-x-2 text-sm font-medium text-gray-200 hover:text-white bg-gradient-to-r from-gray-800 to-gray-900 hover:from-emerald-500 hover:to-green-500 px-4 py-2.5 rounded-xl transition-all duration-300 shadow-sm hover:shadow-lg transform hover:scale-105 border border-gray-700 hover:border-emerald-400"
+              className="btn-category hidden lg:flex items-center space-x-2 text-sm font-medium px-4 py-2.5 rounded-xl transition-all duration-300 shadow-sm hover:shadow-lg transform hover:scale-105"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 transform transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h8M4 18h16" />
@@ -111,10 +111,10 @@ const Navbar = ({ setPage, cartItemCount, user, onLogout, onOpenCartSidebar, onS
 
             {/* Dropdown de Categorías */}
             {showCategoriesDropdown && (
-              <div className="absolute left-0 mt-2 w-72 bg-gray-800 rounded-2xl shadow-2xl border border-gray-600/50 py-2 z-50 backdrop-blur-sm animate-in slide-in-from-top-2 duration-300">
+              <div className="dropdown-bg absolute left-0 mt-2 w-72 rounded-2xl shadow-adapted-xl py-2 z-50 backdrop-blur-sm animate-in slide-in-from-top-2 duration-300">
                 {/* Header del dropdown */}
-                <div className="px-4 py-3 border-b border-gray-700 bg-gradient-to-r from-gray-700 to-transparent">
-                  <h3 className="text-sm font-semibold text-white flex items-center">
+                <div className="settings-card-header px-4 py-3">
+                  <h3 className="text-sm font-semibold text-adapted flex items-center">
                     <svg className="w-4 h-4 mr-2 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
                     </svg>
@@ -129,20 +129,20 @@ const Navbar = ({ setPage, cartItemCount, user, onLogout, onOpenCartSidebar, onS
                     setShowCategoriesDropdown(false);
                     setPage(PAGES.CATALOG);
                   }}
-                  className={`group flex items-center w-full px-4 py-3 text-sm transition-all duration-200 transform hover:translate-x-1 ${
-                    !selectedCategory 
-                      ? 'text-emerald-400 bg-gradient-to-r from-emerald-900/30 to-green-900/30' 
-                      : 'text-gray-200 hover:text-emerald-400 hover:bg-gradient-to-r hover:from-emerald-900/30 hover:to-green-900/30'
+                  className={`dropdown-item-base group flex items-center w-full px-4 py-3 text-sm transition-all duration-200 transform hover:translate-x-1 ${
+                    !selectedCategory ? 'active' : ''
                   }`}
                 >
-                  <div className="w-8 h-8 bg-gradient-to-r from-emerald-800/50 to-green-800/50 group-hover:from-emerald-700/60 group-hover:to-green-700/60 rounded-lg flex items-center justify-center mr-3 transition-all duration-200">
+                  <div className={`category-icon-bg w-8 h-8 rounded-lg flex items-center justify-center mr-3 transition-all duration-200 ${
+                    !selectedCategory ? 'active' : ''
+                  }`}>
                     <svg className="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14-7l-7 7-7-7m14 18l-7-7-7 7" />
                     </svg>
                   </div>
                   <div className="flex-1">
                     <div className="font-medium">Todas las categorías</div>
-                    <div className="text-xs text-gray-400">Ver todos los productos</div>
+                    <div className="text-xs text-adapted-tertiary">Ver todos los productos</div>
                   </div>
                   {!selectedCategory && (
                     <svg className="w-4 h-4 text-emerald-400" fill="currentColor" viewBox="0 0 20 20">
@@ -152,7 +152,7 @@ const Navbar = ({ setPage, cartItemCount, user, onLogout, onOpenCartSidebar, onS
                 </button>
 
                 {/* Lista de categorías */}
-                <div className="max-h-64 overflow-y-auto">
+                <div className="max-h-64 overflow-y-auto custom-scrollbar">
                   {categories && categories.length > 0 ? (
                     categories.map((category) => (
                       <button
@@ -162,24 +162,20 @@ const Navbar = ({ setPage, cartItemCount, user, onLogout, onOpenCartSidebar, onS
                           setShowCategoriesDropdown(false);
                           setPage(PAGES.CATALOG);
                         }}
-                        className={`group flex items-center w-full px-4 py-3 text-sm transition-all duration-200 transform hover:translate-x-1 ${
-                          selectedCategory === category.id 
-                            ? 'text-emerald-400 bg-gradient-to-r from-emerald-900/30 to-green-900/30' 
-                            : 'text-gray-200 hover:text-emerald-400 hover:bg-gradient-to-r hover:from-emerald-900/30 hover:to-green-900/30'
+                        className={`dropdown-item-base group flex items-center w-full px-4 py-3 text-sm transition-all duration-200 transform hover:translate-x-1 ${
+                          selectedCategory === category.id ? 'active' : ''
                         }`}
                       >
-                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center mr-3 transition-all duration-200 ${
-                          selectedCategory === category.id
-                            ? 'bg-gradient-to-r from-emerald-700/60 to-green-700/60'
-                            : 'bg-gray-700 group-hover:bg-gradient-to-r group-hover:from-emerald-800/50 group-hover:to-green-800/50'
+                        <div className={`category-icon-bg w-8 h-8 rounded-lg flex items-center justify-center mr-3 transition-all duration-200 ${
+                          selectedCategory === category.id ? 'active' : ''
                         }`}>
-                          <span className="text-xs font-bold text-gray-200 group-hover:text-emerald-400">
+                          <span className="text-xs font-bold text-adapted-secondary group-hover:text-emerald-400">
                             {category.name.charAt(0).toUpperCase()}
                           </span>
                         </div>
                         <div className="flex-1 text-left">
                           <div className="font-medium">{category.name}</div>
-                          <div className="text-xs text-gray-400">
+                          <div className="text-xs text-adapted-tertiary">
                             {category.description || 'Explora esta categoría'}
                           </div>
                         </div>
@@ -192,10 +188,10 @@ const Navbar = ({ setPage, cartItemCount, user, onLogout, onOpenCartSidebar, onS
                     ))
                   ) : (
                     <div className="px-4 py-6 text-center">
-                      <svg className="mx-auto w-8 h-8 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="mx-auto w-8 h-8 icon-color mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
                       </svg>
-                      <p className="text-sm text-gray-400">No hay categorías disponibles</p>
+                      <p className="text-sm text-adapted-tertiary">No hay categorías disponibles</p>
                     </div>
                   )}
                 </div>
@@ -208,7 +204,7 @@ const Navbar = ({ setPage, cartItemCount, user, onLogout, onOpenCartSidebar, onS
         <div className="flex-1 max-w-xl mx-6 hidden md:block">
           <form onSubmit={handleSearch} className="relative group">
             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-              <svg className="h-5 w-5 text-gray-400 group-focus-within:text-emerald-400 transition-colors duration-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="h-5 w-5 icon-color group-focus-within:text-emerald-400 transition-colors duration-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             </div>
@@ -219,14 +215,14 @@ const Navbar = ({ setPage, cartItemCount, user, onLogout, onOpenCartSidebar, onS
               onChange={(e) => setSearchTerm(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="Descubre productos increíbles..." 
-              className="w-full pl-12 pr-20 py-3 bg-gray-800 border-2 border-gray-600 rounded-2xl focus:outline-none focus:ring-4 focus:ring-emerald-500/20 focus:border-emerald-500 text-sm placeholder-gray-400 text-white transition-all duration-300 shadow-sm hover:shadow-md focus:shadow-lg"
+              className="search-input w-full pl-12 pr-20 py-3 rounded-2xl focus:outline-none focus:ring-4 focus:ring-emerald-500/20 text-sm transition-all duration-300 shadow-sm hover:shadow-md focus:shadow-lg"
             />
             <div className="absolute inset-y-0 right-0 pr-2 flex items-center space-x-1">
               {searchTerm && (
                 <button
                   type="button"
                   onClick={() => setSearchTerm('')}
-                  className="p-1 text-gray-400 hover:text-gray-200 rounded-full hover:bg-gray-700 transition-colors duration-200"
+                  className="p-1 icon-color rounded-full hover:bg-dark-adapted transition-colors duration-200"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
@@ -236,13 +232,13 @@ const Navbar = ({ setPage, cartItemCount, user, onLogout, onOpenCartSidebar, onS
               <button
                 type="submit"
                 disabled={!searchTerm.trim()}
-                className="p-1.5 text-gray-400 hover:text-emerald-400 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg hover:bg-emerald-900/30 transition-colors duration-200"
+                className="p-1.5 icon-color hover:text-emerald-400 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg hover:bg-emerald-900/30 transition-colors duration-200"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
               </button>
-              <kbd className="hidden sm:inline-flex items-center px-2 py-1 text-xs font-medium text-gray-400 bg-gray-700 border border-gray-600 rounded">
+              <kbd className="hidden sm:inline-flex items-center px-2 py-1 text-xs font-medium text-adapted-tertiary bg-dark-adapted border border-adapted rounded">
                 ⌘K
               </kbd>
             </div>
@@ -415,16 +411,8 @@ const CartSidebar = ({ isOpen, onClose, cartItems, setCartItems, setPage }) => {
 
   return (
     <>
-      {/* Overlay */}
-      {isOpen && (
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-50"
-          onClick={onClose}
-        />
-      )}
-
       {/* Sidebar */}
-      <div className={`fixed top-0 right-0 h-full w-80 bg-gray-900 shadow-2xl z-50 transform transition-transform duration-300 ease-in-out border-l border-gray-700 backdrop-blur-sm ${
+      <div className={`fixed top-0 right-0 h-full w-96 bg-gray-900 shadow-2xl z-50 transform transition-transform duration-300 ease-in-out border-l border-gray-700 ${
         isOpen ? 'translate-x-0' : 'translate-x-full'
       }`}>
         <div className="flex flex-col h-full">
@@ -465,52 +453,65 @@ const CartSidebar = ({ isOpen, onClose, cartItems, setCartItems, setPage }) => {
                 </button>
               </div>
             ) : (
-              <div className="p-3 space-y-3">
+              <div className="p-4 space-y-4">
                 {cartItems.map(item => (
-                  <div key={item.id} className="flex items-center space-x-3 p-3 bg-gray-800 rounded-xl border border-gray-700/50 shadow-sm hover:bg-gray-700/50 transition-all duration-200">
-                    <img
-                      src={item.image || 'https://placehold.co/48x48/374151/9CA3AF?text=P'}
-                      alt={item.name}
-                      className="w-12 h-12 object-cover rounded-lg shadow-md flex-shrink-0 ring-2 ring-gray-700"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <h4 className="text-xs font-medium text-white truncate leading-tight">{item.name}</h4>
-                      <div className="text-xs text-gray-400">
-                        <span className="bg-gray-700 px-2 py-1 rounded-md">{item.color} • {item.size}</span>
-                      </div>
-                      <div className="flex items-center justify-between mt-1">
-                        <span className="text-sm font-bold text-emerald-400">
-                          {item.price.toFixed(2)}€
-                        </span>
-                        <div className="flex items-center space-x-1">
+                  <div key={item.id} className="bg-gray-800 rounded-xl border border-gray-700/50 shadow-sm hover:bg-gray-700/50 transition-all duration-200 p-4">
+                    <div className="flex gap-4">
+                      {/* Imagen */}
+                      <img
+                        src={item.image || 'https://placehold.co/80x80/374151/9CA3AF?text=P'}
+                        alt={item.name}
+                        className="w-20 h-20 object-cover rounded-lg shadow-md flex-shrink-0 ring-2 ring-gray-700"
+                      />
+                      
+                      {/* Contenido */}
+                      <div className="flex-1 flex flex-col gap-2">
+                        {/* Nombre y botón eliminar */}
+                        <div className="flex items-start justify-between gap-2">
+                          <h4 className="text-sm font-medium text-white leading-tight flex-1">{item.name}</h4>
                           <button
-                            onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                            className="w-5 h-5 flex items-center justify-center text-gray-400 hover:text-white hover:bg-gray-700 rounded"
+                            onClick={() => removeItem(item.id)}
+                            className="p-1.5 text-gray-400 hover:text-red-400 hover:bg-red-900/30 rounded-lg transition-all duration-200 flex-shrink-0"
+                            title="Eliminar"
                           >
-                            <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 12H4" />
-                            </svg>
-                          </button>
-                          <span className="text-xs font-medium w-6 text-center text-white bg-gray-700 rounded px-1">{item.quantity}</span>
-                          <button
-                            onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                            className="w-5 h-5 flex items-center justify-center text-gray-400 hover:text-white hover:bg-gray-700 rounded"
-                          >
-                            <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                             </svg>
                           </button>
                         </div>
+                        
+                        {/* Color y talla */}
+                        <div className="text-[10px] text-gray-400">
+                          <span className="bg-gray-700 px-2 py-0.5 rounded-md">{item.color} • {item.size}</span>
+                        </div>
+                        
+                        {/* Precio y controles de cantidad */}
+                        <div className="flex items-center justify-between mt-1">
+                          <span className="text-base font-bold text-emerald-400">
+                            {item.price.toFixed(2)}€
+                          </span>
+                          
+                          {/* Controles de cantidad */}
+                          <div className="flex items-center gap-0.5 bg-gray-700/50 rounded-lg p-1">
+                            <button
+                              onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                              className="w-8 h-8 flex items-center justify-center text-white font-bold hover:bg-gray-600 rounded-md transition-colors text-lg"
+                            >
+                              −
+                            </button>
+                            <span className="text-sm font-semibold min-w-[2rem] text-center text-white px-1">
+                              {item.quantity}
+                            </span>
+                            <button
+                              onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                              className="w-8 h-8 flex items-center justify-center text-white font-bold hover:bg-gray-600 rounded-md transition-colors text-lg"
+                            >
+                              +
+                            </button>
+                          </div>
+                        </div>
                       </div>
                     </div>
-                    <button
-                      onClick={() => removeItem(item.id)}
-                      className="p-1.5 text-gray-400 hover:text-red-400 hover:bg-red-900/30 rounded-lg transition-all duration-200 flex-shrink-0"
-                    >
-                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
-                    </button>
                   </div>
                 ))}
               </div>
@@ -745,45 +746,49 @@ const ProductCard = ({ product, setPage, setSelectedProduct }) => {
 // --- PÁGINAS PRINCIPALES ---
 
 // Página de Catálogo / Home (Corregida)
-const HomePage = ({ products, loading, categories, onSelectCategory, setPage, setSelectedProduct, selectedCategoryId }) => ( // Renombrado a selectedCategoryId
-  <div className="px-4 sm:px-0 py-8">
-    <HeroSection />
-    {/* Pasamos selectedCategoryId directamente a CategoryFilter */}
-    <PopularCategories categories={categories} onSelectCategory={onSelectCategory} />
-    <CategoryFilter categories={categories} onSelectCategory={onSelectCategory} selectedCategoryId={selectedCategoryId} />
+const HomePage = ({ products, loading, categories, onSelectCategory, setPage, setSelectedProduct, selectedCategoryId }) => {
+  const navigate = useNavigate();
+
+  const handleViewAllProducts = () => {
+    navigate('/products');
+  };
+
+  return (
+    <div className="px-4 sm:px-0 py-8">
+      <HeroSection products={products} />
+      {/* Pasamos selectedCategoryId directamente a CategoryFilter */}
+      <CategoryFilter categories={categories} onSelectCategory={onSelectCategory} selectedCategoryId={selectedCategoryId} />
 
 
-    <div className="mb-12">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-white">Las Mejores Ofertas Para Ti</h2>
-        <button 
-          onClick={() => {
-            console.log('Ofertas - Ver Todas clicked');
-            onSelectCategory(null);
-          }}
-          className="group text-sm font-medium text-emerald-400 hover:text-emerald-300 transition-all duration-200 flex items-center space-x-2 bg-emerald-400/10 hover:bg-emerald-400/20 px-3 py-2 rounded-lg border border-emerald-400/30 hover:border-emerald-400/50"
-        >
-          <span>Ver Todas</span>
-          <svg className="w-4 h-4 transform group-hover:translate-x-1 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-          </svg>
-        </button>
-      </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {loading ? (
-          <p className="col-span-full text-center py-10 text-gray-500">Cargando ofertas...</p>
-        ) : (
-          products
-            .sort(() => Math.random() - 0.5)
-            .slice(0, 4)
-            .map(product => (
-              <ProductCard key={product.id} product={product} setPage={setPage} setSelectedProduct={setSelectedProduct} />
-            ))
-        )}
+      <div className="mb-12">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold text-white">Las Mejores Ofertas Para Ti</h2>
+          <button 
+            onClick={handleViewAllProducts}
+            className="group text-sm font-medium text-emerald-400 hover:text-emerald-300 transition-all duration-200 flex items-center space-x-2 bg-emerald-400/10 hover:bg-emerald-400/20 px-3 py-2 rounded-lg border border-emerald-400/30 hover:border-emerald-400/50"
+          >
+            <span>Ver Productos</span>
+            <svg className="w-4 h-4 transform group-hover:translate-x-1 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {loading ? (
+            <p className="col-span-full text-center py-10 text-gray-500">Cargando ofertas...</p>
+          ) : (
+            products
+              .sort(() => Math.random() - 0.5)
+              .slice(0, 4)
+              .map(product => (
+                <ProductCard key={product.id} product={product} setPage={setPage} setSelectedProduct={setSelectedProduct} />
+              ))
+          )}
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 // Página de Detalle de Producto (Corregida)
 const ProductDetailPage = ({ product, addToCart, toggleFavorite, isFavorite }) => {
@@ -882,7 +887,6 @@ const ProductDetailPage = ({ product, addToCart, toggleFavorite, isFavorite }) =
         </div>
         <div className="mb-6">
           <p className="text-4xl font-bold text-emerald-400 mb-2">{product.price.toFixed(2)}€</p>
-          <p className="text-sm text-gray-500 line-through">29.99€</p>
         </div>
         <div className="bg-gray-700/50 rounded-lg p-4 mb-6">
           <p className="text-gray-200 leading-relaxed">{product.short_description}</p>
@@ -2601,11 +2605,12 @@ const FavoritesPage = ({ favorites, allProducts, toggleFavorite, setPage, setSel
 
 // Página de Configuración
 const SettingsPage = ({ handleLogout, setNotification }) => {
+  const { themeMode, setThemeMode } = useTheme();
+  
   const [settings, setSettings] = useState({
     emailNotifications: true,
     smsNotifications: false,
     marketingEmails: true,
-    theme: 'light',
     language: 'es'
   });
 
@@ -2614,6 +2619,15 @@ const SettingsPage = ({ handleLogout, setNotification }) => {
     setNotification({
       title: 'Configuración actualizada',
       message: 'Tus preferencias se han guardado correctamente.',
+      product: null
+    });
+  };
+
+  const handleThemeChange = (newTheme) => {
+    setThemeMode(newTheme);
+    setNotification({
+      title: 'Tema actualizado',
+      message: `Tema cambiado a: ${newTheme === 'light' ? 'Claro' : newTheme === 'dark' ? 'Oscuro' : 'Automático'}`,
       product: null
     });
   };
@@ -2631,18 +2645,18 @@ const SettingsPage = ({ handleLogout, setNotification }) => {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold text-white mb-8">Configuración</h1>
+      <h1 className="text-3xl font-bold text-adapted mb-8">Configuración</h1>
       
       <div className="space-y-6">
         {/* Notificaciones */}
-        <div className="bg-gray-800 rounded-lg shadow-md p-6 border border-gray-700">
-          <h2 className="text-xl font-semibold text-white mb-4">Notificaciones</h2>
+        <div className="settings-card rounded-lg shadow-md p-6">
+          <h2 className="text-xl font-semibold text-adapted mb-4">Notificaciones</h2>
           
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="font-medium text-white">Notificaciones por email</h3>
-                <p className="text-sm text-gray-400">Recibe actualizaciones de pedidos por email</p>
+                <h3 className="font-medium text-adapted">Notificaciones por email</h3>
+                <p className="text-sm text-adapted-tertiary">Recibe actualizaciones de pedidos por email</p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
                 <input
@@ -2657,8 +2671,8 @@ const SettingsPage = ({ handleLogout, setNotification }) => {
 
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="font-medium text-white">Notificaciones SMS</h3>
-                <p className="text-sm text-gray-400">Recibe actualizaciones por SMS</p>
+                <h3 className="font-medium text-adapted">Notificaciones SMS</h3>
+                <p className="text-sm text-adapted-tertiary">Recibe actualizaciones por SMS</p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
                 <input
@@ -2673,8 +2687,8 @@ const SettingsPage = ({ handleLogout, setNotification }) => {
 
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="font-medium text-white">Emails de marketing</h3>
-                <p className="text-sm text-gray-400">Recibe ofertas especiales y novedades</p>
+                <h3 className="font-medium text-adapted">Emails de marketing</h3>
+                <p className="text-sm text-adapted-tertiary">Recibe ofertas especiales y novedades</p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
                 <input
@@ -2690,16 +2704,16 @@ const SettingsPage = ({ handleLogout, setNotification }) => {
         </div>
 
         {/* Preferencias */}
-        <div className="bg-gray-800 rounded-lg shadow-md p-6 border border-gray-700">
-          <h2 className="text-xl font-semibold text-white mb-4">Preferencias</h2>
+        <div className="settings-card rounded-lg shadow-md p-6">
+          <h2 className="text-xl font-semibold text-adapted mb-4">Preferencias</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Idioma</label>
+              <label className="block text-sm font-medium text-adapted-secondary mb-2">Idioma</label>
               <select
                 value={settings.language}
                 onChange={(e) => handleSettingChange('language', e.target.value)}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                className="input-themed"
               >
                 <option value="es">Español</option>
                 <option value="en">English</option>
@@ -2708,28 +2722,28 @@ const SettingsPage = ({ handleLogout, setNotification }) => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Tema</label>
+              <label className="block text-sm font-medium text-adapted-secondary mb-2">Tema</label>
               <select
-                value={settings.theme}
-                onChange={(e) => handleSettingChange('theme', e.target.value)}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                value={themeMode}
+                onChange={(e) => handleThemeChange(e.target.value)}
+                className="input-themed"
               >
-                <option value="light">Claro</option>
-                <option value="dark">Oscuro</option>
-                <option value="auto">Automático</option>
+                <option value="light">☀️ Claro</option>
+                <option value="dark">🌙 Oscuro</option>
+                <option value="auto">🔄 Automático</option>
               </select>
             </div>
           </div>
         </div>
 
         {/* Zona peligrosa */}
-        <div className="bg-gray-800 rounded-lg shadow-md p-6 border-l-4 border-red-500 border border-gray-700">
+        <div className="settings-card rounded-lg shadow-md p-6 border-l-4 border-red-500">
           <h2 className="text-xl font-semibold text-red-400 mb-4">Zona peligrosa</h2>
           
           <div className="space-y-4">
             <div>
-              <h3 className="font-medium text-white mb-2">Eliminar cuenta</h3>
-              <p className="text-sm text-gray-400 mb-4">
+              <h3 className="font-medium text-adapted mb-2">Eliminar cuenta</h3>
+              <p className="text-sm text-adapted-tertiary mb-4">
                 Esta acción eliminará permanentemente tu cuenta y todos los datos asociados. 
                 No se puede deshacer.
               </p>
@@ -2758,7 +2772,7 @@ function AppContent() {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState(null);
-  const [searchFilter, setSearchFilter] = useState('');
+  const [searchFilter, _setSearchFilter] = useState('');
   const [_selectedProduct, setSelectedProduct] = useState(null); // Producto para la página de detalle
   const [user, setUser] = useState(() => {
     // Cargar usuario desde localStorage al inicializar
@@ -3041,15 +3055,6 @@ function AppContent() {
     localStorage.removeItem(cartKey);
   };
 
-  // Función para manejar búsqueda
-  const handleSearch = (searchTerm) => {
-    setSearchFilter(searchTerm);
-    // Limpiar filtro de categoría cuando se busca para mostrar resultados en todas las categorías
-    if (searchTerm.trim()) {
-      setSelectedCategory(null);
-    }
-  };
-
   // Función para cerrar sesión
   const handleLogout = async () => {
     const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
@@ -3107,14 +3112,13 @@ function AppContent() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-800 via-gray-900 to-gray-800 flex flex-col">
+    <div className="page-container flex flex-col">
       <Navbar 
         setPage={setPage} 
         cartItemCount={getCartItemCount()} 
         user={user} 
         onLogout={handleLogout}
         onOpenCartSidebar={() => setCartSidebarOpen(true)}
-        onSearch={handleSearch}
         categories={categories}
         selectedCategory={selectedCategory}
         onCategorySelect={handleCategorySelect}
@@ -3204,13 +3208,12 @@ function AppContent() {
           } />
           <Route path="/categories" element={
             <AllCategoriesPage 
-              categories={categories} 
-              onSelectCategory={handleCategorySelect}
+              allProducts={allProducts}
             />
           } />
           <Route path="/products" element={
             <AllProductsPage 
-              products={products}
+              products={allProducts}
               setSelectedProduct={setSelectedProduct}
               addToCart={addToCart}
               toggleFavorite={toggleFavorite}
@@ -3229,7 +3232,7 @@ function AppContent() {
         onClose={() => setNotification(null)} 
       />
 
-      <footer className="w-full text-center p-4 text-xs text-gray-500 border-t border-gray-200">
+      <footer className="w-full text-center p-4 text-xs footer-text border-t border-adapted">
         &copy; {new Date().getFullYear()} OmniStyle - Desarrollado por Germán Peña Ruiz.
       </footer>
     </div>
