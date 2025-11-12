@@ -10,10 +10,52 @@ class UserController extends Controller
 {
     // Este controlador solo debería ser accesible por administradores/empleados
 
-    public function index()
+    public function index(Request $request)
     {
-        // Lista todos los usuarios (solo para administración)
-        return response()->json(User::all());
+        try {
+            // Verificar que el usuario autenticado sea empleado o admin
+            $user = $request->user();
+            
+            if (!$user) {
+                return response()->json([
+                    'message' => 'Usuario no autenticado'
+                ], 401);
+            }
+            
+            if (!in_array($user->role, ['employee', 'admin'])) {
+                return response()->json([
+                    'message' => 'No tienes permisos para acceder a esta sección'
+                ], 403);
+            }
+            
+            // Lista todos los usuarios con información estructurada para el admin panel
+            $users = User::select(['id', 'name', 'email', 'role', 'phone', 'created_at', 'email_verified_at'])
+                ->orderBy('created_at', 'desc')
+                ->get()
+                ->map(function ($userRecord) {
+                    return [
+                        'id' => $userRecord->id,
+                        'name' => $userRecord->name,
+                        'email' => $userRecord->email,
+                        'role' => $userRecord->role ?? 'customer',
+                        'phone' => $userRecord->phone ?? 'N/A',
+                        'registered_at' => $userRecord->created_at ? $userRecord->created_at->format('d/m/Y H:i') : 'N/A',
+                        'verified' => $userRecord->email_verified_at ? true : false,
+                        'status' => $userRecord->email_verified_at ? 'Activo' : 'Pendiente verificación'
+                    ];
+                });
+
+            return response()->json([
+                'users' => $users,
+                'total' => $users->count(),
+                'message' => 'Usuarios obtenidos exitosamente'
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error interno del servidor'
+            ], 500);
+        }
     }
 
     public function store(Request $request)

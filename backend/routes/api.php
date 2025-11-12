@@ -65,6 +65,11 @@ Route::middleware('auth:sanctum')->group(function () {
     // MÓDULO DE ADMINISTRACIÓN (PROTEGIDO POR LOGIN)
     // ----------------------------------------------------
     
+    // Mantenimiento de Productos (solo admin/employee)
+    Route::post('/admin/products', [ProductController::class, 'store']);
+    Route::put('/admin/products/{product}', [ProductController::class, 'update']);
+    Route::delete('/admin/products/{product}', [ProductController::class, 'destroy']);
+    
     // Mantenimiento de Usuarios
     Route::resource('admin/users', UserController::class)->except(['create', 'edit']);
 

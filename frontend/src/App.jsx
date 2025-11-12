@@ -90,7 +90,7 @@ const Navbar = ({ setPage, cartItemCount, user, onLogout, onOpenCartSidebar, cat
           >
             <svg className="h-8 w-8 text-purple-500 group-hover:text-emerald-500 transition-colors duration-500 transform group-hover:rotate-12" fill="currentColor" viewBox="0 0 24 24">
               <path d="M12 2L2 7v10c0 5.55 3.84 10 9 10s9-4.45 9-10V7L12 2z"/>
-              <circle cx="12" cy="12" r="3" fill="black"/>
+              <circle cx="12" cy="12" r="3" style={{ fill: 'var(--circle-color, #fff)' }} className="[--circle-color:#fff] dark:[--circle-color:#000]"/>
             </svg>
             <span>OmniStyle</span>
           </button>
@@ -111,7 +111,7 @@ const Navbar = ({ setPage, cartItemCount, user, onLogout, onOpenCartSidebar, cat
 
             {/* Dropdown de Categorías */}
             {showCategoriesDropdown && (
-              <div className="dropdown-bg absolute left-0 mt-2 w-72 rounded-2xl shadow-adapted-xl py-2 z-50 backdrop-blur-sm animate-in slide-in-from-top-2 duration-300">
+              <div className="dropdown-bg absolute left-0 mt-2 w-72 rounded-2xl shadow-adapted-xl py-2 z-50 backdrop-blur-sm animate-in slide-in-from-top-2 duration-300 overflow-hidden">
                 {/* Header del dropdown */}
                 <div className="settings-card-header px-4 py-3">
                   <h3 className="text-sm font-semibold text-adapted flex items-center">
@@ -152,7 +152,7 @@ const Navbar = ({ setPage, cartItemCount, user, onLogout, onOpenCartSidebar, cat
                 </button>
 
                 {/* Lista de categorías */}
-                <div className="max-h-64 overflow-y-auto custom-scrollbar">
+                <div className="max-h-64 overflow-y-auto overflow-x-hidden custom-scrollbar">
                   {categories && categories.length > 0 ? (
                     categories.map((category) => (
                       <button
@@ -272,7 +272,21 @@ const Navbar = ({ setPage, cartItemCount, user, onLogout, onOpenCartSidebar, cat
           <div className="hidden sm:block w-px h-8 bg-gray-600"></div>
           
           {user ? (
-            <UserDropdown user={user} onLogout={onLogout} setPage={setPage} />
+            <>
+              {user.role === 'employee' && (
+                <NavIconButton 
+                  onClick={() => setPage(PAGES.ADMIN)} 
+                  icon={
+                    <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M12 2L9.19 8.63L2 9.24l5.46 4.73L5.82 21L12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2z" />
+                    </svg>
+                  } 
+                  label="Panel de Admin" 
+                  className="ring-2 ring-yellow-500/30 text-yellow-400 hover:text-yellow-300"
+                />
+              )}
+              <UserDropdown user={user} onLogout={onLogout} setPage={setPage} />
+            </>
           ) : (
             <NavIconButton 
               onClick={() => setPage(PAGES.LOGIN)} 
@@ -332,13 +346,13 @@ const Navbar = ({ setPage, cartItemCount, user, onLogout, onOpenCartSidebar, cat
       )}
       
       {/* Enlaces secundarios mejorados */}
-      <div className="hidden lg:flex justify-center items-center space-x-6 py-4 border-t border-slate-100/50 bg-gradient-to-r from-transparent via-slate-50/50 to-transparent">
+      {/* <div className="hidden lg:flex justify-center items-center space-x-6 py-4 border-t border-slate-100/50 bg-gradient-to-r from-transparent via-slate-50/50 to-transparent">
         <SecondaryNavLink label="✨ Novedades" />
-        <SecondaryNavLink label="🔥 Rebajas" /*active={true}*/ />
+        <SecondaryNavLink label="🔥 Rebajas" />
         <SecondaryNavLink label="👔 Hombre" />
         <SecondaryNavLink label="👗 Mujer" />
         <SecondaryNavLink label="👟 Zapatillas" />
-      </div>
+      </div> */}
     </div>
   </nav>
   );
@@ -596,7 +610,7 @@ const UserDropdown = ({ user, onLogout, setPage }) => {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-3 w-64 bg-gray-800 rounded-2xl shadow-2xl border border-gray-600/50 py-2 z-50 backdrop-blur-sm animate-in slide-in-from-top-2 duration-300">
+        <div className="absolute right-0 mt-3 w-64 bg-gray-800 rounded-2xl shadow-2xl border border-gray-600/50 py-2 z-50 backdrop-blur-sm animate-in slide-in-from-top-2 duration-300 overflow-hidden">
           {/* Header del usuario mejorado */}
           <div className="px-5 py-4 border-b border-gray-700 bg-gradient-to-r from-gray-700 to-transparent">
             <div className="flex items-center space-x-3">
@@ -625,7 +639,7 @@ const UserDropdown = ({ user, onLogout, setPage }) => {
               className="group flex items-center w-full px-5 py-3 text-sm text-gray-200 hover:text-emerald-400 hover:bg-gradient-to-r hover:from-emerald-900/30 hover:to-green-900/30 transition-all duration-200 transform hover:translate-x-1"
             >
               <div className="w-8 h-8 bg-purple-800/50 group-hover:bg-purple-700/60 rounded-lg flex items-center justify-center mr-3 transition-all duration-200">
-                <svg className="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 dark:text-black-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
               </div>
@@ -643,7 +657,7 @@ const UserDropdown = ({ user, onLogout, setPage }) => {
               className="group flex items-center w-full px-5 py-3 text-sm text-gray-200 hover:text-emerald-400 hover:bg-gradient-to-r hover:from-emerald-900/30 hover:to-green-900/30 transition-all duration-200 transform hover:translate-x-1"
             >
               <div className="w-8 h-8 bg-indigo-800/50 group-hover:bg-indigo-700/60 rounded-lg flex items-center justify-center mr-3 transition-all duration-200">
-                <svg className="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 dark:text-black-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                 </svg>
               </div>
@@ -661,7 +675,7 @@ const UserDropdown = ({ user, onLogout, setPage }) => {
               className="group flex items-center w-full px-5 py-3 text-sm text-gray-200 hover:text-emerald-400 hover:bg-gradient-to-r hover:from-emerald-900/30 hover:to-green-900/30 transition-all duration-200 transform hover:translate-x-1"
             >
               <div className="w-8 h-8 bg-pink-800/50 group-hover:bg-pink-700/60 rounded-lg flex items-center justify-center mr-3 transition-all duration-200">
-                <svg className="w-4 h-4 text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 dark:text-black-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                 </svg>
               </div>
@@ -681,7 +695,7 @@ const UserDropdown = ({ user, onLogout, setPage }) => {
               className="group flex items-center w-full px-5 py-3 text-sm text-gray-200 hover:text-emerald-400 hover:bg-gradient-to-r hover:from-emerald-900/30 hover:to-green-900/30 transition-all duration-200 transform hover:translate-x-1"
             >
               <div className="w-8 h-8 bg-amber-800/50 group-hover:bg-amber-700/60 rounded-lg flex items-center justify-center mr-3 transition-all duration-200">
-                <svg className="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 dark:text-black-4 00" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
@@ -700,7 +714,7 @@ const UserDropdown = ({ user, onLogout, setPage }) => {
               className="group flex items-center w-full px-5 py-3 text-sm text-red-400 hover:text-white hover:bg-gradient-to-r hover:from-red-600 hover:to-red-700 transition-all duration-200 transform hover:translate-x-1 border-t border-gray-700 mt-2"
             >
               <div className="w-8 h-8 bg-red-800/50 group-hover:bg-red-700/60 rounded-lg flex items-center justify-center mr-3 transition-all duration-200">
-                <svg className="w-4 h-4 text-red-400 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                 </svg>
               </div>
@@ -925,24 +939,20 @@ const ProductDetailPage = ({ product, addToCart, toggleFavorite, isFavorite }) =
         <div className="space-y-4 mb-8">
           <div className="flex items-center justify-between">
             <span className="text-lg font-semibold text-white">Cantidad:</span>
-            <div className="flex items-center bg-gray-700 rounded-xl overflow-hidden shadow-lg">
+            <div className="flex items-center gap-1 bg-gray-700/50 rounded-lg p-1 shadow-lg">
               <button 
                 onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                className="px-4 py-3 text-white hover:bg-gray-600 disabled:opacity-50 transition-all duration-300 hover:scale-110"
+                className="w-10 h-10 flex items-center justify-center text-white font-bold hover:bg-gray-600 disabled:opacity-50 rounded-md transition-colors text-xl"
                 disabled={quantity <= 1}
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 12H4" />
-                </svg>
+                −
               </button>
-              <span className="px-6 py-3 font-bold text-white bg-gray-800 min-w-[3rem] text-center">{quantity}</span>
+              <span className="px-6 py-2 font-bold text-white min-w-[3rem] text-center text-lg">{quantity}</span>
               <button 
                 onClick={() => setQuantity(quantity + 1)}
-                className="px-4 py-3 text-white hover:bg-gray-600 transition-all duration-300 hover:scale-110"
+                className="w-10 h-10 flex items-center justify-center text-white font-bold hover:bg-gray-600 rounded-md transition-colors text-xl"
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
-                </svg>
+                +
               </button>
             </div>
           </div>
@@ -1771,7 +1781,7 @@ const Toast = ({ notification, onClose }) => {
 
   return (
     <div className="fixed top-4 right-4 z-50 animate-slide-in">
-      <div className={`bg-gray-800 border ${borderColor} rounded-lg shadow-lg p-4 max-w-sm w-full backdrop-blur-sm`}>
+      <div className={`bg-gray-800 border ${borderColor} rounded-lg shadow-lg p-4 max-w-md w-full backdrop-blur-sm`}>
         <div className="flex items-start space-x-3">
           <div className="flex-shrink-0">
             <div className={`w-8 h-8 ${bgColor} rounded-full flex items-center justify-center`}>
@@ -1786,14 +1796,14 @@ const Toast = ({ notification, onClose }) => {
             <p className="text-sm text-gray-300 mt-1">{notification.message}</p>
             
             {notification.product && (
-              <div className="flex items-center mt-3 p-2 bg-gray-700 rounded-md">
+              <div className="flex items-center mt-3 p-3 bg-gray-700/50 rounded-lg border border-gray-600/30">
                 <img 
                   src={notification.product.image || 'https://placehold.co/40x40/374151/9CA3AF?text=P'} 
                   alt={notification.product.name}
-                  className="w-10 h-10 rounded object-cover"
+                  className="w-12 h-12 rounded-md object-cover flex-shrink-0 ring-2 ring-gray-600"
                 />
-                <div className="ml-3 flex-1">
-                  <p className="text-xs font-medium text-white truncate">{notification.product.name}</p>
+                <div className="ml-3 flex-1 min-w-0">
+                  <p className="text-sm font-medium text-white mb-1">{notification.product.name}</p>
                   <p className="text-xs text-gray-400">
                     {notification.product.color} • {notification.product.size} • Cantidad: {notification.product.quantity}
                   </p>
@@ -1920,6 +1930,7 @@ const LoginPage = ({ setPage, setNotification, setUser }) => {
           id: data.user.id,
           name: data.user.name,
           email: data.user.email,
+          role: data.user.role,
           phone: data.user.phone || '',
           address: data.user.address || '',
           birthDate: data.user.birth_date || '',
@@ -1976,6 +1987,7 @@ const LoginPage = ({ setPage, setNotification, setUser }) => {
           id: data.user.id,
           name: data.user.name,
           email: data.user.email,
+          role: data.user.role,
           phone: data.user.phone || '',
           address: data.user.address || '',
           birthDate: data.user.birth_date || '',
@@ -2206,6 +2218,1543 @@ const LoginPage = ({ setPage, setNotification, setUser }) => {
           </div>
         </div>
       </div>
+    </div>
+  );
+};
+
+// Modal para añadir/editar producto
+const AddProductModal = ({ isOpen, onClose, onProductAdded, categories }) => {
+  const [formData, setFormData] = useState({
+    name: '',
+    short_description: '',
+    long_description: '',
+    price: '',
+    is_active: true,
+    categories: [],
+    details: [{ color: '', size: '', stock: '', image_url: '' }],
+    offer: {
+      enabled: false,
+      name: '',
+      discount_percentage: '',
+      start_date: '',
+      end_date: ''
+    }
+  });
+  const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
+
+  const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
+
+  // Resetear formulario cuando se cierre el modal
+  useEffect(() => {
+    if (!isOpen) {
+      setFormData({
+        name: '',
+        short_description: '',
+        long_description: '',
+        price: '',
+        is_active: true,
+        categories: [],
+        details: [{ color: '', size: '', stock: '', image_url: '' }],
+        offer: {
+          enabled: false,
+          name: '',
+          discount_percentage: '',
+          start_date: '',
+          end_date: ''
+        }
+      });
+      setErrors({});
+    }
+  }, [isOpen]);
+
+  const handleInputChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value
+    }));
+  };
+
+  const handleCategoryToggle = (categoryId) => {
+    setFormData(prev => ({
+      ...prev,
+      categories: prev.categories.includes(categoryId)
+        ? prev.categories.filter(id => id !== categoryId)
+        : [...prev.categories, categoryId]
+    }));
+  };
+
+  const handleDetailChange = (index, field, value) => {
+    setFormData(prev => {
+      const newDetails = [...prev.details];
+      newDetails[index][field] = value;
+      return { ...prev, details: newDetails };
+    });
+  };
+
+  const addDetail = () => {
+    setFormData(prev => ({
+      ...prev,
+      details: [...prev.details, { color: '', size: '', stock: '', image_url: '' }]
+    }));
+  };
+
+  const removeDetail = (index) => {
+    if (formData.details.length > 1) {
+      setFormData(prev => ({
+        ...prev,
+        details: prev.details.filter((_, i) => i !== index)
+      }));
+    }
+  };
+
+  const handleOfferChange = (field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      offer: { ...prev.offer, [field]: value }
+    }));
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+
+    if (!formData.name.trim()) newErrors.name = 'El nombre es obligatorio';
+    if (!formData.price || parseFloat(formData.price) <= 0) newErrors.price = 'El precio debe ser mayor a 0';
+    if (formData.categories.length === 0) newErrors.categories = 'Selecciona al menos una categoría';
+    
+    formData.details.forEach((detail, index) => {
+      if (!detail.color.trim()) newErrors[`detail_${index}_color`] = 'El color es obligatorio';
+      if (!detail.size.trim()) newErrors[`detail_${index}_size`] = 'La talla es obligatoria';
+      if (!detail.stock || parseInt(detail.stock) < 0) newErrors[`detail_${index}_stock`] = 'Stock inválido';
+      if (!detail.image_url.trim()) newErrors[`detail_${index}_image_url`] = 'La URL de imagen es obligatoria';
+    });
+
+    if (formData.offer.enabled) {
+      if (!formData.offer.name.trim()) newErrors.offer_name = 'Nombre de oferta obligatorio';
+      if (!formData.offer.discount_percentage || parseFloat(formData.offer.discount_percentage) <= 0 || parseFloat(formData.offer.discount_percentage) > 100) {
+        newErrors.offer_discount = 'Descuento debe estar entre 1 y 100';
+      }
+      if (!formData.offer.start_date) newErrors.offer_start = 'Fecha inicio obligatoria';
+      if (!formData.offer.end_date) newErrors.offer_end = 'Fecha fin obligatoria';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!validateForm()) return;
+
+    setLoading(true);
+
+    try {
+      // Verificar token
+      const userString = localStorage.getItem('omnistyle-user');
+      const userData = userString ? JSON.parse(userString) : null;
+      const token = userData?.token;
+
+      if (!token) {
+        throw new Error('No estás autenticado. Por favor, inicia sesión nuevamente.');
+      }
+
+      // Asegurar que stock sea número entero y limpiar offer si está deshabilitado
+      const dataToSend = {
+        ...formData,
+        details: formData.details.map(detail => ({
+          ...detail,
+          stock: parseInt(detail.stock) || 0
+        })),
+        // Limpiar campos de offer si está deshabilitado
+        offer: formData.offer.enabled ? {
+          ...formData.offer,
+          discount_percentage: parseFloat(formData.offer.discount_percentage) || 0
+        } : {
+          enabled: false,
+          id: null,
+          name: null,
+          discount_percentage: null,
+          start_date: null,
+          end_date: null
+        }
+      };
+
+      const response = await fetch(`${API_URL}/api/admin/products`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(dataToSend)
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        // Si es error 401, el token no es válido - hacer logout
+        if (response.status === 401) {
+          console.log('Token inválido (401), limpiando localStorage y redirigiendo...');
+          localStorage.removeItem('omnistyle-user');
+          // Recargar la página para forzar logout
+          window.location.reload();
+          return;
+        }
+        
+        if (data.errors) {
+          setErrors(data.errors);
+        } else {
+          throw new Error(data.message || 'Error al crear el producto');
+        }
+        return;
+      }
+
+      // Devolver el producto creado (viene en data.product según el backend)
+      onProductAdded(data.product || data);
+      onClose();
+    } catch (error) {
+      console.error('Error:', error);
+      setErrors({ general: error.message });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
+      <div className="bg-gray-800 rounded-2xl shadow-2xl border border-gray-700 w-full max-w-4xl my-8">
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 border-b border-gray-700">
+          <h2 className="text-2xl font-bold text-white">Añadir Nuevo Producto</h2>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-white transition-colors p-2 hover:bg-gray-700 rounded-lg"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="p-6 space-y-6 max-h-[calc(100vh-200px)] overflow-y-auto">
+          {errors.general && (
+            <div className="bg-red-900/50 border border-red-500 text-red-200 px-4 py-3 rounded-lg">
+              {errors.general}
+            </div>
+          )}
+
+          {/* Información básica */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold text-cyan-400">Información Básica</h3>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Nombre del Producto *
+              </label>
+              <input
+                type="text"
+                name="name"
+                value={formData.name}
+                onChange={handleInputChange}
+                className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                placeholder="Ej: Nike Air Max 270"
+              />
+              {errors.name && <p className="text-red-400 text-sm mt-1">{errors.name}</p>}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Descripción Corta
+              </label>
+              <input
+                type="text"
+                name="short_description"
+                value={formData.short_description}
+                onChange={handleInputChange}
+                className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                placeholder="Breve descripción del producto"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Descripción Larga
+              </label>
+              <textarea
+                name="long_description"
+                value={formData.long_description}
+                onChange={handleInputChange}
+                rows="4"
+                className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                placeholder="Descripción detallada del producto"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Precio Base * (€)
+                </label>
+                <input
+                  type="number"
+                  name="price"
+                  value={formData.price}
+                  onChange={handleInputChange}
+                  step="0.01"
+                  min="0"
+                  className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                  placeholder="0.00"
+                />
+                {errors.price && <p className="text-red-400 text-sm mt-1">{errors.price}</p>}
+              </div>
+
+              <div className="flex items-center">
+                <label className="flex items-center space-x-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="is_active"
+                    checked={formData.is_active}
+                    onChange={handleInputChange}
+                    className="w-5 h-5 text-cyan-500 bg-gray-700 border-gray-600 rounded focus:ring-cyan-500"
+                  />
+                  <span className="text-sm font-medium text-gray-300">Producto Activo</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          {/* Categorías */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold text-cyan-400">Categorías *</h3>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              {categories.map(category => (
+                <label
+                  key={category.id}
+                  className={`flex items-center space-x-2 p-3 rounded-lg cursor-pointer transition-all ${
+                    formData.categories.includes(category.id)
+                      ? 'bg-cyan-900/50 border-2 border-cyan-500'
+                      : 'bg-gray-700 border-2 border-gray-600 hover:border-cyan-500/50'
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={formData.categories.includes(category.id)}
+                    onChange={() => handleCategoryToggle(category.id)}
+                    className="w-4 h-4 text-cyan-500 bg-gray-600 border-gray-500 rounded focus:ring-cyan-500"
+                  />
+                  <span className="text-sm text-white">{category.name}</span>
+                </label>
+              ))}
+            </div>
+            {errors.categories && <p className="text-red-400 text-sm">{errors.categories}</p>}
+          </div>
+
+          {/* Variantes (Detalles) */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-cyan-400">Variantes (Color, Talla, Stock) *</h3>
+              <button
+                type="button"
+                onClick={addDetail}
+                className="px-3 py-1 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg text-sm flex items-center space-x-1"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+                </svg>
+                <span>Añadir Variante</span>
+              </button>
+            </div>
+
+            {formData.details.map((detail, index) => (
+              <div key={index} className="bg-gray-700/50 p-4 rounded-lg space-y-3 border border-gray-600">
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="text-sm font-medium text-gray-300">Variante #{index + 1}</h4>
+                  {formData.details.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => removeDetail(index)}
+                      className="text-red-400 hover:text-red-300 p-1"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  <div>
+                    <label className="block text-xs text-white font-medium mb-1">Color *</label>
+                    <input
+                      type="text"
+                      value={detail.color}
+                      onChange={(e) => handleDetailChange(index, 'color', e.target.value)}
+                      className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-gray-900 focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                      placeholder="Ej: Negro"
+                    />
+                    {errors[`detail_${index}_color`] && (
+                      <p className="text-red-400 text-xs mt-1">{errors[`detail_${index}_color`]}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-xs text-white font-medium mb-1">Talla *</label>
+                    <input
+                      type="text"
+                      value={detail.size}
+                      onChange={(e) => handleDetailChange(index, 'size', e.target.value)}
+                      className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-gray-900 focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                      placeholder="Ej: M, 42"
+                    />
+                    {errors[`detail_${index}_size`] && (
+                      <p className="text-red-400 text-xs mt-1">{errors[`detail_${index}_size`]}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-xs text-white font-medium mb-1">Stock *</label>
+                    <input
+                      type="number"
+                      value={detail.stock}
+                      onChange={(e) => handleDetailChange(index, 'stock', e.target.value)}
+                      min="0"
+                      className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-gray-900 focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                      placeholder="0"
+                    />
+                    {errors[`detail_${index}_stock`] && (
+                      <p className="text-red-400 text-xs mt-1">{errors[`detail_${index}_stock`]}</p>
+                    )}
+                  </div>
+
+                  <div className="col-span-2 md:col-span-4">
+                    <label className="block text-xs text-white font-medium mb-1">URL de Imagen *</label>
+                    <input
+                      type="text"
+                      value={detail.image_url}
+                      onChange={(e) => handleDetailChange(index, 'image_url', e.target.value)}
+                      className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-gray-900 focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                      placeholder="https://ejemplo.com/imagen.jpg"
+                    />
+                    {errors[`detail_${index}_image_url`] && (
+                      <p className="text-red-400 text-xs mt-1">{errors[`detail_${index}_image_url`]}</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Oferta opcional */}
+          <div className="space-y-4">
+            <div className="flex items-center space-x-3">
+              <input
+                type="checkbox"
+                checked={formData.offer.enabled}
+                onChange={(e) => handleOfferChange('enabled', e.target.checked)}
+                className="w-5 h-5 text-purple-500 bg-gray-700 border-gray-600 rounded focus:ring-purple-500"
+              />
+              <h3 className="text-lg font-semibold text-purple-400">Añadir Oferta (Opcional)</h3>
+            </div>
+
+            {formData.offer.enabled && (
+              <div className="bg-purple-900/20 p-4 rounded-lg space-y-3 border border-purple-500/30">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Nombre de la Oferta *
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.offer.name}
+                      onChange={(e) => handleOfferChange('name', e.target.value)}
+                      className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-purple-500"
+                      placeholder="Ej: Black Friday"
+                    />
+                    {errors.offer_name && <p className="text-red-400 text-sm mt-1">{errors.offer_name}</p>}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Descuento (%) *
+                    </label>
+                    <input
+                      type="number"
+                      value={formData.offer.discount_percentage}
+                      onChange={(e) => handleOfferChange('discount_percentage', e.target.value)}
+                      min="1"
+                      max="100"
+                      step="0.01"
+                      className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-purple-500"
+                      placeholder="15.00"
+                    />
+                    {errors.offer_discount && <p className="text-red-400 text-sm mt-1">{errors.offer_discount}</p>}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Fecha Inicio *
+                    </label>
+                    <input
+                      type="datetime-local"
+                      value={formData.offer.start_date}
+                      onChange={(e) => handleOfferChange('start_date', e.target.value)}
+                      className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-purple-500"
+                    />
+                    {errors.offer_start && <p className="text-red-400 text-sm mt-1">{errors.offer_start}</p>}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Fecha Fin *
+                    </label>
+                    <input
+                      type="datetime-local"
+                      value={formData.offer.end_date}
+                      onChange={(e) => handleOfferChange('end_date', e.target.value)}
+                      className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-purple-500"
+                    />
+                    {errors.offer_end && <p className="text-red-400 text-sm mt-1">{errors.offer_end}</p>}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Botones */}
+          <div className="flex items-center justify-end space-x-3 pt-4 border-t border-gray-700">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-6 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="px-6 py-2 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white rounded-lg transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+            >
+              {loading ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  <span>Guardando...</span>
+                </>
+              ) : (
+                <>
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span>Crear Producto</span>
+                </>
+              )}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+// Función para ordenar tallas correctamente
+const sizeOrder = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
+const sortDetailsBySize = (details) => {
+  return [...details].sort((a, b) => {
+    const indexA = sizeOrder.indexOf(a.size.toUpperCase());
+    const indexB = sizeOrder.indexOf(b.size.toUpperCase());
+    // Si la talla no está en el orden predefinido, ponerla al final
+    if (indexA === -1) return 1;
+    if (indexB === -1) return -1;
+    return indexA - indexB;
+  });
+};
+
+// Modal para editar producto
+const EditProductModal = ({ isOpen, onClose, onProductUpdated, product, categories }) => {
+  const [formData, setFormData] = useState({
+    name: '',
+    short_description: '',
+    long_description: '',
+    price: '',
+    is_active: true,
+    categories: [],
+    details: [],
+    offer: {
+      enabled: false,
+      id: null,
+      name: '',
+      discount_percentage: '',
+      start_date: '',
+      end_date: ''
+    }
+  });
+  const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
+
+  const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
+
+  // Cargar datos del producto cuando se abre el modal
+  useEffect(() => {
+    if (isOpen && product) {
+      // Formatear fechas para datetime-local
+      const formatDateTime = (dateString) => {
+        if (!dateString) return '';
+        const date = new Date(dateString);
+        return date.toISOString().slice(0, 16);
+      };
+
+      // Verificar si tiene oferta activa
+      const activeOffer = product.offers && product.offers.length > 0 ? product.offers[0] : null;
+
+      setFormData({
+        name: product.name || '',
+        short_description: product.short_description || '',
+        long_description: product.long_description || '',
+        price: product.price || '',
+        is_active: product.is_active ?? true,
+        categories: product.categories ? product.categories.map(cat => cat.id) : [],
+        details: product.details && product.details.length > 0 
+          ? sortDetailsBySize(product.details).map(detail => ({
+              id: detail.id,
+              color: detail.color || '',
+              size: detail.size || '',
+              stock: detail.stock || 0,
+              image_url: detail.image_url || ''
+            }))
+          : [{ color: '', size: '', stock: '', image_url: '' }],
+        offer: activeOffer ? {
+          enabled: true,
+          id: activeOffer.id,
+          name: activeOffer.name || '',
+          discount_percentage: activeOffer.discount_percentage || '',
+          start_date: formatDateTime(activeOffer.start_date),
+          end_date: formatDateTime(activeOffer.end_date)
+        } : {
+          enabled: false,
+          id: null,
+          name: '',
+          discount_percentage: '',
+          start_date: '',
+          end_date: ''
+        }
+      });
+      setErrors({});
+    }
+  }, [isOpen, product]);
+
+  const handleInputChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value
+    }));
+  };
+
+  const handleCategoryToggle = (categoryId) => {
+    setFormData(prev => ({
+      ...prev,
+      categories: prev.categories.includes(categoryId)
+        ? prev.categories.filter(id => id !== categoryId)
+        : [...prev.categories, categoryId]
+    }));
+  };
+
+  const handleDetailChange = (index, field, value) => {
+    setFormData(prev => {
+      const newDetails = [...prev.details];
+      newDetails[index][field] = value;
+      return { ...prev, details: newDetails };
+    });
+  };
+
+  const addDetail = () => {
+    setFormData(prev => ({
+      ...prev,
+      details: [...prev.details, { color: '', size: '', stock: '', image_url: '' }]
+    }));
+  };
+
+  const removeDetail = (index) => {
+    if (formData.details.length > 1) {
+      setFormData(prev => ({
+        ...prev,
+        details: prev.details.filter((_, i) => i !== index)
+      }));
+    }
+  };
+
+  const handleOfferChange = (field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      offer: { ...prev.offer, [field]: value }
+    }));
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+
+    if (!formData.name.trim()) newErrors.name = 'El nombre es obligatorio';
+    if (!formData.price || parseFloat(formData.price) <= 0) newErrors.price = 'El precio debe ser mayor a 0';
+    if (formData.categories.length === 0) newErrors.categories = 'Selecciona al menos una categoría';
+    
+    formData.details.forEach((detail, index) => {
+      if (!detail.color.trim()) newErrors[`detail_${index}_color`] = 'El color es obligatorio';
+      if (!detail.size.trim()) newErrors[`detail_${index}_size`] = 'La talla es obligatoria';
+      if (detail.stock === '' || parseInt(detail.stock) < 0) newErrors[`detail_${index}_stock`] = 'Stock inválido';
+      if (!detail.image_url.trim()) newErrors[`detail_${index}_image_url`] = 'La URL de imagen es obligatoria';
+    });
+
+    if (formData.offer.enabled) {
+      if (!formData.offer.name.trim()) newErrors.offer_name = 'Nombre de oferta obligatorio';
+      if (!formData.offer.discount_percentage || parseFloat(formData.offer.discount_percentage) <= 0 || parseFloat(formData.offer.discount_percentage) > 100) {
+        newErrors.offer_discount = 'Descuento debe estar entre 1 y 100';
+      }
+      if (!formData.offer.start_date) newErrors.offer_start = 'Fecha inicio obligatoria';
+      if (!formData.offer.end_date) newErrors.offer_end = 'Fecha fin obligatoria';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!validateForm()) return;
+
+    setLoading(true);
+
+    try {
+      // Verificar token
+      const userString = localStorage.getItem('omnistyle-user');
+      const userData = userString ? JSON.parse(userString) : null;
+      const token = userData?.token;
+
+      if (!token) {
+        throw new Error('No estás autenticado. Por favor, inicia sesión nuevamente.');
+      }
+
+      // Debug: Log datos enviados
+      console.log('Datos enviados al backend:', formData);
+
+      // Asegurar que stock sea número entero y limpiar offer si está deshabilitado
+      const dataToSend = {
+        ...formData,
+        details: formData.details.map(detail => ({
+          ...detail,
+          stock: parseInt(detail.stock) || 0
+        })),
+        // Limpiar campos de offer si está deshabilitado
+        offer: formData.offer.enabled ? {
+          ...formData.offer,
+          discount_percentage: parseFloat(formData.offer.discount_percentage) || 0
+        } : {
+          enabled: false,
+          id: formData.offer.id || null,
+          name: null,
+          discount_percentage: null,
+          start_date: null,
+          end_date: null
+        }
+      };
+
+      const response = await fetch(`${API_URL}/api/admin/products/${product.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(dataToSend)
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        // Si es error 401, el token no es válido - hacer logout
+        if (response.status === 401) {
+          console.log('Token inválido (401), limpiando localStorage y redirigiendo...');
+          localStorage.removeItem('omnistyle-user');
+          // Recargar la página para forzar logout
+          window.location.reload();
+          return;
+        }
+        
+        if (data.errors) {
+          console.log('Errores de validación:', JSON.stringify(data.errors, null, 2));
+          console.log('Objeto completo de respuesta:', JSON.stringify(data, null, 2));
+          setErrors(data.errors);
+        } else {
+          console.log('Error del servidor:', data);
+          throw new Error(data.message || 'Error al actualizar el producto');
+        }
+        return;
+      }
+
+      onProductUpdated(data.product || data);
+      onClose();
+    } catch (error) {
+      console.error('Error:', error);
+      setErrors({ general: error.message });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
+      <div className="bg-gray-800 rounded-2xl shadow-2xl border border-gray-700 w-full max-w-4xl my-8">
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 border-b border-gray-700">
+          <h2 className="text-2xl font-bold text-white">Editar Producto</h2>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-white transition-colors p-2 hover:bg-gray-700 rounded-lg"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="p-6 space-y-6 max-h-[calc(100vh-200px)] overflow-y-auto">
+          {errors.general && (
+            <div className="bg-red-900/50 border border-red-500 text-red-200 px-4 py-3 rounded-lg">
+              {errors.general}
+            </div>
+          )}
+
+          {/* Información básica */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold text-cyan-400">Información Básica</h3>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Nombre del Producto *
+              </label>
+              <input
+                type="text"
+                name="name"
+                value={formData.name}
+                onChange={handleInputChange}
+                className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                placeholder="Ej: Nike Air Max 270"
+              />
+              {errors.name && <p className="text-red-400 text-sm mt-1">{errors.name}</p>}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Descripción Corta
+              </label>
+              <input
+                type="text"
+                name="short_description"
+                value={formData.short_description}
+                onChange={handleInputChange}
+                className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                placeholder="Breve descripción del producto"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Descripción Larga
+              </label>
+              <textarea
+                name="long_description"
+                value={formData.long_description}
+                onChange={handleInputChange}
+                rows="4"
+                className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                placeholder="Descripción detallada del producto"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Precio Base * (€)
+                </label>
+                <input
+                  type="number"
+                  name="price"
+                  value={formData.price}
+                  onChange={handleInputChange}
+                  step="0.01"
+                  min="0"
+                  className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                  placeholder="0.00"
+                />
+                {errors.price && <p className="text-red-400 text-sm mt-1">{errors.price}</p>}
+              </div>
+
+              <div className="flex items-center">
+                <label className="flex items-center space-x-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="is_active"
+                    checked={formData.is_active}
+                    onChange={handleInputChange}
+                    className="w-5 h-5 text-cyan-500 bg-gray-700 border-gray-600 rounded focus:ring-cyan-500"
+                  />
+                  <span className="text-sm font-medium text-gray-300">Producto Activo</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          {/* Categorías */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold text-cyan-400">Categorías *</h3>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              {categories.map(category => (
+                <label
+                  key={category.id}
+                  className={`flex items-center space-x-2 p-3 rounded-lg cursor-pointer transition-all ${
+                    formData.categories.includes(category.id)
+                      ? 'bg-cyan-900/50 border-2 border-cyan-500'
+                      : 'bg-gray-700 border-2 border-gray-600 hover:border-cyan-500/50'
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={formData.categories.includes(category.id)}
+                    onChange={() => handleCategoryToggle(category.id)}
+                    className="w-4 h-4 text-cyan-500 bg-gray-600 border-gray-500 rounded focus:ring-cyan-500"
+                  />
+                  <span className="text-sm text-white">{category.name}</span>
+                </label>
+              ))}
+            </div>
+            {errors.categories && <p className="text-red-400 text-sm">{errors.categories}</p>}
+          </div>
+
+          {/* Variantes (Detalles) */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-cyan-400">Variantes (Color, Talla, Stock) *</h3>
+              <button
+                type="button"
+                onClick={addDetail}
+                className="px-3 py-1 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg text-sm flex items-center space-x-1"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+                </svg>
+                <span>Añadir Variante</span>
+              </button>
+            </div>
+
+            {formData.details.map((detail, index) => (
+              <div key={index} className="bg-gray-700/50 p-4 rounded-lg space-y-3 border border-gray-600">
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="text-sm font-medium text-gray-300">
+                    Variante #{index + 1} {detail.id && <span className="text-xs text-gray-500">(ID: {detail.id})</span>}
+                  </h4>
+                  {formData.details.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => removeDetail(index)}
+                      className="text-red-400 hover:text-red-300 p-1"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  <div>
+                    <label className="block text-xs text-white font-medium mb-1">Color *</label>
+                    <input
+                      type="text"
+                      value={detail.color}
+                      onChange={(e) => handleDetailChange(index, 'color', e.target.value)}
+                      className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-gray-900 focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                      placeholder="Ej: Negro"
+                    />
+                    {errors[`detail_${index}_color`] && (
+                      <p className="text-red-400 text-xs mt-1">{errors[`detail_${index}_color`]}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-xs text-white font-medium mb-1">Talla *</label>
+                    <input
+                      type="text"
+                      value={detail.size}
+                      onChange={(e) => handleDetailChange(index, 'size', e.target.value)}
+                      className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-gray-900 focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                      placeholder="Ej: M, 42"
+                    />
+                    {errors[`detail_${index}_size`] && (
+                      <p className="text-red-400 text-xs mt-1">{errors[`detail_${index}_size`]}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-xs text-white font-medium mb-1">Stock *</label>
+                    <input
+                      type="number"
+                      value={detail.stock}
+                      onChange={(e) => handleDetailChange(index, 'stock', e.target.value)}
+                      min="0"
+                      className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-gray-900 focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                      placeholder="0"
+                    />
+                    {errors[`detail_${index}_stock`] && (
+                      <p className="text-red-400 text-xs mt-1">{errors[`detail_${index}_stock`]}</p>
+                    )}
+                  </div>
+
+                  <div className="col-span-2 md:col-span-4">
+                    <label className="block text-xs text-white font-medium mb-1">URL de Imagen *</label>
+                    <input
+                      type="text"
+                      value={detail.image_url}
+                      onChange={(e) => handleDetailChange(index, 'image_url', e.target.value)}
+                      className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-gray-900 focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                      placeholder="https://ejemplo.com/imagen.jpg"
+                    />
+                    {errors[`detail_${index}_image_url`] && (
+                      <p className="text-red-400 text-xs mt-1">{errors[`detail_${index}_image_url`]}</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Oferta opcional */}
+          <div className="space-y-4">
+            <div className="flex items-center space-x-3">
+              <input
+                type="checkbox"
+                checked={formData.offer.enabled}
+                onChange={(e) => handleOfferChange('enabled', e.target.checked)}
+                className="w-5 h-5 text-purple-500 bg-gray-700 border-gray-600 rounded focus:ring-purple-500"
+              />
+              <h3 className="text-lg font-semibold text-purple-400">
+                {formData.offer.id ? 'Editar Oferta' : 'Añadir Oferta'} (Opcional)
+              </h3>
+            </div>
+
+            {formData.offer.enabled && (
+              <div className="bg-purple-900/20 p-4 rounded-lg space-y-3 border border-purple-500/30">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Nombre de la Oferta *
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.offer.name}
+                      onChange={(e) => handleOfferChange('name', e.target.value)}
+                      className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-purple-500"
+                      placeholder="Ej: Black Friday"
+                    />
+                    {errors.offer_name && <p className="text-red-400 text-sm mt-1">{errors.offer_name}</p>}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Descuento (%) *
+                    </label>
+                    <input
+                      type="number"
+                      value={formData.offer.discount_percentage}
+                      onChange={(e) => handleOfferChange('discount_percentage', e.target.value)}
+                      min="1"
+                      max="100"
+                      step="0.01"
+                      className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-purple-500"
+                      placeholder="15.00"
+                    />
+                    {errors.offer_discount && <p className="text-red-400 text-sm mt-1">{errors.offer_discount}</p>}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Fecha Inicio *
+                    </label>
+                    <input
+                      type="datetime-local"
+                      value={formData.offer.start_date}
+                      onChange={(e) => handleOfferChange('start_date', e.target.value)}
+                      className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-purple-500"
+                    />
+                    {errors.offer_start && <p className="text-red-400 text-sm mt-1">{errors.offer_start}</p>}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Fecha Fin *
+                    </label>
+                    <input
+                      type="datetime-local"
+                      value={formData.offer.end_date}
+                      onChange={(e) => handleOfferChange('end_date', e.target.value)}
+                      className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-purple-500"
+                    />
+                    {errors.offer_end && <p className="text-red-400 text-sm mt-1">{errors.offer_end}</p>}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Botones */}
+          <div className="flex items-center justify-end space-x-3 pt-4 border-t border-gray-700">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-6 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="px-6 py-2 bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white rounded-lg transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+            >
+              {loading ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  <span>Actualizando...</span>
+                </>
+              ) : (
+                <>
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span>Actualizar Producto</span>
+                </>
+              )}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+// Página de Administración / Panel de Admin
+const AdminPage = ({ user, onProductAdded, onProductUpdated, onProductDeleted }) => {
+  const [activeTab, setActiveTab] = useState('products'); // 'products', 'offers' o 'users'
+  const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [notification, setNotification] = useState(null);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+
+  const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
+
+  // Cargar productos y categorías
+  useEffect(() => {
+    if (user?.role !== 'employee') return;
+    
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const [productsRes, categoriesRes] = await Promise.all([
+          fetch(`${API_URL}/api/products`),
+          fetch(`${API_URL}/api/categories`)
+        ]);
+        const productsData = await productsRes.json();
+        const categoriesData = await categoriesRes.json();
+        setProducts(productsData);
+        setCategories(categoriesData);
+      } catch (error) {
+        console.error('Error al cargar datos:', error);
+        setNotification({ type: 'error', message: 'Error al cargar los datos' });
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, [API_URL, user]);
+
+  // Cargar usuarios cuando se selecciona la pestaña de usuarios
+  const fetchUsers = async () => {
+    if (!user || !['employee', 'admin'].includes(user.role)) {
+      return;
+    }
+    
+    setLoading(true);
+    try {
+      // Obtener token del localStorage o del objeto usuario
+      let token = localStorage.getItem('omnistyle-token');
+      if (!token && user?.token) {
+        token = user.token;
+      }
+      
+      if (!token) {
+        setNotification({ type: 'error', message: 'Error de autenticación: no se encontró token' });
+        setLoading(false);
+        return;
+      }
+      
+      const response = await fetch(`${API_URL}/api/admin/users`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (response.ok) {
+        const usersData = await response.json();
+        setUsers(usersData.users || []);
+      } else {
+        setNotification({ type: 'error', message: `Error al cargar usuarios: ${response.status}` });
+      }
+    } catch {
+      setNotification({ type: 'error', message: 'Error de conexión al cargar usuarios' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Cargar usuarios cuando se cambia a la pestaña de usuarios
+  useEffect(() => {
+    if (activeTab === 'users') {
+      fetchUsers();
+    }
+  }, [activeTab]);
+
+  const handleProductAddedSuccess = (newProduct) => {
+    onProductAdded();
+    setNotification({ type: 'success', message: 'Producto creado exitosamente' });
+    setTimeout(() => setNotification(null), 3000);
+  };
+
+  const handleProductUpdatedSuccess = (updatedProduct) => {
+    onProductUpdated();
+    setNotification({ type: 'success', message: 'Producto actualizado exitosamente' });
+    setTimeout(() => setNotification(null), 3000);
+  };
+
+  const handleEditClick = (product) => {
+    setSelectedProduct(product);
+    setShowEditModal(true);
+  };
+
+  // Verificar que el usuario sea empleado
+  if (user?.role !== 'employee') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center px-4">
+        <div className="text-center">
+          <div className="text-6xl mb-4">🚫</div>
+          <h2 className="text-2xl font-bold text-white mb-2">Acceso Denegado</h2>
+          <p className="text-gray-400">No tienes permisos para acceder a esta sección.</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 py-8 px-4">
+      {/* Notificación */}
+      {notification && (
+        <div className={`fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg ${
+          notification.type === 'success' ? 'bg-green-500' : 'bg-red-500'
+        } text-white animate-in slide-in-from-top-2`}>
+          {notification.message}
+          <button onClick={() => setNotification(null)} className="ml-4 font-bold">×</button>
+        </div>
+      )}
+
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold text-white mb-2">Panel de Administración</h1>
+          <p className="text-gray-400">Gestiona productos, ofertas y usuarios de la tienda</p>
+        </div>
+
+        {/* Tabs */}
+        <div className="flex space-x-2 mb-6 border-b border-gray-700">
+          <button
+            onClick={() => setActiveTab('products')}
+            className={`px-6 py-3 font-medium transition-all duration-300 border-b-2 ${
+              activeTab === 'products'
+                ? 'text-cyan-400 border-cyan-400'
+                : 'text-gray-400 border-transparent hover:text-gray-200'
+            }`}
+          >
+            <div className="flex items-center space-x-2">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+              </svg>
+              <span>Productos</span>
+            </div>
+          </button>
+          <button
+            onClick={() => setActiveTab('offers')}
+            className={`px-6 py-3 font-medium transition-all duration-300 border-b-2 ${
+              activeTab === 'offers'
+                ? 'text-cyan-400 border-cyan-400'
+                : 'text-gray-400 border-transparent hover:text-gray-200'
+            }`}
+          >
+            <div className="flex items-center space-x-2">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+              </svg>
+              <span>Ofertas</span>
+            </div>
+          </button>
+          <button
+            onClick={() => setActiveTab('users')}
+            className={`px-6 py-3 font-medium transition-all duration-300 border-b-2 ${
+              activeTab === 'users'
+                ? 'text-cyan-400 border-cyan-400'
+                : 'text-gray-400 border-transparent hover:text-gray-200'
+            }`}
+          >
+            <div className="flex items-center space-x-2">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+              <span>Usuarios</span>
+            </div>
+          </button>
+        </div>
+
+        {/* Contenido según tab activo */}
+        {activeTab === 'products' && (
+          <div className="bg-gray-800 rounded-2xl p-6 shadow-xl border border-gray-700">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-bold text-white">Gestión de Productos</h2>
+              <button 
+                onClick={() => setShowAddModal(true)}
+                className="px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-lg hover:from-cyan-600 hover:to-blue-600 transition-all duration-300 shadow-lg flex items-center space-x-2"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+                </svg>
+                <span>Añadir Producto</span>
+              </button>
+            </div>
+
+            {loading ? (
+              <div className="text-center py-12">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-400 mx-auto"></div>
+                <p className="text-gray-400 mt-4">Cargando productos...</p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-700">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Producto</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Categoría</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Precio</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Stock</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-700">
+                    {products.map((product) => {
+                      const defaultDetail = product.details && product.details.length > 0 ? product.details[0] : null;
+                      const totalStock = product.details?.reduce((sum, detail) => sum + (detail.stock || 0), 0) || 0;
+                      const categoryNames = product.categories?.map(cat => cat.name).join(', ') || 'Sin categoría';
+                      
+                      return (
+                      <tr key={product.id} className="hover:bg-gray-700/50 transition-colors">
+                        <td className="px-4 py-4">
+                          <div className="flex items-center space-x-3">
+                            <img
+                              src={defaultDetail?.image_url || 'https://placehold.co/50x50/374151/9CA3AF?text=No+Image'}
+                              alt={product.name}
+                              className="w-12 h-12 rounded-lg object-cover"
+                              onError={(e) => { 
+                                e.target.onerror = null; 
+                                e.target.src = 'https://placehold.co/50x50/374151/9CA3AF?text=No+Image' 
+                              }}
+                            />
+                            <div>
+                              <div className="text-sm font-medium text-white">{product.name}</div>
+                              <div className="text-xs text-gray-400">{defaultDetail?.color || 'N/A'}</div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-4 py-4 text-sm text-gray-300">
+                          {categoryNames}
+                        </td>
+                        <td className="px-4 py-4 text-sm font-medium text-emerald-400">
+                          ${product.price?.toFixed(2)}
+                        </td>
+                        <td className="px-4 py-4">
+                          <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                            totalStock === 0 ? 'bg-red-900/50 text-red-400' :
+                            totalStock < 40 ? 'bg-yellow-900/50 text-yellow-400' :
+                            'bg-green-900/50 text-green-400'
+                          }`}>
+                            {totalStock} unidades
+                          </span>
+                        </td>
+                        <td className="px-4 py-4">
+                          <div className="flex space-x-2">
+                            <button 
+                              onClick={() => handleEditClick(product)}
+                              className="p-2 text-blue-400 hover:bg-blue-900/30 rounded-lg transition-colors"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                              </svg>
+                            </button>
+                            <button className="p-2 text-red-400 hover:bg-red-900/30 rounded-lg transition-colors">
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                              </svg>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === 'offers' && (
+          <div className="bg-gray-800 rounded-2xl p-6 shadow-xl border border-gray-700">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-bold text-white">Gestión de Ofertas</h2>
+              <button className="px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all duration-300 shadow-lg flex items-center space-x-2">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+                </svg>
+                <span>Crear Oferta</span>
+              </button>
+            </div>
+            <div className="text-center py-12">
+              <svg className="w-16 h-16 text-gray-600 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+              </svg>
+              <p className="text-gray-400">Funcionalidad de ofertas próximamente...</p>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'users' && (
+          <div className="bg-gray-800 rounded-2xl p-6 shadow-xl border border-gray-700">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-bold text-white">Gestión de Usuarios</h2>
+              <div className="flex items-center space-x-4">
+                <span className="text-sm text-gray-400">
+                  Total: {users.length} usuarios
+                </span>
+                <button 
+                  onClick={fetchUsers}
+                  className="px-4 py-2 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-lg hover:from-blue-600 hover:to-cyan-600 transition-all duration-300 shadow-lg flex items-center space-x-2"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                  <span>Actualizar</span>
+                </button>
+              </div>
+            </div>
+
+            {loading ? (
+              <div className="text-center py-12">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-400 mx-auto"></div>
+                <p className="text-gray-400 mt-4">Cargando usuarios...</p>
+              </div>
+            ) : users.length === 0 ? (
+              <div className="text-center py-12">
+                <svg className="w-16 h-16 text-gray-600 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" />
+                </svg>
+                <p className="text-gray-400">No hay usuarios registrados</p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-gray-700">
+                      <th className="text-left py-3 px-4 text-gray-300 font-semibold">ID</th>
+                      <th className="text-left py-3 px-4 text-gray-300 font-semibold">Nombre</th>
+                      <th className="text-left py-3 px-4 text-gray-300 font-semibold">Email</th>
+                      <th className="text-left py-3 px-4 text-gray-300 font-semibold">Rol</th>
+                      <th className="text-left py-3 px-4 text-gray-300 font-semibold">Fecha de registro</th>
+                      <th className="text-left py-3 px-4 text-gray-300 font-semibold">Estado</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {users.map((userItem) => (
+                      <tr key={userItem.id} className="border-b border-gray-700/50 hover:bg-gray-700/30 transition-colors">
+                        <td className="py-3 px-4 text-gray-200">#{userItem.id}</td>
+                        <td className="py-3 px-4">
+                          <div className="flex items-center space-x-3">
+                            <div className="w-8 h-8 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full flex items-center justify-center">
+                              <span className="text-white text-sm font-bold">
+                                {userItem.name.charAt(0).toUpperCase()}
+                              </span>
+                            </div>
+                            <span className="text-white font-medium">{userItem.name}</span>
+                          </div>
+                        </td>
+                        <td className="py-3 px-4 text-gray-300">{userItem.email}</td>
+                        <td className="py-3 px-4">
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                            userItem.role === 'employee' 
+                              ? 'bg-yellow-900 text-yellow-300' 
+                              : 'bg-blue-900 text-blue-300'
+                          }`}>
+                            {userItem.role === 'employee' ? 'Empleado' : 'Cliente'}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4 text-gray-300">
+                          {userItem.created_at ? new Date(userItem.created_at).toLocaleDateString('es-ES') : 'No disponible'}
+                        </td>
+                        <td className="py-3 px-4">
+                          <span className="flex items-center">
+                            <div className="w-2 h-2 bg-green-400 rounded-full mr-2"></div>
+                            <span className="text-green-400 text-sm">Activo</span>
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Modal para añadir producto */}
+      <AddProductModal
+        isOpen={showAddModal}
+        onClose={() => setShowAddModal(false)}
+        onProductAdded={handleProductAddedSuccess}
+        categories={categories}
+      />
+
+      {/* Modal para editar producto */}
+      <EditProductModal
+        isOpen={showEditModal}
+        onClose={() => setShowEditModal(false)}
+        onProductUpdated={handleProductUpdatedSuccess}
+        product={selectedProduct}
+        categories={categories}
+      />
     </div>
   );
 };
@@ -2845,6 +4394,9 @@ function AppContent() {
       case PAGES.SETTINGS:
         navigate('/settings');
         break;
+      case PAGES.ADMIN:
+        navigate('/admin');
+        break;
       default:
         navigate('/');
     }
@@ -2968,6 +4520,46 @@ function AppContent() {
     };
     fetchCatalog();
   }, [API_URL]); // Dependencia correcta
+
+  // Funciones para manejar productos desde el admin panel
+  const handleProductAdded = async () => {
+    // Forzar recarga de todos los productos para asegurar sincronización
+    try {
+      const response = await fetch(`${API_URL}/api/products`);
+      const productsData = await response.json();
+      setProducts(productsData);
+      setAllProducts(productsData); // También actualizar allProducts
+    } catch (error) {
+      console.error('Error al recargar productos:', error);
+    }
+  };
+
+  const handleProductUpdated = async () => {
+    // Forzar recarga de todos los productos para asegurar sincronización
+    try {
+      const response = await fetch(`${API_URL}/api/products`);
+      const productsData = await response.json();
+      setProducts(productsData);
+      setAllProducts(productsData); // También actualizar allProducts
+    } catch (error) {
+      console.error('Error al recargar productos:', error);
+    }
+  };
+
+  const handleProductDeleted = () => {
+    // Forzar recarga de todos los productos para asegurar sincronización  
+    const fetchProducts = async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/products`);
+        const productsData = await response.json();
+        setProducts(productsData);
+        setAllProducts(productsData);
+      } catch (error) {
+        console.error('Error al recargar productos:', error);
+      }
+    };
+    fetchProducts();
+  };
 
   // Aplicar filtros cuando cambien la categoría seleccionada, búsqueda o los productos base
   useEffect(() => {
@@ -3204,6 +4796,18 @@ function AppContent() {
               />
             ) : (
               <Navigate to="/login" replace />
+            )
+          } />
+          <Route path="/admin" element={
+            user?.role === 'employee' ? (
+              <AdminPage 
+                user={user}
+                onProductAdded={handleProductAdded}
+                onProductUpdated={handleProductUpdated}
+                onProductDeleted={handleProductDeleted}
+              />
+            ) : (
+              <Navigate to="/" replace />
             )
           } />
           <Route path="/categories" element={

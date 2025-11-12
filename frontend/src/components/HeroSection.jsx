@@ -21,12 +21,12 @@ const HeroSection = ({ products = [] }) => {
     };
 
     return (
-        // Contenedor Principal con tema oscuro moderno
-        <div className="relative h-[550px] bg-gradient-to-r from-gray-900 via-black to-gray-900 rounded-lg mb-12 shadow-2xl overflow-hidden border border-gray-700/50">
+        // Contenedor Principal con tema adaptable
+        <div className="relative h-[550px] bg-gradient-to-r from-gray-900 via-black to-gray-900 light:from-gray-100 light:via-gray-200 light:to-gray-100 rounded-lg mb-12 shadow-2xl overflow-hidden border border-gray-700/50 light:border-gray-300/50">
             
-            {/* Imagen de fondo con overlay oscuro */}
-            <div className="absolute inset-0 bg-[url('/hero-fondo.webp')] bg-cover bg-center opacity-30"></div>
-            <div className="absolute inset-0 bg-gradient-to-r from-purple-900/20 via-black/40 to-indigo-900/20"></div>
+            {/* Imagen de fondo con overlay oscuro - menos desenfoque en modo claro */}
+            <div className="absolute inset-0 bg-[url('/hero-fondo.webp')] bg-cover bg-center opacity-70 light:opacity-50"></div>
+            <div className="absolute inset-0 bg-gradient-to-r from-purple-900/20 via-black/40 to-indigo-900/20 light:from-purple-900/10 light:via-black/20 light:to-indigo-900/10"></div>
 
             {/* Contenido del Hero con texto claro */}
             <div className="relative z-10 h-full flex flex-col justify-center items-start p-8 md:p-16">
@@ -39,11 +39,11 @@ const HeroSection = ({ products = [] }) => {
                 {/* Título con gradiente de colores */}
                 <h1 className="text-5xl md:text-7xl lg:text-8xl font-extrabold mb-4 leading-none">
                     <span className="bg-gradient-to-r from-purple-500 via-indigo-500 to-emerald-500 bg-clip-text text-transparent">50%</span>
-                    <span className="text-white ml-4">OFF</span>
+                    <span className="text-white light:text-gray-800 ml-4">OFF</span>
                 </h1>
                 
                 {/* Párrafo de descripción */}
-                <p className="text-xl md:text-2xl text-gray-200 max-w-xl mb-8 leading-relaxed">
+                <p className="text-xl md:text-2xl text-gray-200 light:text-gray-700 max-w-xl mb-8 leading-relaxed">
                     Descubre moda de calidad que refleja tu estilo y haz que cada día sea extraordinario.
                 </p>
                 
