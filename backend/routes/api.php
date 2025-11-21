@@ -15,10 +15,19 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 // ----------------------------------------------------
+// SOLUCIÓN AL ERROR: "Route [login] not defined"
+// ----------------------------------------------------
+// Laravel intenta redirigir aquí si falla la autenticación.
+// Definimos esta ruta para que devuelva JSON en lugar de intentar cargar una vista.
+Route::get('/login', function () {
+    return response()->json(['message' => 'Unauthenticated. Please log in.'], 401);
+})->name('login');
+
+// ----------------------------------------------------
 // AUTHENTICATION ROUTES
 // ----------------------------------------------------
 Route::post('/register', [AuthController::class, 'register']);
-Route::post('/login', [AuthController::class, 'login']);
+Route::post('/login', [AuthController::class, 'login']); // Login real (POST)
 
 // ----------------------------------------------------
 // RUTAS PÚBLICAS (Catálogo y Lectura)
@@ -31,8 +40,9 @@ Route::get('/products/{product}', [ProductController::class, 'show']);
 // ----------------------------------------------------
 // RUTAS DE INVITADOS/USUARIOS (Requieren Sesión Web)
 // ----------------------------------------------------
+// NOTA: Asegúrate de que tu frontend envíe las cookies de sesión
+// y que 'config/cors.php' permita 'supports_credentials' => true.
 
-// Usamos el alias 'web' que está correctamente registrado en Laravel para cargar la sesión.
 Route::middleware('web')->group(function () {
     
     // Rutas de Carrito (POST/GET/DELETE para añadir/obtener/eliminar items)
@@ -45,10 +55,11 @@ Route::middleware('web')->group(function () {
 
 
 // ----------------------------------------------------
-// RUTAS PROTEGIDAS (Requieren Sanctum, para Checkout y Perfil)
+// RUTAS PROTEGIDAS (Requieren Sanctum)
 // ----------------------------------------------------
 
 Route::middleware('auth:sanctum')->group(function () {
+    
     // User profile and account management
     Route::get('/user', [AuthController::class, 'user']);
     Route::post('/logout', [AuthController::class, 'logout']);
@@ -62,25 +73,30 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::resource('addresses', AddressController::class)->except(['create', 'edit', 'show']);
 
     // ----------------------------------------------------
-    // MÓDULO DE ADMINISTRACIÓN (PROTEGIDO POR LOGIN)
+    // MÓDULO DE ADMINISTRACIÓN
     // ----------------------------------------------------
+    // RECOMENDACIÓN: En el futuro, añade un middleware extra aquí como 'can:admin'
+    // para que los usuarios normales no puedan acceder a estas rutas.
     
-    // Mantenimiento de Productos (solo admin/employee)
-    Route::post('/admin/products', [ProductController::class, 'store']);
-    Route::put('/admin/products/{product}', [ProductController::class, 'update']);
-    Route::delete('/admin/products/{product}', [ProductController::class, 'destroy']);
-    
-    // Mantenimiento de Usuarios
-    Route::resource('admin/users', UserController::class)->except(['create', 'edit']);
+    Route::prefix('admin')->group(function () {
+        
+        // Mantenimiento de Productos
+        Route::post('/products', [ProductController::class, 'store']);
+        Route::put('/products/{product}', [ProductController::class, 'update']);
+        Route::delete('/products/{product}', [ProductController::class, 'destroy']);
+        
+        // Mantenimiento de Usuarios
+        Route::resource('users', UserController::class)->except(['create', 'edit']);
 
-    // Mantenimiento de Variantes de Productos
-    Route::resource('admin/product-details', ProductDetailController::class)->except(['create', 'edit']);
-    
-    // Mantenimiento de Ofertas
-    Route::resource('admin/offers', OfferController::class)->except(['create', 'edit']);
+        // Mantenimiento de Variantes de Productos
+        Route::resource('product-details', ProductDetailController::class)->except(['create', 'edit']);
+        
+        // Mantenimiento de Ofertas
+        Route::resource('offers', OfferController::class)->except(['create', 'edit']);
 
-    // Consulta de Pedidos y Detalles
-    Route::resource('admin/order-items', OrderItemController::class)->only(['index', 'show']);
+        // Consulta de Pedidos y Detalles
+        Route::resource('order-items', OrderItemController::class)->only(['index', 'show']);
+    });
 });
 
 // Ruta de prueba para verificar conectividad
