@@ -3475,7 +3475,7 @@ const AdminPage = ({ user, onProductAdded, onProductUpdated, onProductDeleted })
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-slate-900 py-8 px-4">
+    <div className="min-h-screen from-slate-900 via-gray-900 to-slate-900 py-8 px-4">
       {/* Notificación */}
       {notification && (
         <div className={`fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg ${
