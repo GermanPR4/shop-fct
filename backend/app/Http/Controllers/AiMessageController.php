@@ -31,7 +31,7 @@ class AiMessageController extends Controller
 
             $userId = $request->user()?->id;
             $receivedToken = $request->input('session_token');
-            
+
             // Lógica de token mejorada
             $sessionToken = $receivedToken;
             if (!$sessionToken && !$userId) {
@@ -72,7 +72,7 @@ class AiMessageController extends Controller
 
             $productContext = "";
             $foundProducts = collect(); // Inicializar como colección vacía
-            
+
             if ($isProductQuery) {
                 Log::info('Palabras clave extraídas:', $keywords);
                 $foundProducts = $this->searchProducts($keywords);
@@ -214,7 +214,7 @@ Eres OmniStyle AI, el asistente personal de moda de OmniStyle. Tu misión es ayu
             // 7. Preparar productos para el frontend (si encontró alguno)
             $productsForFrontend = [];
             if ($isProductQuery && !empty($foundProducts)) {
-                $productsForFrontend = $foundProducts->map(function($product) {
+                $productsForFrontend = $foundProducts->map(function ($product) {
                     return [
                         'id' => $product->id,
                         'name' => $product->name,
@@ -254,40 +254,104 @@ Eres OmniStyle AI, el asistente personal de moda de OmniStyle. Tu misión es ayu
     {
         $processedMessage = strtolower(preg_replace('/[¿?¡!,.]/', '', $message));
         $words = explode(' ', $processedMessage);
-        
+
         // Solo extraer palabras clave de moda/productos específicas
         $fashionKeywords = [
-            'vestido', 'vestidos', 'camisa', 'camisas', 'pantalon', 'pantalones', 'falda', 'faldas',
-            'zapatos', 'zapatillas', 'botas', 'sandalia', 'sandalias', 'chaqueta', 'chaquetas',
-            'abrigo', 'abrigos', 'jersey', 'jerseys', 'sudadera', 'sudaderas', 'camiseta', 'camisetas',
-            'jeans', 'vaqueros', 'short', 'shorts', 'blazer', 'blazers', 'bufanda', 'bufandas',
-            'gorro', 'gorros', 'gorra', 'gorras', 'sombrero', 'sombreros', 'bolso', 'bolsos', 'mochila', 'mochilas',
-            'negro', 'blanco', 'rojo', 'azul', 'verde', 'amarillo', 'rosa', 'gris', 'marron',
-            'xs', 's', 'm', 'l', 'xl', 'xxl', 'talla', 'color', 'casual', 'formal', 'deportivo',
-            'hombre', 'mujer', 'unisex', 'invierno', 'verano', 'primavera', 'otoño', 'nike', 'adidas',
-            'bota', 'calzado', 'ropa'
+            'vestido',
+            'vestidos',
+            'camisa',
+            'camisas',
+            'pantalon',
+            'pantalones',
+            'falda',
+            'faldas',
+            'zapatos',
+            'zapatillas',
+            'botas',
+            'sandalia',
+            'sandalias',
+            'chaqueta',
+            'chaquetas',
+            'abrigo',
+            'abrigos',
+            'jersey',
+            'jerseys',
+            'sudadera',
+            'sudaderas',
+            'camiseta',
+            'camisetas',
+            'jeans',
+            'vaqueros',
+            'short',
+            'shorts',
+            'blazer',
+            'blazers',
+            'bufanda',
+            'bufandas',
+            'gorro',
+            'gorros',
+            'gorra',
+            'gorras',
+            'sombrero',
+            'sombreros',
+            'bolso',
+            'bolsos',
+            'mochila',
+            'mochilas',
+            'negro',
+            'blanco',
+            'rojo',
+            'azul',
+            'verde',
+            'amarillo',
+            'rosa',
+            'gris',
+            'marron',
+            'xs',
+            's',
+            'm',
+            'l',
+            'xl',
+            'xxl',
+            'talla',
+            'color',
+            'casual',
+            'formal',
+            'deportivo',
+            'hombre',
+            'mujer',
+            'unisex',
+            'invierno',
+            'verano',
+            'primavera',
+            'otoño',
+            'nike',
+            'adidas',
+            'bota',
+            'calzado',
+            'ropa'
         ];
-        
+
         // Filtrar solo palabras que están en nuestra lista de moda
-        $keywords = array_filter($words, function($word) use ($fashionKeywords) {
+        $keywords = array_filter($words, function ($word) use ($fashionKeywords) {
             return in_array($word, $fashionKeywords);
         });
-        
+
         $result = array_values(array_unique($keywords));
-        
+
         Log::info('Palabras clave extraídas del mensaje:', [
             'mensaje' => $message,
             'palabras_originales' => $words,
             'keywords_filtradas' => $result
         ]);
-        
+
         return $result;
     }
 
     private function searchProducts(array $keywords)
     {
         Log::info('Buscando productos con palabras clave:', $keywords);
-        
+
         if (empty($keywords)) {
             return collect();
         }
@@ -296,16 +360,74 @@ Eres OmniStyle AI, el asistente personal de moda de OmniStyle. Tu misión es ayu
         $query->where('is_active', true);
 
         // Filtrar solo palabras clave relevantes para productos
-        $productKeywords = array_filter($keywords, function($keyword) {
+        $productKeywords = array_filter($keywords, function ($keyword) {
             $fashionKeywords = [
-                'vestido', 'vestidos', 'camisa', 'camisas', 'pantalon', 'pantalones', 'falda', 'faldas',
-                'zapatos', 'zapatillas', 'botas', 'sandalia', 'sandalias', 'chaqueta', 'chaquetas',
-                'abrigo', 'abrigos', 'jersey', 'jerseys', 'sudadera', 'sudaderas', 'camiseta', 'camisetas',
-                'jeans', 'vaqueros', 'short', 'shorts', 'blazer', 'blazers', 'bufanda', 'bufandas',
-                'gorro', 'gorros', 'gorra', 'gorras', 'sombrero', 'sombreros', 'bolso', 'bolsos', 'mochila', 'mochilas',
-                'negro', 'blanco', 'rojo', 'azul', 'verde', 'amarillo', 'rosa', 'gris', 'marron',
-                'xs', 's', 'm', 'l', 'xl', 'xxl', 'casual', 'formal', 'deportivo',
-                'hombre', 'mujer', 'unisex', 'invierno', 'verano', 'primavera', 'otoño'
+                'vestido',
+                'vestidos',
+                'camisa',
+                'camisas',
+                'pantalon',
+                'pantalones',
+                'falda',
+                'faldas',
+                'zapatos',
+                'zapatillas',
+                'botas',
+                'sandalia',
+                'sandalias',
+                'chaqueta',
+                'chaquetas',
+                'abrigo',
+                'abrigos',
+                'jersey',
+                'jerseys',
+                'sudadera',
+                'sudaderas',
+                'camiseta',
+                'camisetas',
+                'jeans',
+                'vaqueros',
+                'short',
+                'shorts',
+                'blazer',
+                'blazers',
+                'bufanda',
+                'bufandas',
+                'gorro',
+                'gorros',
+                'gorra',
+                'gorras',
+                'sombrero',
+                'sombreros',
+                'bolso',
+                'bolsos',
+                'mochila',
+                'mochilas',
+                'negro',
+                'blanco',
+                'rojo',
+                'azul',
+                'verde',
+                'amarillo',
+                'rosa',
+                'gris',
+                'marron',
+                'xs',
+                's',
+                'm',
+                'l',
+                'xl',
+                'xxl',
+                'casual',
+                'formal',
+                'deportivo',
+                'hombre',
+                'mujer',
+                'unisex',
+                'invierno',
+                'verano',
+                'primavera',
+                'otoño'
             ];
             return in_array(strtolower($keyword), $fashionKeywords);
         });
@@ -318,51 +440,51 @@ Eres OmniStyle AI, el asistente personal de moda de OmniStyle. Tu misión es ayu
         }
 
         // Construir la búsqueda con OR entre las diferentes palabras clave
-        $query->where(function($q) use ($productKeywords) {
+        $query->where(function ($q) use ($productKeywords) {
             $first = true;
-            
+
             foreach ($productKeywords as $keyword) {
                 $singular = rtrim($keyword, 's');
                 $plural = $keyword . (substr($keyword, -1) !== 's' ? 's' : '');
-                
+
                 $searchMethod = $first ? 'where' : 'orWhere';
                 $first = false;
-                
+
                 $q->{$searchMethod}(function ($subQ) use ($keyword, $singular, $plural) {
                     // Búsqueda en nombre del producto
                     $subQ->where('products.name', 'LIKE', "%{$keyword}%")
-                         ->orWhere('products.name', 'LIKE', "%{$singular}%")
-                         ->orWhere('products.name', 'LIKE', "%{$plural}%")
-                         
-                         // Búsqueda en descripciones
-                         ->orWhere('products.short_description', 'LIKE', "%{$keyword}%")
-                         ->orWhere('products.long_description', 'LIKE', "%{$keyword}%")
-                         
-                         // Búsqueda en categorías
-                         ->orWhereHas('categories', function($cq) use ($keyword, $singular, $plural) {
-                             $cq->where('name', 'LIKE', "%{$keyword}%")
+                        ->orWhere('products.name', 'LIKE', "%{$singular}%")
+                        ->orWhere('products.name', 'LIKE', "%{$plural}%")
+
+                        // Búsqueda en descripciones
+                        ->orWhere('products.short_description', 'LIKE', "%{$keyword}%")
+                        ->orWhere('products.long_description', 'LIKE', "%{$keyword}%")
+
+                        // Búsqueda en categorías
+                        ->orWhereHas('categories', function ($cq) use ($keyword, $singular, $plural) {
+                            $cq->where('name', 'LIKE', "%{$keyword}%")
                                 ->orWhere('name', 'LIKE', "%{$singular}%")
                                 ->orWhere('name', 'LIKE', "%{$plural}%");
-                         })
-                         
-                         // Búsqueda en detalles (colores y tallas)
-                         ->orWhereHas('details', function ($dq) use ($keyword, $singular, $plural) {
-                             $dq->where('color', 'LIKE', "%{$keyword}%")
+                        })
+
+                        // Búsqueda en detalles (colores y tallas)
+                        ->orWhereHas('details', function ($dq) use ($keyword, $singular, $plural) {
+                            $dq->where('color', 'LIKE', "%{$keyword}%")
                                 ->orWhere('color', 'LIKE', "%{$singular}%")
                                 ->orWhere('color', 'LIKE', "%{$plural}%")
                                 ->orWhere('size', 'LIKE', "%{$keyword}%");
-                         });
+                        });
                 });
             }
         });
-        
+
         $products = $query->distinct()->limit(5)->get();
-        
+
         Log::info('Productos encontrados:', [
             'count' => $products->count(),
             'products' => $products->pluck('name')->toArray()
         ]);
-        
+
         return $products;
     }
 
@@ -371,23 +493,23 @@ Eres OmniStyle AI, el asistente personal de moda de OmniStyle. Tu misión es ayu
         if ($products->isEmpty()) {
             return "No se encontraron productos que coincidan exactamente con la búsqueda en nuestro catálogo actual.";
         }
-        
+
         $context = "=== PRODUCTOS DISPONIBLES EN OMNISTYLE ===\n";
         $context .= "Solo estos productos existen realmente en nuestra tienda:\n\n";
-        
+
         foreach ($products as $product) {
             $context .= "🛍️ **{$product->name}**\n";
             $context .= "   💰 Precio: " . number_format($product->price, 2, ',', '.') . "€\n";
             $context .= "   📝 ID del producto: {$product->id}\n";
-            
+
             if ($product->short_description) {
                 $context .= "   📄 Descripción: {$product->short_description}\n";
             }
-            
+
             if ($product->details->isNotEmpty()) {
                 $colors = $product->details->pluck('color')->unique()->filter()->implode(', ');
                 $sizes = $product->details->pluck('size')->unique()->filter()->sort()->implode(', ');
-                
+
                 if ($colors) {
                     $context .= "   🎨 Colores disponibles: {$colors}\n";
                 }
@@ -395,18 +517,18 @@ Eres OmniStyle AI, el asistente personal de moda de OmniStyle. Tu misión es ayu
                     $context .= "   📏 Tallas disponibles: {$sizes}\n";
                 }
             }
-            
+
             if ($product->categories->isNotEmpty()) {
                 $categories = $product->categories->pluck('name')->implode(', ');
                 $context .= "   🏷️ Categorías: {$categories}\n";
             }
-            
+
             $context .= "\n";
         }
-        
+
         $context .= "\n⚠️ IMPORTANTE: Solo menciona y recomienda estos productos específicos. No inventes otros productos que no aparezcan en esta lista.\n";
         $context .= "Si el usuario quiere más detalles, puede hacer clic en 'Ver Producto' para abrir la página completa.\n";
-        
+
         return $context;
     }
 }

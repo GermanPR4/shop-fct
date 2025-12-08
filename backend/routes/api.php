@@ -14,87 +14,83 @@ use App\Http\Controllers\AuthController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-// ----------------------------------------------------
-// SOLUCIÓN AL ERROR: "Route [login] not defined"
-// ----------------------------------------------------
-// Laravel intenta redirigir aquí si falla la autenticación.
-// Definimos esta ruta para que devuelva JSON en lugar de intentar cargar una vista.
+/**
+ * Ruta requerida por Laravel para redirección de autenticación.
+ * Devuelve JSON en lugar de una vista para compatibilidad con APIs.
+ */
 Route::get('/login', function () {
     return response()->json(['message' => 'Unauthenticated. Please log in.'], 401);
 })->name('login');
 
-// ----------------------------------------------------
-// AUTHENTICATION ROUTES
-// ----------------------------------------------------
-Route::post('/register', [AuthController::class, 'register']);
-Route::post('/login', [AuthController::class, 'login']); // Login real (POST)
+/* ============================================================================
+   AUTENTICACIÓN
+   ============================================================================ */
 
-// ----------------------------------------------------
-// RUTAS PÚBLICAS (Catálogo y Lectura)
-// ----------------------------------------------------
+Route::post('/register', [AuthController::class, 'register']);
+Route::post('/login', [AuthController::class, 'login']);
+
+/* ============================================================================
+   RUTAS PÚBLICAS - Catálogo de productos y categorías
+   ============================================================================ */
 
 Route::get('/categories', [CategoryController::class, 'index']);
 Route::get('/products', [ProductController::class, 'index']);
 Route::get('/products/{product}', [ProductController::class, 'show']);
 
-// ----------------------------------------------------
-// RUTAS DE INVITADOS/USUARIOS (Requieren Sesión Web)
-// ----------------------------------------------------
-// NOTA: Asegúrate de que tu frontend envíe las cookies de sesión
-// y que 'config/cors.php' permita 'supports_credentials' => true.
+/* ============================================================================
+   CARRITO Y CHAT - Requieren sesión web (invitados y usuarios)
+   ============================================================================ */
 
 Route::middleware('web')->group(function () {
     
-    // Rutas de Carrito (POST/GET/DELETE para añadir/obtener/eliminar items)
+    // Gestión del carrito de compras
     Route::resource('cart', CartItemController::class)->except(['create', 'edit', 'show']);
     Route::put('cart/{cart}', [CartItemController::class, 'update']); 
     
-    // Chat de IA: También necesita la sesión para rastrear al invitado (session_token)
+    // Chat con IA (usa session_token para invitados)
     Route::post('/chat', [AiMessageController::class, 'store']); 
 });
 
-
-// ----------------------------------------------------
-// RUTAS PROTEGIDAS (Requieren Sanctum)
-// ----------------------------------------------------
+/* ============================================================================
+   RUTAS PROTEGIDAS - Requieren autenticación con Sanctum
+   ============================================================================ */
 
 Route::middleware('auth:sanctum')->group(function () {
     
-    // User profile and account management
+    // Gestión de perfil y cuenta
     Route::get('/user', [AuthController::class, 'user']);
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::put('/profile', [AuthController::class, 'updateProfile']);
 
-    // Gestión de Pedidos (Checkout y Historial)
+    // Pedidos y checkout
     Route::post('/checkout', [OrderController::class, 'store']); 
     Route::get('/orders', [OrderController::class, 'index']); 
 
-    // Gestión de Direcciones (CRUD del usuario)
+    // Direcciones de envío
     Route::resource('addresses', AddressController::class)->except(['create', 'edit', 'show']);
 
-    // ----------------------------------------------------
-    // MÓDULO DE ADMINISTRACIÓN
-    // ----------------------------------------------------
-    // RECOMENDACIÓN: En el futuro, añade un middleware extra aquí como 'can:admin'
-    // para que los usuarios normales no puedan acceder a estas rutas.
+    /* ========================================================================
+       PANEL DE ADMINISTRACIÓN
+       Nota: Considerar añadir middleware de roles (ej: 'can:admin')
+       ======================================================================== */
     
     Route::prefix('admin')->group(function () {
         
-        // Mantenimiento de Productos
+        // Gestión de productos
         Route::post('/products', [ProductController::class, 'store']);
         Route::put('/products/{product}', [ProductController::class, 'update']);
         Route::delete('/products/{product}', [ProductController::class, 'destroy']);
         
-        // Mantenimiento de Usuarios
+        // Gestión de usuarios
         Route::resource('users', UserController::class)->except(['create', 'edit']);
 
-        // Mantenimiento de Variantes de Productos
+        // Variantes de productos
         Route::resource('product-details', ProductDetailController::class)->except(['create', 'edit']);
         
-        // Mantenimiento de Ofertas
+        // Ofertas y promociones
         Route::resource('offers', OfferController::class)->except(['create', 'edit']);
 
-        // Consulta de Pedidos y Detalles
+        // Consulta de pedidos
         Route::resource('order-items', OrderItemController::class)->only(['index', 'show']);
     });
 });

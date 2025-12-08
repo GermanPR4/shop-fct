@@ -1,14 +1,12 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation, Navigate, useParams } from 'react-router-dom';
 import { useTheme } from './contexts/ThemeContext.jsx';
-// Importa los componentes
 import HeroSection from './components/HeroSection.jsx';
 import ChatWidget from './components/ChatWidget.jsx';
 import CategoryFilter from './components/CategoryFilter.jsx';
 import AllCategoriesPage from './components/AllCategoriesPage.jsx';
 import AllProductsPage from './components/AllProductsPage.jsx';
 
-// --- CONFIGURACIÓN DE NAVEGACIÓN ---
 const PAGES = {
   HOME: 'HOME',
   CATALOG: 'CATALOG',
@@ -23,9 +21,10 @@ const PAGES = {
   SETTINGS: 'SETTINGS',
 };
 
-// --- COMPONENTES AUXILIARES ---
-
-// Navbar Mejorado con Diseño Moderno y Búsqueda Funcional
+/**
+ * Barra de navegación principal con búsqueda, categorías y menú de usuario.
+ * Gestiona el dropdown de categorías, la búsqueda de productos y atajos de teclado.
+ */
 const Navbar = ({ setPage, cartItemCount, user, onLogout, onOpenCartSidebar, categories, selectedCategory, onCategorySelect }) => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
@@ -47,7 +46,7 @@ const Navbar = ({ setPage, cartItemCount, user, onLogout, onOpenCartSidebar, cat
     }
   };
 
-  // Manejador para el atajo de teclado Cmd/Ctrl + K
+  // Atajo de teclado Cmd/Ctrl + K para enfocar la búsqueda
   useEffect(() => {
     const handleGlobalKeyDown = (e) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
@@ -64,7 +63,6 @@ const Navbar = ({ setPage, cartItemCount, user, onLogout, onOpenCartSidebar, cat
     };
   }, []);
 
-  // Cerrar dropdown de categorías al hacer clic fuera
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (!event.target.closest('.categories-dropdown')) {
@@ -485,7 +483,7 @@ const CartSidebar = ({ isOpen, onClose, cartItems, setCartItems, setPage }) => {
                           <h4 className="text-sm font-medium text-white leading-tight flex-1">{item.name}</h4>
                           <button
                             onClick={() => removeItem(item.id)}
-                            className="p-1.5 text-gray-400 hover:text-red-400 hover:bg-red-900/30 rounded-lg transition-all duration-200 flex-shrink-0"
+                            className="p-1.5 text-red-400 hover:text-red-300 hover:bg-red-900/50 rounded-lg transition-all duration-200 flex-shrink-0"
                             title="Eliminar"
                           >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -543,7 +541,7 @@ const CartSidebar = ({ isOpen, onClose, cartItems, setCartItems, setPage }) => {
               <div className="space-y-2">
                 <button
                   onClick={goToCheckout}
-                  className="w-full bg-gradient-to-r from-emerald-600 to-green-600 text-white py-3 rounded-xl text-sm font-semibold hover:from-emerald-700 hover:to-green-700 transition-all duration-300 transform hover:scale-105 shadow-lg"
+                  className="w-full bg-gradient-to-r from-emerald-500 to-green-500 text-white py-3 rounded-xl text-sm font-semibold hover:from-emerald-600 hover:to-green-600 transition-all duration-300 transform hover:scale-105 shadow-lg"
                 >
                   💳 Finalizar Compra
                 </button>
@@ -743,7 +741,7 @@ const ProductCard = ({ product, setPage, setSelectedProduct }) => {
   return (
     <div className="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden group transition hover:shadow-xl hover:border-emerald-500/30 cursor-pointer" onClick={handleViewDetails}>
       <div className="aspect-w-1 aspect-h-1 w-full overflow-hidden bg-gray-700">
-        <img src={defaultDetail?.image_url || 'https://placehold.co/400x400/374151/9CA3AF?text=OmniStyle'} alt={product.name} className="w-full h-full object-center object-cover group-hover:opacity-75" onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/400x400/374151/9CA3AF?text=OmniStyle' }} />
+        <img src={defaultDetail?.image_url || 'https://placehold.co/400x400/374151/9CA3AF?text=OmniStyle'} alt={product.name} className="w-full h-full object-center object-contain group-hover:opacity-75" onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/400x400/374151/9CA3AF?text=OmniStyle' }} />
       </div>
       <div className="p-4 text-left">
         <h3 className="text-sm font-medium text-white mb-1 truncate">{product.name}</h3>
@@ -757,9 +755,9 @@ const ProductCard = ({ product, setPage, setSelectedProduct }) => {
   );
 };
 
-// --- PÁGINAS PRINCIPALES ---
-
-// Página de Catálogo / Home (Corregida)
+/**
+ * Página principal con ofertas destacadas y filtros de categoría
+ */
 const HomePage = ({ products, loading, categories, onSelectCategory, setPage, setSelectedProduct, selectedCategoryId }) => {
   const navigate = useNavigate();
 
@@ -770,7 +768,6 @@ const HomePage = ({ products, loading, categories, onSelectCategory, setPage, se
   return (
     <div className="px-4 sm:px-0 py-8">
       <HeroSection products={products} />
-      {/* Pasamos selectedCategoryId directamente a CategoryFilter */}
       <CategoryFilter categories={categories} onSelectCategory={onSelectCategory} selectedCategoryId={selectedCategoryId} />
 
 
@@ -804,32 +801,31 @@ const HomePage = ({ products, loading, categories, onSelectCategory, setPage, se
   );
 };
 
-// Página de Detalle de Producto (Corregida)
+/**
+ * Página de detalle del producto con selector de variantes y botón de compra.
+ * Los hooks se declaran antes de any early return para cumplir las reglas de React.
+ */
 const ProductDetailPage = ({ product, addToCart, toggleFavorite, isFavorite }) => {
-  // --- CORRECCIÓN: useState DEBE ir ANTES del return condicional ---
-  // Usamos optional chaining (?.) para seguridad si product es null inicialmente
+  /**
+   * IMPORTANTE: Los hooks deben declararse antes de cualquier early return.
+   * Usamos optional chaining para manejar casos donde product es null.
+   */
   const [selectedColor, setSelectedColor] = useState(product?.details?.[0]?.color);
   const [selectedSize, setSelectedSize] = useState(product?.details?.[0]?.size);
   const [quantity, setQuantity] = useState(1);
-  // --- FIN CORRECCIÓN ---
 
-  // --- CORRECCIÓN: useEffect DEBE ir ANTES del return condicional ---
+  // Actualiza las tallas disponibles cuando cambia el color seleccionado
   useEffect(() => {
-    // Solo ejecutar si hay detalles y tallas disponibles
     if (product && product.details) {
       const availableSizesForColor = [...new Set(product.details.filter(d => d.color === selectedColor).map(d => d.size))];
-      // Solo actualiza si hay tallas disponibles para ese color y la actual no está incluida
       if (availableSizesForColor.length > 0 && !availableSizesForColor.includes(selectedSize)) {
-        setSelectedSize(availableSizesForColor[0]); // Selecciona la primera talla disponible
+        setSelectedSize(availableSizesForColor[0]);
       }
     }
-  }, [product, selectedColor, selectedSize]); // Añadimos 'product' a las dependencias
-  // --- FIN CORRECCIÓN ---
+  }, [product, selectedColor, selectedSize]);
 
 
-  // Early return si no hay producto o detalles
   if (!product || !product.details || product.details.length === 0) {
-    // Este return ahora es seguro porque los Hooks ya se han llamado
     return <p className="text-center py-10 text-gray-500">Detalles del producto no disponibles.</p>;
   }
 
@@ -842,11 +838,11 @@ const ProductDetailPage = ({ product, addToCart, toggleFavorite, isFavorite }) =
     <div className="p-4 sm:p-8 flex flex-col md:flex-row gap-8 max-w-5xl mx-auto bg-gray-800 rounded-lg shadow-md border border-gray-700">
       {/* Columna Izquierda: Imágenes */}
       <div className="md:w-1/2">
-        <div className="relative group">
+        <div className="relative group bg-gray-700 rounded-2xl">
           <img 
             src={currentDetail?.image_url || 'https://placehold.co/600x600/374151/9CA3AF?text=OmniStyle'} 
             alt={product.name} 
-            className="w-full rounded-2xl shadow-2xl mb-6 aspect-square object-cover border border-gray-700 group-hover:shadow-emerald-500/20 transition-all duration-300" 
+            className="w-full rounded-2xl shadow-2xl mb-6 aspect-square object-contain p-4 border border-gray-700 group-hover:shadow-blue-500/20 transition-all duration-300" 
           />
           <div className="absolute top-4 left-4 bg-emerald-500 text-white px-3 py-1 rounded-full text-xs font-semibold shadow-lg">
             ✨ Nuevo
@@ -860,7 +856,7 @@ const ProductDetailPage = ({ product, addToCart, toggleFavorite, isFavorite }) =
               <img 
                 src={detail.image_url || 'https://placehold.co/100x100/374151/9CA3AF?text=Var'} 
                 alt={`${product.name} ${detail.color}`} 
-                className={`w-20 h-20 rounded-xl object-cover cursor-pointer border-3 transition-all duration-300 hover:scale-110 ${selectedColor === detail.color ? 'border-emerald-400 shadow-lg shadow-emerald-400/50' : 'border-gray-600 hover:border-emerald-400/70'}`} 
+                className={`w-20 h-20 rounded-xl object-contain cursor-pointer border-3 transition-all duration-200 ${selectedColor === detail.color ? 'border-blue-400 shadow-md' : 'border-gray-600 hover:border-gray-400'}`} 
                 onClick={() => setSelectedColor(detail.color)} 
               />
               {selectedColor === detail.color && (
@@ -900,7 +896,22 @@ const ProductDetailPage = ({ product, addToCart, toggleFavorite, isFavorite }) =
           </div>
         </div>
         <div className="mb-6">
-          <p className="text-4xl font-bold text-emerald-400 mb-2">{product.price.toFixed(2)}€</p>
+          {/* Verificar si tiene ofertas activas */}
+          {product.offers && product.offers.length > 0 ? (
+            <div className="flex items-baseline gap-3">
+              <p className="text-4xl font-bold text-emerald-400">
+                {(parseFloat(product.price) * (1 - parseFloat(product.offers[0].discount_percentage) / 100)).toFixed(2)}€
+              </p>
+              <p className="text-2xl text-gray-500 line-through">
+                {product.price.toFixed(2)}€
+              </p>
+              <span className="bg-red-500 text-white text-sm px-3 py-1 rounded-full font-bold">
+                -{product.offers[0].discount_percentage}% OFF
+              </span>
+            </div>
+          ) : (
+            <p className="text-4xl font-bold text-emerald-400 mb-2">{product.price.toFixed(2)}€</p>
+          )}
         </div>
         <div className="bg-gray-700/50 rounded-lg p-4 mb-6">
           <p className="text-gray-200 leading-relaxed">{product.short_description}</p>
@@ -908,15 +919,15 @@ const ProductDetailPage = ({ product, addToCart, toggleFavorite, isFavorite }) =
 
         {/* Selector de Color */}
         <div className="mb-6">
-          <h3 className="text-lg font-semibold text-white mb-3">Color: <span className="text-emerald-400">{selectedColor}</span></h3>
-          <div className="flex space-x-3">
+          <h3 className="text-lg font-semibold text-white mb-3">Color: <span className="text-blue-400">{selectedColor}</span></h3>
+          <div className="flex flex-wrap gap-3">
             {availableColors.map(color => (
-              <button key={color} onClick={() => setSelectedColor(color)} className={`w-10 h-10 rounded-xl border-3 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-400 transition-all duration-300 hover:scale-110 shadow-lg ${selectedColor === color ? 'border-emerald-400 ring-2 ring-emerald-400/50 shadow-emerald-400/30' : 'border-gray-600 hover:border-emerald-400/70'}`} style={{ backgroundColor: color.toLowerCase() }} title={color}>
-                {selectedColor === color && (
-                  <svg className="w-5 h-5 text-white mx-auto" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                  </svg>
-                )}
+              <button 
+                key={color} 
+                onClick={() => setSelectedColor(color)} 
+                className={`px-4 py-2 rounded-lg border-2 font-medium transition-all duration-200 ${selectedColor === color ? 'bg-blue-600 text-white border-blue-500 shadow-lg' : 'bg-gray-700 text-gray-200 border-gray-600 hover:border-gray-400'}`}
+              >
+                {color}
               </button>
             ))}
           </div>
@@ -939,7 +950,7 @@ const ProductDetailPage = ({ product, addToCart, toggleFavorite, isFavorite }) =
         <div className="space-y-4 mb-8">
           <div className="flex items-center justify-between">
             <span className="text-lg font-semibold text-white">Cantidad:</span>
-            <div className="flex items-center gap-1 bg-gray-700/50 rounded-lg p-1 shadow-lg">
+            <div className="flex items-center gap-1 border-2 border-gray-600 rounded-lg p-1">
               <button 
                 onClick={() => setQuantity(Math.max(1, quantity - 1))}
                 className="w-10 h-10 flex items-center justify-center text-white font-bold hover:bg-gray-600 disabled:opacity-50 rounded-md transition-colors text-xl"
@@ -963,7 +974,7 @@ const ProductDetailPage = ({ product, addToCart, toggleFavorite, isFavorite }) =
                 addToCart(product, selectedColor, selectedSize, quantity);
               }
             }}
-            className="w-full bg-gradient-to-r from-emerald-600 to-green-600 text-white py-4 rounded-xl font-bold text-lg hover:from-emerald-700 hover:to-green-700 active:from-emerald-800 active:to-green-800 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 disabled:opacity-75 disabled:cursor-not-allowed transform" 
+            className="w-full bg-gradient-to-r from-emerald-500 to-green-500 text-white py-4 rounded-xl font-bold text-lg hover:from-emerald-600 hover:to-green-600 active:from-emerald-700 active:to-green-700 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 disabled:opacity-75 disabled:cursor-not-allowed transform" 
             disabled={!currentDetail || currentDetail.stock <= 0}
           >
             {currentDetail && currentDetail.stock > 0 ? '🛒 Añadir al Carrito' : '❌ Agotado'}
@@ -2163,7 +2174,7 @@ const LoginPage = ({ setPage, setNotification, setUser }) => {
             <button
               type="submit"
               disabled={isLoading}
-              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 shadow-md hover:shadow-lg"
+              className="group relative w-full flex justify-center py-3 px-4 border-2 border-emerald-500 text-sm font-medium rounded-lg text-white bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 hover:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 shadow-lg hover:shadow-xl"
             >
               {isLoading ? (
                 <div className="flex items-center">
@@ -3464,7 +3475,7 @@ const AdminPage = ({ user, onProductAdded, onProductUpdated, onProductDeleted })
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 py-8 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-slate-900 py-8 px-4">
       {/* Notificación */}
       {notification && (
         <div className={`fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg ${
@@ -3486,10 +3497,10 @@ const AdminPage = ({ user, onProductAdded, onProductUpdated, onProductDeleted })
         <div className="flex space-x-2 mb-6 border-b border-gray-700">
           <button
             onClick={() => setActiveTab('products')}
-            className={`px-6 py-3 font-medium transition-all duration-300 border-b-2 ${
+            className={`px-6 py-3 font-medium transition-all duration-300 border-b-2 rounded-t-lg ${
               activeTab === 'products'
-                ? 'text-cyan-400 border-cyan-400'
-                : 'text-gray-400 border-transparent hover:text-gray-200'
+                ? 'text-blue-400 border-blue-400 bg-blue-900/30'
+                : 'text-gray-400 border-transparent hover:text-gray-200 hover:bg-gray-700/30'
             }`}
           >
             <div className="flex items-center space-x-2">
@@ -3501,10 +3512,10 @@ const AdminPage = ({ user, onProductAdded, onProductUpdated, onProductDeleted })
           </button>
           <button
             onClick={() => setActiveTab('offers')}
-            className={`px-6 py-3 font-medium transition-all duration-300 border-b-2 ${
+            className={`px-6 py-3 font-medium transition-all duration-300 border-b-2 rounded-t-lg ${
               activeTab === 'offers'
-                ? 'text-cyan-400 border-cyan-400'
-                : 'text-gray-400 border-transparent hover:text-gray-200'
+                ? 'text-blue-400 border-blue-400 bg-blue-900/30'
+                : 'text-gray-400 border-transparent hover:text-gray-200 hover:bg-gray-700/30'
             }`}
           >
             <div className="flex items-center space-x-2">
@@ -3516,10 +3527,10 @@ const AdminPage = ({ user, onProductAdded, onProductUpdated, onProductDeleted })
           </button>
           <button
             onClick={() => setActiveTab('users')}
-            className={`px-6 py-3 font-medium transition-all duration-300 border-b-2 ${
+            className={`px-6 py-3 font-medium transition-all duration-300 border-b-2 rounded-t-lg ${
               activeTab === 'users'
-                ? 'text-cyan-400 border-cyan-400'
-                : 'text-gray-400 border-transparent hover:text-gray-200'
+                ? 'text-blue-400 border-blue-400 bg-blue-900/30'
+                : 'text-gray-400 border-transparent hover:text-gray-200 hover:bg-gray-700/30'
             }`}
           >
             <div className="flex items-center space-x-2">
@@ -3571,7 +3582,7 @@ const AdminPage = ({ user, onProductAdded, onProductUpdated, onProductDeleted })
                       const categoryNames = product.categories?.map(cat => cat.name).join(', ') || 'Sin categoría';
                       
                       return (
-                      <tr key={product.id} className="hover:bg-gray-700/50 transition-colors">
+                      <tr key={product.id} className="hover:bg-blue-900/20 hover:border-l-4 hover:border-blue-500 transition-all duration-200">
                         <td className="px-4 py-4">
                           <div className="flex items-center space-x-3">
                             <img

@@ -2,62 +2,52 @@ import React, { useState, useEffect, useRef } from 'react';
 
 const ChatWidget = () => {
     const [isOpen, setIsOpen] = useState(false);
-    // Estado para guardar todos los mensajes de la conversación
     const [messages, setMessages] = useState([
         { role: 'assistant', content: '¡Hola! ¿Cómo puedo ayudarte a encontrar tu estilo hoy?' }
     ]);
-    // Estado para el mensaje que el usuario está escribiendo
     const [inputMessage, setInputMessage] = useState('');
-    // Estado para guardar el token de la sesión de IA
     const [sessionToken, setSessionToken] = useState(localStorage.getItem('ai_session_token') || null);
-    // Estado para mostrar un indicador de carga
     const [isLoading, setIsLoading] = useState(false);
 
-    // Referencia para hacer scroll automático al final del chat
     const messagesEndRef = useRef(null);
 
-    // URL de la API (asegúrate de que VITE_API_URL esté configurada)
     const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
 
-    // Efecto para hacer scroll al final cuando lleguen nuevos mensajes
+    // Scroll automático al final cuando llegan nuevos mensajes
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [messages]);
 
-    // Función para ver producto completo
     const handleViewProduct = (productId) => {
-        // Navegar a la página del producto en la misma ventana
         window.location.href = `/product/${productId}`;
     };
 
-    // Función para manejar el envío del formulario (cuando el usuario presiona Enter)
+    /**
+     * Envía el mensaje del usuario al backend y procesa la respuesta de la IA.
+     * Gestiona el token de sesión para mantener el contexto de la conversación.
+     */
     const handleSubmit = async (event) => {
-        event.preventDefault(); // Evita que la página se recargue
-        const userMessage = inputMessage.trim(); // Limpia espacios
+        event.preventDefault();
+        const userMessage = inputMessage.trim();
 
-        if (!userMessage) return; // No envía mensajes vacíos
+        if (!userMessage) return;
 
-        // Añade el mensaje del usuario al historial local
         setMessages(prev => [...prev, { role: 'user', content: userMessage }]);
-        setInputMessage(''); // Limpia el input
-        setIsLoading(true); // Muestra indicador de carga
+        setInputMessage('');
+        setIsLoading(true);
 
         try {
-            // Prepara los datos para enviar al backend
             const payload = {
                 message: userMessage,
-                session_token: sessionToken, // sessionToken viene de localStorage o es null al principio
+                session_token: sessionToken,
             };
 
-            // Llama a la API del backend
             const response = await fetch(`${API_URL}/api/chat`, {
                 method: 'POST',
                 credentials: 'include',
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
-                    // Si usas Sanctum y el usuario está logueado, necesitarás enviar el token Bearer
-                    // 'Authorization': `Bearer ${token}` 
                 },
                 body: JSON.stringify(payload),
             });
@@ -68,46 +58,40 @@ const ChatWidget = () => {
 
             const data = await response.json();
 
-            // Añade la respuesta del asistente al historial
             setMessages(prev => [...prev, { 
                 role: 'assistant', 
                 content: data.reply,
-                products: data.products || null // Si la IA encontró productos
+                products: data.products || null
             }]);
 
-            // Guarda el nuevo token de sesión si es la primera vez o ha cambiado
+            // Persiste el token de sesión para mantener el contexto
             if (data.session_token && data.session_token !== sessionToken) {
                 setSessionToken(data.session_token);
-                localStorage.setItem('ai_session_token', data.session_token); // Guarda en localStorage para persistencia
+                localStorage.setItem('ai_session_token', data.session_token);
             }
 
         } catch (error) {
             console.error("Error al enviar mensaje:", error);
-            // Añade un mensaje de error al chat
             setMessages(prev => [...prev, { role: 'assistant', content: 'Lo siento, hubo un problema al conectar. Inténtalo de nuevo.' }]);
         } finally {
-            setIsLoading(false); // Oculta indicador de carga
+            setIsLoading(false);
         }
     };
 
     return (
         <div>
-            {/* Botón flotante */}
             <button
                 onClick={() => setIsOpen(!isOpen)}
                 className="fixed bottom-6 right-6 bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-4 rounded-full shadow-2xl hover:from-purple-700 hover:to-indigo-700 transition-all duration-300 z-50 transform hover:scale-110 ring-4 ring-purple-500/20"
                 aria-label="Abrir chat de IA"
             >
-                {/* Icono de Chat */}
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                 </svg>
             </button>
 
-            {/* Panel del Chat */}
             {isOpen && (
                 <div className="fixed bottom-24 right-6 w-80 sm:w-96 max-h-[70vh] bg-gray-900 rounded-lg shadow-2xl border border-gray-700 z-40 flex flex-col">
-                    {/* Cabecera */}
                     <div className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-3 rounded-t-lg flex justify-between items-center">
                         <h3 className="font-semibold">Asistente OmniStyle</h3>
                         <button 
@@ -121,7 +105,6 @@ const ChatWidget = () => {
                         </button>
                     </div>
 
-                    {/* Área de Mensajes */}
                     <div className="flex-1 p-4 overflow-y-auto space-y-3 bg-gray-900">
                         {messages.map((msg, index) => (
                             <div key={index} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
@@ -175,11 +158,9 @@ const ChatWidget = () => {
                                 </div>
                             </div>
                         )}
-                        {/* Elemento invisible para hacer scroll */}
                         <div ref={messagesEndRef} />
                     </div>
 
-                    {/* Input para escribir */}
                     <form onSubmit={handleSubmit} className="p-3 border-t border-gray-700 bg-gray-800 rounded-b-lg">
                         <input
                             type="text"
@@ -187,7 +168,7 @@ const ChatWidget = () => {
                             className="w-full px-3 py-2 bg-gray-700 border border-gray-600 text-white placeholder-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm transition-all duration-200"
                             value={inputMessage}
                             onChange={(e) => setInputMessage(e.target.value)}
-                            disabled={isLoading} // Deshabilita mientras carga
+                            disabled={isLoading}
                         />
                     </form>
                 </div>

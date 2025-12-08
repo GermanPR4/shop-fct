@@ -1,14 +1,13 @@
-/* ========================================
-   SOBREESCRITURAS DE TAILWIND PARA TEMAS
-   Este archivo contiene clases personalizadas que reemplazan
-   los colores hardcoded de Tailwind con variables CSS
-   ======================================== */
+/**
+ * SOBREESCRITURAS DE TAILWIND PARA SISTEMA DE TEMAS
+ * 
+ * Este archivo reemplaza los colores estáticos de Tailwind con variables CSS
+ * para permitir temas dinámicos (claro/oscuro) sin recompilar el código.
+ */
 
-/* ===========================================
-   SOBREESCRITURA GLOBAL DE COLORES DE TAILWIND
-   =========================================== */
-
-/* Backgrounds grises -> variables CSS */
+/* ============================================================================
+   BACKGROUNDS - Mapeo de grises de Tailwind a variables de tema
+   ============================================================================ */
 .bg-gray-50 { background-color: var(--bg-secondary) !important; }
 .bg-gray-100 { background-color: var(--bg-secondary) !important; }
 .bg-gray-200 { background-color: var(--bg-secondary) !important; }
@@ -17,7 +16,7 @@
 .bg-gray-900 { background-color: var(--bg-primary) !important; }
 .bg-black { background-color: var(--bg-primary) !important; }
 
-/* Gradientes de fondo -> adaptados */
+/* Gradientes */
 .from-gray-700 { --tw-gradient-from: var(--bg-tertiary) !important; }
 .from-gray-800 { --tw-gradient-from: var(--bg-secondary) !important; }
 .from-gray-900 { --tw-gradient-from: var(--bg-primary) !important; }
@@ -26,7 +25,9 @@
 .to-gray-900 { --tw-gradient-to: var(--bg-primary) !important; }
 .via-black { --tw-gradient-stops: var(--tw-gradient-from), var(--bg-primary), var(--tw-gradient-to) !important; }
 
-/* Textos grises -> variables CSS */
+/* ============================================================================
+   TEXTOS - Mapeo de colores de texto a variables de tema
+   ============================================================================ */
 .text-white { color: var(--text-primary) !important; }
 .text-gray-200 { color: var(--text-secondary) !important; }
 .text-gray-300 { color: var(--text-secondary) !important; }
@@ -38,7 +39,11 @@
 .placeholder-gray-400::placeholder { color: var(--text-tertiary) !important; }
 .placeholder-slate-400::placeholder { color: var(--text-tertiary) !important; }
 
-/* Bordes grises -> variables CSS */
+/* ============================================================================
+   BORDES Y FOCUS STATES
+   ============================================================================ */
+
+/* Bordes */
 .border-gray-200 { border-color: var(--border-color) !important; }
 .border-gray-300 { border-color: var(--border-color) !important; }
 .border-gray-600 { border-color: var(--border-color) !important; }
@@ -47,266 +52,34 @@
 .border-slate-200 { border-color: var(--border-color) !important; }
 .border-slate-300 { border-color: var(--border-color) !important; }
 
-/* Rings de enfoque */
+/* Focus rings */
 .ring-emerald-300 { --tw-ring-color: rgba(16, 185, 129, 0.3) !important; }
 .ring-emerald-500 { --tw-ring-color: var(--accent-primary) !important; }
 .focus\:ring-emerald-500:focus { --tw-ring-color: var(--accent-primary) !important; }
 .focus\:border-emerald-500:focus { border-color: var(--accent-primary) !important; }
 
-/* Divider */
+/* Dividers */
 .divide-gray-100 > :not([hidden]) ~ :not([hidden]) { border-color: var(--border-color) !important; }
 
-/* Hover states para backgrounds */
+/* ============================================================================
+   ESTADOS HOVER Y GRUPOS
+   ============================================================================ */
 .hover\:bg-gray-50:hover { background-color: var(--bg-secondary) !important; }
 .hover\:bg-gray-700:hover { background-color: var(--bg-tertiary) !important; }
 .hover\:bg-gray-100:hover { background-color: var(--bg-secondary) !important; }
 .hover\:text-gray-200:hover { color: var(--text-secondary) !important; }
 .hover\:text-white:hover { color: var(--text-primary) !important; }
 
-/* Group hover states */
+/* Group hover */
 .group:hover .group-hover\:text-white { color: var(--text-primary) !important; }
 .group:hover .group-hover\:bg-gray-100 { background-color: var(--bg-secondary) !important; }
 
 /* Peer states */
 .peer:checked ~ .peer-checked\:bg-emerald-600 { background-color: var(--accent-primary) !important; }
 
-/* ===========================================
-   CLASES PERSONALIZADAS ORIGINALES
-   =========================================== */
-
-/* Navbar */
-.nav-gradient {
-  background: linear-gradient(to right, var(--bg-secondary), var(--bg-primary), var(--bg-secondary));
-  border-bottom: 1px solid var(--border-color);
-}
-
-/* Backgrounds oscuros adaptados */
-.bg-dark-adapted {
-  background-color: var(--bg-secondary);
-}
-
-.bg-darker-adapted {
-  background-color: var(--bg-tertiary);
-}
-
-/* Textos adaptados */
-.text-adapted {
-  color: var(--text-primary);
-}
-
-.text-adapted-secondary {
-  color: var(--text-secondary);
-}
-
-.text-adapted-tertiary {
-  color: var(--text-tertiary);
-}
-
-/* Bordes adaptados */
-.border-adapted {
-  border-color: var(--border-color);
-}
-
-.border-adapted-hover:hover {
-  border-color: var(--border-color-hover);
-}
-
-/* Botones dropdown y categorías */
-.btn-category {
-  background: linear-gradient(to right, var(--bg-secondary), var(--bg-tertiary));
-  color: var(--text-secondary);
-  border: 1px solid var(--border-color);
-}
-
-.btn-category:hover {
-  background: linear-gradient(to right, var(--accent-primary), #059669);
-  color: white;
-  border-color: var(--accent-primary);
-}
-
-/* Dropdown menu */
-.dropdown-bg {
-  background-color: var(--bg-elevated);
-  border: 1px solid var(--border-color);
-}
-
-/* Items de dropdown */
-.dropdown-item-base {
-  color: var(--text-primary);
-}
-
-.dropdown-item-base.active {
-  color: var(--accent-primary);
-  background: linear-gradient(to right, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.1));
-}
-
-.dropdown-item-base:hover {
-  color: var(--accent-primary);
-  background: linear-gradient(to right, rgba(16, 185, 129, 0.15), rgba(5, 150, 105, 0.15));
-}
-
-/* Input de búsqueda */
-.search-input {
-  background-color: var(--bg-secondary);
-  color: var(--text-primary);
-  border: 2px solid var(--border-color);
-}
-
-.search-input::placeholder {
-  color: var(--text-tertiary);
-}
-
-.search-input:focus {
-  border-color: var(--accent-primary);
-  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
-}
-
-/* Iconos */
-.icon-color {
-  color: var(--text-secondary);
-}
-
-.icon-color:hover {
-  color: var(--accent-primary);
-}
-
-/* Badges y contador de carrito */
-.badge-counter {
-  background: linear-gradient(to right, var(--accent-secondary), #7c3aed);
-  color: white;
-  border: 2px solid var(--bg-primary);
-}
-
-/* Tooltips */
-.tooltip-bg {
-  background-color: var(--bg-tertiary);
-  color: var(--text-primary);
-}
-
-/* Sidebar del carrito */
-.cart-sidebar-bg {
-  background-color: var(--bg-elevated);
-  border-left: 1px solid var(--border-color);
-}
-
-.cart-item-bg {
-  background-color: var(--bg-secondary);
-  border: 1px solid var(--border-color);
-}
-
-.cart-item-bg:hover {
-  background-color: var(--bg-tertiary);
-}
-
-/* Overlay */
-.overlay-bg {
-  background-color: var(--overlay);
-  backdrop-filter: var(--backdrop-blur);
-}
-
-/* Divisor */
-.divider-color {
-  background-color: var(--border-color);
-}
-
-/* Estados vacíos */
-.empty-state-icon-bg {
-  background: linear-gradient(to right, var(--bg-tertiary), var(--bg-secondary));
-}
-
-.empty-state-icon {
-  color: var(--text-tertiary);
-}
-
-.empty-state-title {
-  color: var(--text-primary);
-}
-
-.empty-state-text {
-  color: var(--text-secondary);
-}
-
-/* Botón primario (siempre mantener color emerald) */
-.btn-action-primary {
-  background: linear-gradient(to right, var(--accent-primary), #059669);
-  color: white;
-}
-
-.btn-action-primary:hover {
-  background: linear-gradient(to right, #059669, #047857);
-}
-
-/* Texto en categorías */
-.category-icon-bg {
-  background-color: var(--bg-tertiary);
-}
-
-.category-icon-bg.active,
-.category-icon-bg:hover {
-  background: linear-gradient(to right, rgba(16, 185, 129, 0.2), rgba(5, 150, 105, 0.2));
-}
-
-/* Sombras adaptadas */
-.shadow-adapted {
-  box-shadow: var(--shadow-md);
-}
-
-.shadow-adapted-lg {
-  box-shadow: var(--shadow-lg);
-}
-
-.shadow-adapted-xl {
-  box-shadow: var(--shadow-xl);
-}
-
-/* Items de producto */
-.product-card {
-  background-color: var(--bg-elevated);
-  border: 1px solid var(--border-color);
-  border-radius: var(--border-radius-lg);
-  transition: all var(--transition-base);
-}
-
-.product-card:hover {
-  box-shadow: var(--shadow-lg);
-  transform: translateY(-4px);
-}
-
-/* Main container */
-.main-bg-gradient {
-  background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 50%, var(--bg-primary) 100%);
-}
-
-/* Tarjetas de configuración */
-.settings-card {
-  background-color: var(--bg-elevated);
-  border: 1px solid var(--border-color);
-}
-
-.settings-card-header {
-  background: linear-gradient(to right, var(--bg-tertiary), transparent);
-  border-bottom: 1px solid var(--border-color);
-}
-
-/* Footer */
-.footer-text {
-  color: var(--text-tertiary);
-}
-
-/* Scrollbar para elementos específicos */
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: var(--bg-secondary);
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: var(--border-color-hover);
-  border-radius: var(--border-radius-md);
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: var(--accent-primary);
-}
-
+/* ============================================================================
+   CLASES PERSONALIZADAS - Componentes específicos de la aplicación
+   ============================================================================ */
 
 /* Navbar */
 .nav-gradient {

@@ -406,13 +406,13 @@ const ProductCard = ({ product, onProductClick, addToCart, toggleFavorite, isFav
     return (
         <div 
             onClick={() => onProductClick(product)}
-            className="bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-2xl overflow-hidden hover:shadow-2xl hover:border-emerald-400/30 transition-all duration-300 transform hover:scale-[1.02] cursor-pointer group"
+            className="bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-2xl overflow-hidden hover:shadow-2xl hover:border-blue-400/30 transition-all duration-300 transform hover:scale-[1.02] cursor-pointer group"
         >
-            <div className="aspect-square overflow-hidden relative">
+            <div className="aspect-square overflow-hidden relative bg-gray-700">
                 <img
                     src={product.details?.[0]?.image_url || product.image_url || '/api/placeholder/300/300'}
                     alt={product.name}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                    className="w-full h-full object-contain p-2 group-hover:opacity-90 transition-opacity duration-300"
                 />
                 {toggleFavorite && (
                     <button
@@ -481,7 +481,7 @@ const ProductCard = ({ product, onProductClick, addToCart, toggleFavorite, isFav
                 {addToCart && (
                     <button
                         onClick={handleAddToCart}
-                        className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2 rounded-lg transition-colors duration-200 flex items-center justify-center space-x-2"
+                        className="w-full bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 text-white font-medium py-2 rounded-lg transition-all duration-200 flex items-center justify-center space-x-2 shadow-md hover:shadow-lg"
                     >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
