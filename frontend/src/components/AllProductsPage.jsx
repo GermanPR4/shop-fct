@@ -246,7 +246,7 @@ const AllProductsPage = ({ products, setSelectedProduct, addToCart, toggleFavori
     const currentProducts = sortedProducts.slice(startIndex, endIndex);
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 px-4 py-8">
+        <div className="min-h-screen  from-gray-900 via-gray-800 to-gray-900 px-4 py-8">
             <div className="max-w-7xl mx-auto">
                 {/* Header */}
                 <div className="flex items-center justify-between mb-12">
@@ -406,7 +406,7 @@ const ProductCard = ({ product, onProductClick, addToCart, toggleFavorite, isFav
     return (
         <div 
             onClick={() => onProductClick(product)}
-            className="bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-2xl overflow-hidden hover:shadow-2xl hover:border-blue-400/30 transition-all duration-300 transform hover:scale-[1.02] cursor-pointer group"
+            className="backdrop-blur-sm border border-gray-700/50 rounded-2xl overflow-hidden hover:shadow-2xl hover:border-blue-400/30 transition-all duration-300 transform hover:scale-[1.02] cursor-pointer group"
         >
             <div className="aspect-square overflow-hidden relative bg-gray-700">
                 <img
@@ -417,7 +417,7 @@ const ProductCard = ({ product, onProductClick, addToCart, toggleFavorite, isFav
                 {toggleFavorite && (
                     <button
                         onClick={handleToggleFavorite}
-                        className="absolute top-3 right-3 p-2 bg-black/50 rounded-full hover:bg-black/70 transition-colors duration-200"
+                        className="absolute top-3 right-3 p-2 rounded-full hover:bg-black/70 transition-colors duration-200"
                     >
                         <svg
                             className={`w-5 h-5 ${isFavorite ? 'text-red-500 fill-current' : 'text-white'}`}
