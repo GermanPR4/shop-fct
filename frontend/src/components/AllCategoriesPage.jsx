@@ -176,7 +176,7 @@ const AllCategoriesPage = ({ allProducts = [] }) => {
 
     if (!allCategories || allCategories.length === 0) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 px-4 py-8">
+            <div className="min-h-screen from-gray-900 via-gray-800 to-gray-900 px-4 py-8">
                 <div className="max-w-7xl mx-auto">
                     <div className="flex items-center justify-between mb-8">
                         <button
@@ -260,7 +260,7 @@ const AllCategoriesPage = ({ allProducts = [] }) => {
 
     // Vista por defecto: Mostrar todas las categorías
     return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 px-4 py-8">
+        <div className="min-h-screen from-gray-900 via-gray-800 to-gray-900 px-4 py-8">
             <div className="max-w-7xl mx-auto">
                 {/* Header */}
                 <div className="flex items-center justify-between mb-8">
