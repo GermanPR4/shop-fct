@@ -44,5 +44,31 @@ class OfferController extends Controller
         return response()->json($offer);
     }
     
-    // update y destroy quedan para la administración
+    /**
+     * Update the specified resource in storage (PUT/PATCH /api/admin/offers/{id}).
+     */
+    public function update(Request $request, Offer $offer)
+    {
+        $validated = $request->validate([
+            'name' => 'sometimes|required|string|max:255',
+            'discount_percentage' => 'sometimes|required|numeric|min:0|max:100',
+            'start_date' => 'sometimes|required|date',
+            'end_date' => 'sometimes|required|date|after_or_equal:start_date',
+            'product_id' => 'nullable|exists:products,id',
+            'product_detail_id' => 'nullable|exists:product_details,id',
+            'active' => 'sometimes|boolean',
+        ]);
+        
+        $offer->update($validated);
+        return response()->json($offer);
+    }
+
+    /**
+     * Remove the specified resource from storage (DELETE /api/admin/offers/{id}).
+     */
+    public function destroy(Offer $offer)
+    {
+        $offer->delete();
+        return response()->json(['message' => 'Oferta eliminada exitosamente'], 200);
+    }
 }

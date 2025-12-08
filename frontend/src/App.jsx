@@ -497,11 +497,27 @@ const CartSidebar = ({ isOpen, onClose, cartItems, setCartItems, setPage }) => {
                           <span className="bg-gray-700 px-2 py-0.5 rounded-md">{item.color} • {item.size}</span>
                         </div>
                         
+                        {/* Descuento si existe */}
+                        {item.discount && (
+                          <div className="text-[10px]">
+                            <span className="bg-red-500/20 text-red-400 px-2 py-0.5 rounded-md font-semibold">
+                              🏷️ -{item.discount.percentage}% OFF
+                            </span>
+                          </div>
+                        )}
+                        
                         {/* Precio y controles de cantidad */}
                         <div className="flex items-center justify-between mt-1">
-                          <span className="text-base font-bold text-emerald-400">
-                            {item.price.toFixed(2)}€
-                          </span>
+                          <div className="flex flex-col">
+                            <span className="text-base font-bold text-emerald-400">
+                              {item.price.toFixed(2)}€
+                            </span>
+                            {item.discount && (
+                              <span className="text-[10px] text-gray-500 line-through">
+                                {item.originalPrice.toFixed(2)}€
+                              </span>
+                            )}
+                          </div>
                           
                           {/* Controles de cantidad */}
                           <div className="flex items-center gap-0.5 bg-gray-700/50 rounded-lg p-1">
@@ -3358,17 +3374,281 @@ const EditProductModal = ({ isOpen, onClose, onProductUpdated, product, categori
   );
 };
 
+// Modal para añadir/editar oferta
+const OfferModal = ({ isOpen, onClose, onOfferSaved, offer, products, user }) => {
+  const [formData, setFormData] = useState({
+    name: '',
+    discount_percentage: '',
+    start_date: '',
+    end_date: '',
+    product_id: '',
+    product_detail_id: '',
+    active: true
+  });
+  const [productDetails, setProductDetails] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
+
+  useEffect(() => {
+    if (offer) {
+      setFormData({
+        name: offer.name || '',
+        discount_percentage: offer.discount_percentage || '',
+        start_date: offer.start_date ? offer.start_date.split('T')[0] : '',
+        end_date: offer.end_date ? offer.end_date.split('T')[0] : '',
+        product_id: offer.product_id || '',
+        product_detail_id: offer.product_detail_id || '',
+        active: offer.active !== undefined ? offer.active : true
+      });
+    } else {
+      setFormData({
+        name: '',
+        discount_percentage: '',
+        start_date: '',
+        end_date: '',
+        product_id: '',
+        product_detail_id: '',
+        active: true
+      });
+    }
+  }, [offer]);
+
+  // Cargar detalles del producto cuando se selecciona uno
+  useEffect(() => {
+    if (formData.product_id) {
+      const selectedProduct = products.find(p => p.id === parseInt(formData.product_id));
+      setProductDetails(selectedProduct?.details || []);
+    } else {
+      setProductDetails([]);
+      setFormData(prev => ({ ...prev, product_detail_id: '' }));
+    }
+  }, [formData.product_id, products]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+
+    try {
+      // Obtener token del localStorage o del objeto usuario
+      let token = localStorage.getItem('omnistyle-token');
+      if (!token && user?.token) {
+        token = user.token;
+      }
+      
+      if (!token) {
+        setError('Error de autenticación: no se encontró token');
+        setLoading(false);
+        return;
+      }
+      
+      const url = offer 
+        ? `${API_URL}/api/admin/offers/${offer.id}` 
+        : `${API_URL}/api/admin/offers`;
+      const method = offer ? 'PUT' : 'POST';
+
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          ...formData,
+          product_id: formData.product_id || null,
+          product_detail_id: formData.product_detail_id || null,
+          discount_percentage: parseFloat(formData.discount_percentage)
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        onOfferSaved(data);
+        onClose();
+      } else {
+        const errorData = await response.json();
+        setError(errorData.message || 'Error al guardar la oferta');
+      }
+    } catch {
+      setError('Error de conexión al guardar la oferta');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-gray-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-gray-700">
+        <div className="sticky top-0 bg-gradient-to-r from-purple-600 to-pink-600 p-6 rounded-t-2xl border-b border-gray-700 z-10">
+          <div className="flex justify-between items-center">
+            <h2 className="text-2xl font-bold text-white flex items-center space-x-2">
+              <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+              </svg>
+              <span>{offer ? 'Editar Oferta' : 'Nueva Oferta'}</span>
+            </h2>
+            <button onClick={onClose} className="text-white/80 hover:text-white hover:bg-white/20 rounded-lg p-2 transition-colors">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+          {error && (
+            <div className="bg-red-900/50 border border-red-500 text-red-200 px-4 py-3 rounded-lg">
+              {error}
+            </div>
+          )}
+
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">Nombre de la oferta *</label>
+            <input
+              type="text"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              placeholder="Ej: Descuento de Verano"
+              required
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">Descuento (%) *</label>
+              <input
+                type="number"
+                min="0"
+                max="100"
+                step="0.01"
+                value={formData.discount_percentage}
+                onChange={(e) => setFormData({ ...formData, discount_percentage: e.target.value })}
+                className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                placeholder="25"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">Estado</label>
+              <div className="flex items-center h-full">
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={formData.active}
+                    onChange={(e) => setFormData({ ...formData, active: e.target.checked })}
+                    className="sr-only peer"
+                  />
+                  <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+                  <span className="ml-3 text-sm font-medium text-gray-300">
+                    {formData.active ? 'Activa' : 'Inactiva'}
+                  </span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">Fecha de inicio *</label>
+              <input
+                type="date"
+                value={formData.start_date}
+                onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
+                className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">Fecha de fin *</label>
+              <input
+                type="date"
+                value={formData.end_date}
+                onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
+                min={formData.start_date}
+                className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                required
+              />
+            </div>
+          </div>
+
+          <div className="border-t border-gray-700 pt-6">
+            <h3 className="text-lg font-semibold text-white mb-4">Producto asociado (opcional)</h3>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">Producto</label>
+              <select
+                value={formData.product_id}
+                onChange={(e) => setFormData({ ...formData, product_id: e.target.value })}
+                className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              >
+                <option value="">Todos los productos (oferta general)</option>
+                {products.map(product => (
+                  <option key={product.id} value={product.id}>
+                    {product.name} - ${product.price}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {productDetails.length > 0 && (
+              <div className="mt-4">
+                <label className="block text-sm font-medium text-gray-300 mb-2">Variante específica (opcional)</label>
+                <select
+                  value={formData.product_detail_id}
+                  onChange={(e) => setFormData({ ...formData, product_detail_id: e.target.value })}
+                  className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                >
+                  <option value="">Todas las variantes</option>
+                  {productDetails.map(detail => (
+                    <option key={detail.id} value={detail.id}>
+                      {detail.color} - {detail.size}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+          </div>
+
+          <div className="flex space-x-4 pt-4 border-t border-gray-700">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 px-6 py-3 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors font-medium"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="flex-1 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all duration-300 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? 'Guardando...' : (offer ? 'Actualizar Oferta' : 'Crear Oferta')}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
 // Página de Administración / Panel de Admin
 const AdminPage = ({ user, onProductAdded, onProductUpdated, onProductDeleted }) => {
   const [activeTab, setActiveTab] = useState('products'); // 'products', 'offers' o 'users'
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [users, setUsers] = useState([]);
+  const [offers, setOffers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [notification, setNotification] = useState(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [showOfferModal, setShowOfferModal] = useState(false);
+  const [selectedOffer, setSelectedOffer] = useState(null);
 
   const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
 
@@ -3398,7 +3678,7 @@ const AdminPage = ({ user, onProductAdded, onProductUpdated, onProductDeleted })
   }, [API_URL, user]);
 
   // Cargar usuarios cuando se selecciona la pestaña de usuarios
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     if (!user || !['employee', 'admin'].includes(user.role)) {
       return;
     }
@@ -3435,22 +3715,64 @@ const AdminPage = ({ user, onProductAdded, onProductUpdated, onProductDeleted })
     } finally {
       setLoading(false);
     }
-  };
+  }, [API_URL, user]);
+
+  // Cargar ofertas
+  const fetchOffers = useCallback(async () => {
+    if (!user || !['employee', 'admin'].includes(user.role)) {
+      return;
+    }
+    
+    setLoading(true);
+    try {
+      // Obtener token del localStorage o del objeto usuario
+      let token = localStorage.getItem('omnistyle-token');
+      if (!token && user?.token) {
+        token = user.token;
+      }
+      
+      if (!token) {
+        setNotification({ type: 'error', message: 'Error de autenticación: no se encontró token' });
+        setLoading(false);
+        return;
+      }
+      
+      const response = await fetch(`${API_URL}/api/admin/offers`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (response.ok) {
+        const offersData = await response.json();
+        setOffers(offersData || []);
+      } else {
+        setNotification({ type: 'error', message: `Error al cargar ofertas: ${response.status}` });
+      }
+    } catch {
+      setNotification({ type: 'error', message: 'Error de conexión al cargar ofertas' });
+    } finally {
+      setLoading(false);
+    }
+  }, [API_URL, user]);
 
   // Cargar usuarios cuando se cambia a la pestaña de usuarios
   useEffect(() => {
     if (activeTab === 'users') {
       fetchUsers();
+    } else if (activeTab === 'offers') {
+      fetchOffers();
     }
-  }, [activeTab]);
+  }, [activeTab, fetchUsers, fetchOffers]);
 
-  const handleProductAddedSuccess = (newProduct) => {
+  const handleProductAddedSuccess = () => {
     onProductAdded();
     setNotification({ type: 'success', message: 'Producto creado exitosamente' });
     setTimeout(() => setNotification(null), 3000);
   };
 
-  const handleProductUpdatedSuccess = (updatedProduct) => {
+  const handleProductUpdatedSuccess = () => {
     onProductUpdated();
     setNotification({ type: 'success', message: 'Producto actualizado exitosamente' });
     setTimeout(() => setNotification(null), 3000);
@@ -3459,6 +3781,91 @@ const AdminPage = ({ user, onProductAdded, onProductUpdated, onProductDeleted })
   const handleEditClick = (product) => {
     setSelectedProduct(product);
     setShowEditModal(true);
+  };
+
+  const handleOfferSaved = () => {
+    fetchOffers();
+    setNotification({ type: 'success', message: selectedOffer ? 'Oferta actualizada exitosamente' : 'Oferta creada exitosamente' });
+    setTimeout(() => setNotification(null), 3000);
+    setSelectedOffer(null);
+  };
+
+  const handleEditOffer = (offer) => {
+    setSelectedOffer(offer);
+    setShowOfferModal(true);
+  };
+
+  const handleDeleteOffer = async (offerId) => {
+    if (!confirm('¿Estás seguro de que deseas eliminar esta oferta?')) return;
+    
+    try {
+      let token = localStorage.getItem('omnistyle-token');
+      if (!token && user?.token) {
+        token = user.token;
+      }
+      
+      if (!token) {
+        setNotification({ type: 'error', message: 'Error de autenticación: no se encontró token' });
+        return;
+      }
+      
+      const response = await fetch(`${API_URL}/api/admin/offers/${offerId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (response.ok) {
+        fetchOffers();
+        setNotification({ type: 'success', message: 'Oferta eliminada exitosamente' });
+        setTimeout(() => setNotification(null), 3000);
+      } else {
+        setNotification({ type: 'error', message: 'Error al eliminar oferta' });
+      }
+    } catch {
+      setNotification({ type: 'error', message: 'Error de conexión' });
+    }
+  };
+
+  const handleToggleOfferStatus = async (offer) => {
+    try {
+      let token = localStorage.getItem('omnistyle-token');
+      if (!token && user?.token) {
+        token = user.token;
+      }
+      
+      if (!token) {
+        setNotification({ type: 'error', message: 'Error de autenticación: no se encontró token' });
+        return;
+      }
+      
+      const response = await fetch(`${API_URL}/api/admin/offers/${offer.id}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          ...offer,
+          active: !offer.active
+        })
+      });
+      
+      if (response.ok) {
+        fetchOffers();
+        setNotification({ 
+          type: 'success', 
+          message: `Oferta ${!offer.active ? 'activada' : 'desactivada'} exitosamente` 
+        });
+        setTimeout(() => setNotification(null), 3000);
+      } else {
+        setNotification({ type: 'error', message: 'Error al cambiar estado de oferta' });
+      }
+    } catch {
+      setNotification({ type: 'error', message: 'Error de conexión' });
+    }
   };
 
   // Verificar que el usuario sea empleado
@@ -3646,19 +4053,151 @@ const AdminPage = ({ user, onProductAdded, onProductUpdated, onProductDeleted })
           <div className="bg-gray-800 rounded-2xl p-6 shadow-xl border border-gray-700">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-bold text-white">Gestión de Ofertas</h2>
-              <button className="px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all duration-300 shadow-lg flex items-center space-x-2">
+              <button 
+                onClick={() => {
+                  setSelectedOffer(null);
+                  setShowOfferModal(true);
+                }}
+                className="px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all duration-300 shadow-lg flex items-center space-x-2"
+              >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
                 </svg>
                 <span>Crear Oferta</span>
               </button>
             </div>
-            <div className="text-center py-12">
-              <svg className="w-16 h-16 text-gray-600 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-              </svg>
-              <p className="text-gray-400">Funcionalidad de ofertas próximamente...</p>
-            </div>
+
+            {loading ? (
+              <div className="text-center py-12">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-400 mx-auto"></div>
+                <p className="text-gray-400 mt-4">Cargando ofertas...</p>
+              </div>
+            ) : offers.length === 0 ? (
+              <div className="text-center py-12">
+                <svg className="w-16 h-16 text-gray-600 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                </svg>
+                <p className="text-gray-400 mb-4">No hay ofertas creadas</p>
+                <button 
+                  onClick={() => {
+                    setSelectedOffer(null);
+                    setShowOfferModal(true);
+                  }}
+                  className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                >
+                  Crear primera oferta
+                </button>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-700">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Oferta</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Descuento</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Producto</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Vigencia</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Estado</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-700">
+                    {offers.map((offer) => {
+                      const product = products.find(p => p.id === offer.product_id);
+                      const detail = product?.details?.find(d => d.id === offer.product_detail_id);
+                      const startDate = new Date(offer.start_date);
+                      const endDate = new Date(offer.end_date);
+                      const now = new Date();
+                      const isVigente = offer.active && startDate <= now && endDate >= now;
+                      
+                      return (
+                        <tr key={offer.id} className="hover:bg-purple-900/20 hover:border-l-4 hover:border-purple-500 transition-all duration-200">
+                          <td className="px-4 py-4">
+                            <div className="flex items-center space-x-3">
+                              <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+                                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                                </svg>
+                              </div>
+                              <div>
+                                <div className="text-sm font-medium text-white">{offer.name}</div>
+                                <div className="text-xs text-gray-400">ID: {offer.id}</div>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-4 py-4">
+                            <span className="px-3 py-1 bg-gradient-to-r from-purple-900/50 to-pink-900/50 text-purple-300 rounded-full text-sm font-bold">
+                              {offer.discount_percentage}% OFF
+                            </span>
+                          </td>
+                          <td className="px-4 py-4 text-sm text-gray-300">
+                            {product ? (
+                              <div>
+                                <div className="font-medium">{product.name}</div>
+                                {detail && (
+                                  <div className="text-xs text-gray-400">
+                                    {detail.color} - {detail.size}
+                                  </div>
+                                )}
+                              </div>
+                            ) : (
+                              <span className="text-yellow-400">Todos los productos</span>
+                            )}
+                          </td>
+                          <td className="px-4 py-4 text-sm text-gray-300">
+                            <div className="text-xs">
+                              <div>{startDate.toLocaleDateString('es-ES')}</div>
+                              <div className="text-gray-500">hasta</div>
+                              <div>{endDate.toLocaleDateString('es-ES')}</div>
+                            </div>
+                          </td>
+                          <td className="px-4 py-4">
+                            <div className="flex flex-col space-y-1">
+                              <label className="relative inline-flex items-center cursor-pointer">
+                                <input
+                                  type="checkbox"
+                                  checked={offer.active}
+                                  onChange={() => handleToggleOfferStatus(offer)}
+                                  className="sr-only peer"
+                                />
+                                <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+                              </label>
+                              {isVigente && (
+                                <span className="px-2 py-1 bg-green-900/50 text-green-400 rounded-full text-xs font-medium text-center">
+                                  Vigente
+                                </span>
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-4 py-4">
+                            <div className="flex space-x-2">
+                              <button
+                                onClick={() => handleEditOffer(offer)}
+                                className="p-2 text-blue-400 hover:bg-blue-900/30 rounded-lg transition-colors"
+                                title="Editar oferta"
+                              >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                </svg>
+                              </button>
+                              <button
+                                onClick={() => handleDeleteOffer(offer.id)}
+                                className="p-2 text-red-400 hover:bg-red-900/30 rounded-lg transition-colors"
+                                title="Eliminar oferta"
+                              >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         )}
 
@@ -3765,6 +4304,19 @@ const AdminPage = ({ user, onProductAdded, onProductUpdated, onProductDeleted })
         onProductUpdated={handleProductUpdatedSuccess}
         product={selectedProduct}
         categories={categories}
+      />
+
+      {/* Modal para añadir/editar oferta */}
+      <OfferModal
+        isOpen={showOfferModal}
+        onClose={() => {
+          setShowOfferModal(false);
+          setSelectedOffer(null);
+        }}
+        onOfferSaved={handleOfferSaved}
+        offer={selectedOffer}
+        products={products}
+        user={user}
       />
     </div>
   );
@@ -4609,11 +5161,35 @@ function AppContent() {
 
   // Funciones del carrito
   const addToCart = (product, selectedColor, selectedSize, quantity = 1) => {
+    // Calcular precio con oferta si existe
+    let finalPrice = product.price;
+    let discount = null;
+    
+    if (product.offers && product.offers.length > 0) {
+      const activeOffer = product.offers.find(offer => {
+        if (!offer.active) return false;
+        const now = new Date();
+        const startDate = new Date(offer.start_date);
+        const endDate = new Date(offer.end_date);
+        return startDate <= now && endDate >= now;
+      });
+      
+      if (activeOffer) {
+        discount = {
+          percentage: activeOffer.discount_percentage,
+          name: activeOffer.name
+        };
+        finalPrice = product.price * (1 - activeOffer.discount_percentage / 100);
+      }
+    }
+    
     const cartItem = {
       id: `${product.id}-${selectedColor}-${selectedSize}`,
       productId: product.id,
       name: product.name,
-      price: product.price,
+      originalPrice: product.price,
+      price: finalPrice,
+      discount: discount,
       color: selectedColor,
       size: selectedSize,
       quantity: quantity,
