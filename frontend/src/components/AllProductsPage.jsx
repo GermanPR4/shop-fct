@@ -417,7 +417,7 @@ const ProductCard = ({ product, onProductClick, addToCart, toggleFavorite, isFav
                 {toggleFavorite && (
                     <button
                         onClick={handleToggleFavorite}
-                        className="absolute top-3 right-3 p-2 rounded-full hover:bg-black/70 transition-colors duration-200"
+                        className="absolute top-3 right-3 p-2 rounded-full  transition-colors duration-200"
                     >
                         <svg
                             className={`w-5 h-5 ${isFavorite ? 'text-red-500 fill-current' : 'text-white'}`}
@@ -443,14 +443,12 @@ const ProductCard = ({ product, onProductClick, addToCart, toggleFavorite, isFav
                 
                 <div className="flex items-center justify-between mb-3">
                     <div className="flex flex-col">
-                        {/* Verificar si tiene ofertas activas */}
                         {product.offers && product.offers.length > 0 ? (
                             <>
-                                {/* Precio con descuento */}
                                 <span className="text-2xl font-bold text-emerald-400">
                                     ${(parseFloat(product.price) * (1 - parseFloat(product.offers[0].discount_percentage) / 100)).toFixed(2)}
                                 </span>
-                                {/* Precio original tachado y badge de descuento */}
+
                                 <div className="flex items-center gap-2">
                                     <span className="text-sm text-gray-500 line-through">
                                         ${parseFloat(product.price).toFixed(2)}
@@ -461,7 +459,6 @@ const ProductCard = ({ product, onProductClick, addToCart, toggleFavorite, isFav
                                 </div>
                             </>
                         ) : (
-                            /* Precio normal sin oferta */
                             <span className="text-2xl font-bold text-emerald-400">
                                 ${parseFloat(product.price).toFixed(2)}
                             </span>
