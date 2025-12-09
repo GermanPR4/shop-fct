@@ -21,6 +21,49 @@ const PAGES = {
   SETTINGS: 'SETTINGS',
 };
 
+// Mapeo de colores a códigos hexadecimales
+const COLOR_MAP = {
+  'Negro': '#000000',
+  'Blanco': '#FFFFFF',
+  'Rosa': '#FFC0CB',
+  'Marrón Claro': '#cdad83ff',
+  'Gris': '#808080',
+  'Azul': '#0000FF',
+  'Azul Oscuro': '#1c1c59ff',
+  'Rojo': '#FF0000',
+  'Verde': '#008000',
+  'Amarillo': '#FFFF00',
+  'Naranja': '#FFA500',
+  'Morado': '#800080',
+  'Marrón': '#8B4513',
+  'Beige': '#F5F5DC',
+  'Caqui': '#C3B091',
+  // Combinaciones
+  'Blanco/Azul': 'linear-gradient(90deg, #FFFFFF 50%, #0000FF 50%)',
+  'Negro/Blanco': 'linear-gradient(90deg, #000000 50%, #FFFFFF 50%)',
+  'Negro/Rojo': 'linear-gradient(90deg, #000000 50%, #FF0000 50%)',
+  'Negro con estampado mariposa': 'radial-gradient(circle, #FFD700 20%, transparent 20%) 0 0 / 10px 10px, #000000',
+};
+
+const getColorStyle = (colorName) => {
+  const colorValue = COLOR_MAP[colorName] || '#6B7280'; // Gris por defecto
+  
+  if (colorValue.includes('gradient')) {
+    return { background: colorValue };
+  }
+  // Manejar patrones compuestos (como radial-gradient con fondo)
+  if (colorValue.includes(',') && colorValue.includes('#')) {
+    const parts = colorValue.split(', #');
+    if (parts.length > 1) {
+      return { 
+        background: parts[0],
+        backgroundColor: '#' + parts[1]
+      };
+    }
+  }
+  return { backgroundColor: colorValue };
+};
+
 /**
  * Barra de navegación principal con búsqueda, categorías y menú de usuario.
  * Gestiona el dropdown de categorías, la búsqueda de productos y atajos de teclado.
@@ -929,21 +972,48 @@ const ProductDetailPage = ({ product, addToCart, toggleFavorite, isFavorite }) =
             <p className="text-4xl font-bold text-emerald-400 mb-2">{product.price.toFixed(2)}€</p>
           )}
         </div>
-        <div className="bg-gray-700/50 rounded-lg p-4 mb-6">
+        <div className="bg-gray-300/50 rounded-lg p-4 mb-6">
           <p className="text-gray-200 leading-relaxed">{product.short_description}</p>
         </div>
 
         {/* Selector de Color */}
         <div className="mb-6">
-          <h3 className="text-lg font-semibold text-white mb-3">Color: <span className="text-blue-400">{selectedColor}</span></h3>
+          <h3 className="text-lg font-semibold text-white mb-3">Color:</h3>
           <div className="flex flex-wrap gap-3">
             {availableColors.map(color => (
               <button 
                 key={color} 
                 onClick={() => setSelectedColor(color)} 
-                className={`px-4 py-2 rounded-lg border-2 font-medium transition-all duration-200 ${selectedColor === color ? 'bg-blue-600 text-white border-blue-500 shadow-lg' : 'bg-gray-700 text-gray-200 border-gray-600 hover:border-gray-400'}`}
+                className={`relative w-12 h-12 rounded-full border-3 transition-all duration-200 ${
+                  selectedColor === color 
+                    ? 'border-blue-400 shadow-lg shadow-blue-400/50 scale-110' 
+                    : 'border-gray-600 hover:border-gray-400 hover:scale-105'
+                }`}
+                style={getColorStyle(color)}
+                title={color}
               >
-                {color}
+                {selectedColor === color && (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <svg className="w-7 h-7" viewBox="0 0 24 24">
+                      <path 
+                        d="M5 13l4 4L19 7" 
+                        fill="none"
+                        stroke="#000000"
+                        strokeWidth="4"
+                        strokeLinecap="round" 
+                        strokeLinejoin="round"
+                      />
+                      <path 
+                        d="M5 13l4 4L19 7" 
+                        fill="none"
+                        stroke="#FFFFFF"
+                        strokeWidth="2.5"
+                        strokeLinecap="round" 
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </div>
+                )}
               </button>
             ))}
           </div>
@@ -1000,7 +1070,7 @@ const ProductDetailPage = ({ product, addToCart, toggleFavorite, isFavorite }) =
         {/* Información adicional */}
         <div className="border-t border-gray-700 pt-6">
           <div className="space-y-4">
-            <div className="bg-gray-700/30 rounded-xl p-4">
+            <div className=" rounded-xl p-4">
               <h4 className="text-lg font-semibold text-white mb-3 flex items-center">
                 <svg className="w-5 h-5 mr-2 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -1011,11 +1081,11 @@ const ProductDetailPage = ({ product, addToCart, toggleFavorite, isFavorite }) =
             </div>
             
             <div className="grid grid-cols-2 gap-4">
-              <div className="bg-gray-700/30 rounded-xl p-4">
+              <div className="border-2 border-gray-700 rounded-xl p-4">
                 <h5 className="font-semibold text-emerald-400 mb-2">📦 Envío Gratis</h5>
                 <p className="text-sm text-gray-300">En pedidos superiores a 50€</p>
               </div>
-              <div className="bg-gray-700/30 rounded-xl p-4">
+              <div className="border-2 border-gray-700 rounded-xl p-4">
                 <h5 className="font-semibold text-emerald-400 mb-2">↩️ Devoluciones</h5>
                 <p className="text-sm text-gray-300">30 días para cambios</p>
               </div>
@@ -3649,8 +3719,23 @@ const AdminPage = ({ user, onProductAdded, onProductUpdated, onProductDeleted })
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [showOfferModal, setShowOfferModal] = useState(false);
   const [selectedOffer, setSelectedOffer] = useState(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [productToDelete, setProductToDelete] = useState(null);
 
   const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
+
+  // Función para recargar productos
+  const fetchProducts = useCallback(async () => {
+    if (user?.role !== 'employee') return;
+    
+    try {
+      const response = await fetch(`${API_URL}/api/products`);
+      const productsData = await response.json();
+      setProducts(productsData);
+    } catch (error) {
+      console.error('Error al cargar productos:', error);
+    }
+  }, [API_URL, user]);
 
   // Cargar productos y categorías
   useEffect(() => {
@@ -3761,6 +3846,12 @@ const AdminPage = ({ user, onProductAdded, onProductUpdated, onProductDeleted })
   useEffect(() => {
     if (activeTab === 'users') {
       fetchUsers();
+      
+      const intervalId = setInterval(() => {
+        fetchUsers();
+      }, 10000);
+      
+      return () => clearInterval(intervalId);
     } else if (activeTab === 'offers') {
       fetchOffers();
     }
@@ -3768,14 +3859,67 @@ const AdminPage = ({ user, onProductAdded, onProductUpdated, onProductDeleted })
 
   const handleProductAddedSuccess = () => {
     onProductAdded();
+    fetchProducts(); // Recargar productos localmente
     setNotification({ type: 'success', message: 'Producto creado exitosamente' });
     setTimeout(() => setNotification(null), 3000);
   };
 
   const handleProductUpdatedSuccess = () => {
     onProductUpdated();
+    fetchProducts(); // Recargar productos localmente
+    if (activeTab === 'offers') {
+      fetchOffers(); // También recargar ofertas si estamos en esa pestaña
+    }
     setNotification({ type: 'success', message: 'Producto actualizado exitosamente' });
     setTimeout(() => setNotification(null), 3000);
+  };
+
+  const handleDeleteProduct = (product) => {
+    setProductToDelete(product);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDeleteProduct = async () => {
+    if (!productToDelete) return;
+    
+    try {
+      let token = localStorage.getItem('omnistyle-token');
+      if (!token && user?.token) {
+        token = user.token;
+      }
+      
+      if (!token) {
+        setNotification({ type: 'error', message: 'Error de autenticación: no se encontró token' });
+        setShowDeleteModal(false);
+        setProductToDelete(null);
+        return;
+      }
+      
+      const response = await fetch(`${API_URL}/api/admin/products/${productToDelete.id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (response.ok) {
+        onProductDeleted();
+        fetchProducts(); // Recargar productos localmente
+        setNotification({ type: 'success', message: 'Producto eliminado exitosamente' });
+        setTimeout(() => setNotification(null), 3000);
+      } else {
+        const errorData = await response.json();
+        setNotification({ type: 'error', message: errorData.message || 'Error al eliminar producto' });
+        setTimeout(() => setNotification(null), 3000);
+      }
+    } catch {
+      setNotification({ type: 'error', message: 'Error de conexión al eliminar producto' });
+      setTimeout(() => setNotification(null), 3000);
+    } finally {
+      setShowDeleteModal(false);
+      setProductToDelete(null);
+    }
   };
 
   const handleEditClick = (product) => {
@@ -3785,6 +3929,8 @@ const AdminPage = ({ user, onProductAdded, onProductUpdated, onProductDeleted })
 
   const handleOfferSaved = () => {
     fetchOffers();
+    fetchProducts(); // Recargar productos para reflejar cambios en ofertas
+    onProductUpdated(); // Actualizar catálogo global
     setNotification({ type: 'success', message: selectedOffer ? 'Oferta actualizada exitosamente' : 'Oferta creada exitosamente' });
     setTimeout(() => setNotification(null), 3000);
     setSelectedOffer(null);
@@ -3819,6 +3965,8 @@ const AdminPage = ({ user, onProductAdded, onProductUpdated, onProductDeleted })
       
       if (response.ok) {
         fetchOffers();
+        fetchProducts(); // Recargar productos para reflejar cambios
+        onProductUpdated(); // Actualizar catálogo global
         setNotification({ type: 'success', message: 'Oferta eliminada exitosamente' });
         setTimeout(() => setNotification(null), 3000);
       } else {
@@ -3855,6 +4003,8 @@ const AdminPage = ({ user, onProductAdded, onProductUpdated, onProductDeleted })
       
       if (response.ok) {
         fetchOffers();
+        fetchProducts();
+        onProductUpdated();
         setNotification({ 
           type: 'success', 
           message: `Oferta ${!offer.active ? 'activada' : 'desactivada'} exitosamente` 
@@ -4027,12 +4177,17 @@ const AdminPage = ({ user, onProductAdded, onProductUpdated, onProductDeleted })
                             <button 
                               onClick={() => handleEditClick(product)}
                               className="p-2 text-blue-400 hover:bg-blue-900/30 rounded-lg transition-colors"
+                              title="Editar producto"
                             >
                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                               </svg>
                             </button>
-                            <button className="p-2 text-red-400 hover:bg-red-900/30 rounded-lg transition-colors">
+                            <button 
+                              onClick={() => handleDeleteProduct(product)}
+                              className="p-2 text-red-400 hover:bg-red-900/30 rounded-lg transition-colors"
+                              title="Eliminar producto"
+                            >
                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                               </svg>
@@ -4318,6 +4473,50 @@ const AdminPage = ({ user, onProductAdded, onProductUpdated, onProductDeleted })
         products={products}
         user={user}
       />
+
+      {/* Modal de confirmación para eliminar producto */}
+      {showDeleteModal && productToDelete && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-800 rounded-lg shadow-xl max-w-md w-full border border-gray-700">
+            <div className="p-6">
+              <div className="flex items-center space-x-2 mb-4">
+                <svg className="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <h3 className="text-lg font-semibold text-white">Confirmar eliminación</h3>
+              </div>
+              
+              <p className="text-gray-300 mb-4">
+                ¿Estás seguro de que deseas eliminar el producto <span className="font-semibold text-white">"{productToDelete.name}"</span>?
+              </p>
+              
+              <div className="border-4 border-red-500/30 rounded p-3 mb-6">
+                <p className="text-red-300 text-sm font-medium">
+                  ⚠️ Esta acción es irreversible y eliminará todas las variantes e imágenes asociadas.
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex space-x-3 px-6 pb-6">
+              <button
+                onClick={() => {
+                  setShowDeleteModal(false);
+                  setProductToDelete(null);
+                }}
+                className="flex-1 px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-600 transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={confirmDeleteProduct}
+                className="flex-1 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
+              >
+                Eliminar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -258,6 +258,37 @@ class ProductController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Remove the specified product (DELETE /api/admin/products/{id}).
+     */
+    public function destroy(Product $product)
+    {
+        try {
+            DB::beginTransaction();
+
+            $product->offers()->delete();
+
+            $product->details()->delete();
+
+            $product->categories()->detach();
+
+            $product->delete();
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Producto eliminado exitosamente'
+            ], 200);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            return response()->json([
+                'message' => 'Error al eliminar el producto',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
     
-    // Los demás métodos quedan para el módulo Admin
 }
